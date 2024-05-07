@@ -13,6 +13,9 @@ import subprocess
 
 from typing import List, Optional
 
+import logging
+logger = logging.getLogger(__name__)
+
 @dataclass
 class JackhmmerArgs:
     """Defaults are EVcouplings defaults for running Jackhmmer."""
@@ -138,19 +141,22 @@ class Jackhmmer:
 
         cmd = [
             self.args.executable,
-            f'-N {self.args.iterations}',
-            f'-E {self.args.evalue}',
-            f'--incE {self.args.evalue}',
-            f'--cpu {self.args.cpus}',
+            '-N', str(self.args.iterations),
+            '-E', str(self.args.evalue),
+            '--incE', str(self.args.evalue),
+            '--incdomE', str(self.args.evalue),
+            '--cpu', str(self.args.cpus),
+            '-o', output_file,
+            '-A', alignment_file,
+            '--popen', str(self.args.popen),
+            '--pextend', str(self.args.pextend),
+            '--mx', self.args.mx,
+            '--noali',
             seqfile,
             self.args.seqdb,
-            f'-o {output_file}',
-            f'-A {alignment_file}',
-            f'--popen {self.args.popen}',
-            f'--pextend {self.args.pextend}',
-            f'--mx {self.args.mx}',
-            '--noali',
         ]
+
+        logger.info(f"Running jackhmmer with command `{' '.join(cmd)}`")
 
         subprocess.run(cmd)
         

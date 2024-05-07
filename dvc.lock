@@ -1,0 +1,25 @@
+schema: '2.0'
+stages:
+  run_jackhmmer:
+    cmd: python scripts/run_jackhmmer.py
+    deps:
+    - path: data/wt.fasta
+      hash: md5
+      md5: a1598310bd55723f8c9255b8160c1816
+      size: 263
+    params:
+      params.yaml:
+        jackhmmer:
+          seqdb: /kfs2/projects/bpms/ekomp_tmp/datasets/uniref/uniref100.fasta
+          evalue: 0.0001
+          iterations: 1
+          cpus: 4
+          mx: BLOSUM62
+          popen: 0.02
+          pextend: 0.4
+    outs:
+    - path: data/jackhmmer/
+      hash: md5
+      md5: 5c4d9ff4f3626a7d635495bbfb062986.dir
+      size: 261897107
+      nfiles: 2

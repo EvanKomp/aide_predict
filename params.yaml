@@ -1,7 +1,7 @@
 jackhmmer:
-  seqdb: data/uniprot_sprot.fasta
+  seqdb: /kfs2/projects/bpms/ekomp_tmp/datasets/uniref/uniref100.fasta
   evalue: 0.0001
-  iterations: 5
+  iterations: 1
   cpus: 4
   mx: 'BLOSUM62'
   popen: 0.02

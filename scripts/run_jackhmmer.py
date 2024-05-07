@@ -17,6 +17,10 @@ import dvc.api
 
 from aide_predict.utils.jackhmmer import Jackhmmer, JackhmmerArgs
 
+import logging
+logging.basicConfig(level=logging.INFO, filemode='w', filename='./logs/run_jackhmmer.log')
+logger = logging.getLogger(__name__)
+
 PARAMS = dvc.api.params_show()['jackhmmer']
 EXECDIR = os.getcwd()
 
