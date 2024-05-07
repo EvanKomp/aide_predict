@@ -1,0 +1,10 @@
+name: protein-prediction
+channels:
+  - defaults
+  - conda-forge
+
+dependencies:
+  - python=3.10
+  - numpy
+  - pandas
+  - scikit-learn
