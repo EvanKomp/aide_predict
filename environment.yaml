@@ -2,11 +2,13 @@ name: protein-prediction
 channels:
   - defaults
   - conda-forge
+  - bioconda
 
 dependencies:
   - python=3.10
   - numpy
   - pandas
+  - hmmer
   - scikit-learn
   - pip
   - pip:
