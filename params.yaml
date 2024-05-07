@@ -1,3 +1,8 @@
-# Parameters for ML aided prediction of protein mutation combinatorial libraries
-
-# TODO
+jackhmmer:
+  seqdb: data/uniprot_sprot.fasta
+  evalue: 0.0001
+  iterations: 5
+  cpus: 4
+  mx: 'BLOSUM62'
+  popen: 0.02
+  pextend: 0.4

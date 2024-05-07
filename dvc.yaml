@@ -1,2 +1,10 @@
 stages:
-  # TODO
+  run_jackhmmer:
+  # EXPECTED ENVIRONMENTAL VARIABLE 'JACKHMMER_PATH' IF IT IS NOT IN PATH ALREADY
+    params:
+      - jackhmmer
+    cmd: python scripts/run_jackhmmer.py
+    deps:
+      - data/wt.fasta
+    outs:
+      - data/jackhmmer/
