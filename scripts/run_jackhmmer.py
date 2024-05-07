@@ -36,6 +36,8 @@ if __name__ == '__main__':
         seqdb=PARAMS['seqdb'],
         cpus=PARAMS['cpus'],
         iterations=PARAMS['iterations'],
+        use_bitscores=PARAMS['use_bitscores'],
+        tvalue=PARAMS['tvalue'],
         evalue=PARAMS['evalue'],
         popen=PARAMS['popen'],
         pextend=PARAMS['pextend'],
@@ -50,5 +52,5 @@ if __name__ == '__main__':
         jackhmmer.run(os.path.join(EXECDIR, 'data', 'wt.fasta'), os.path.join(EXECDIR, 'data', 'jackhmmer'))
     else:
         os.makedirs(os.path.join(EXECDIR, 'data', 'jackhmmer'))
-        
+
 

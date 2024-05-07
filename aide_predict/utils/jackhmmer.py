@@ -22,7 +22,9 @@ class JackhmmerArgs:
     seqdb: str
     cpus: int = 1
     iterations: int = 3
+    use_bitscores: bool = True
     evalue: float = 0.0001
+    tvalue: float = 0.5
     zvalue: Optional[int] = None
     popen: float = 0.02
     pextend: float = 0.4
@@ -142,9 +144,6 @@ class Jackhmmer:
         cmd = [
             self.args.executable,
             '-N', str(self.args.iterations),
-            '-E', str(self.args.evalue),
-            '--incE', str(self.args.evalue),
-            '--incdomE', str(self.args.evalue),
             '--cpu', str(self.args.cpus),
             '-o', output_file,
             '-A', alignment_file,
@@ -152,9 +151,26 @@ class Jackhmmer:
             '--pextend', str(self.args.pextend),
             '--mx', self.args.mx,
             '--noali',
+        ]
+        if not self.args.use_bitscores:
+            cmd.extend([
+                '-E', str(self.args.evalue),
+                '--incE', str(self.args.evalue),
+                '--incdomE', str(self.args.evalue),
+            ])
+
+        else:
+            cmd.extend([
+                '-T', str(self.args.tvalue),
+                '--incT', str(self.args.tvalue),
+                '--incdomT', str(self.args.tvalue),
+            ])
+
+        cmd.extend([
             seqfile,
             self.args.seqdb,
-        ]
+        ])
+
 
         logger.info(f"Running jackhmmer with command `{' '.join(cmd)}`")
 

@@ -1,7 +1,9 @@
 jackhmmer:
   seqdb: /kfs2/projects/bpms/ekomp_tmp/datasets/uniref/uniref100.fasta
-  evalue: 0.0001
   iterations: 1
+  evalue: 0.0001
+  tvalue: 0.5
+  use_bitscores: true
   cpus: 4
   mx: 'BLOSUM62'
   popen: 0.02
