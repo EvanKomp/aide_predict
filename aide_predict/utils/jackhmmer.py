@@ -155,6 +155,7 @@ class Jackhmmer:
         if not self.args.use_bitscores:
             cmd.extend([
                 '-E', str(self.args.evalue),
+                "--domE", str(self.args.evalue),
                 '--incE', str(self.args.evalue),
                 '--incdomE', str(self.args.evalue),
             ])
@@ -162,6 +163,7 @@ class Jackhmmer:
         else:
             cmd.extend([
                 '-T', str(self.args.tvalue),
+                "--domT", str(self.args.tvalue),
                 '--incT', str(self.args.tvalue),
                 '--incdomT', str(self.args.tvalue),
             ])
