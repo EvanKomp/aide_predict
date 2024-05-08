@@ -5,6 +5,8 @@ stages:
       - jackhmmer
     cmd: python scripts/run_jackhmmer.py
     deps:
+      - scripts/run_jackhmmer.py
+      - aide_predict/utils/jackhmmer.py
       - data/wt.fasta
     outs:
       - data/jackhmmer/

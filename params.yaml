@@ -1,6 +1,6 @@
 jackhmmer:
   seqdb: /kfs2/projects/bpms/ekomp_tmp/datasets/uniref/uniref100.fasta
-  iterations: 1
+  iterations: 5
   evalue: 0.0001
   tvalue: 0.5
   use_bitscores: true

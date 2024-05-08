@@ -11,8 +11,10 @@ stages:
       params.yaml:
         jackhmmer:
           seqdb: /kfs2/projects/bpms/ekomp_tmp/datasets/uniref/uniref100.fasta
+          iterations: 5
           evalue: 0.0001
-          iterations: 1
+          tvalue: 0.5
+          use_bitscores: true
           cpus: 4
           mx: BLOSUM62
           popen: 0.02
@@ -20,6 +22,6 @@ stages:
     outs:
     - path: data/jackhmmer/
       hash: md5
-      md5: 5c4d9ff4f3626a7d635495bbfb062986.dir
-      size: 261897107
+      md5: 08ff561e8e3696f340405e6af595cfcc.dir
+      size: 42023736692
       nfiles: 2
