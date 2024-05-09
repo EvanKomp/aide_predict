@@ -59,6 +59,12 @@ To use the tools for ML aided prediction of protein mutation combinatorial libra
 4. Run `dvc repro` to execute the ML models and prediction tools, spitting out what to select next
 
 
+## Citations
+No software or code with viral licenses was used in the creation of this project.
+
+Some coda from Tranception was adapted for MSA processing in this repo, and the model itself if supported as a wrapper:
+> Notin, P., Dias, M., Frazer, J., Marchena-Hurtado, J., Gomez, A., Marks, D.S., Gal, Y. (2022). Tranception: Protein Fitness Prediction with Autoregressive Transformers and Inference-time Retrieval. ICML.
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE).

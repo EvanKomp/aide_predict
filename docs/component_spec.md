@@ -18,7 +18,7 @@ Options will for example TopN, or a Threshold.
 Inherits from sklearn transformer. Takes in a sequence and returns a score.
 
 ## SequenceChecker(Transformer)
-Inherits from sklearn transformer. Simply checks that all sequences are the same length, and also records the variable amino acid sequences.
+Inherits from sklearn transformer. Simply checks that all sequences are the same length, and also records the variable amino acid residues.
 
 ## Embedder(Transformer)
 Inherits from sklearn transformer. Takes in a sequence and returns a feature vector. Options are Eg. one hot or esm1v.
