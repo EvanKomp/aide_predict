@@ -8,3 +8,10 @@ jackhmmer:
   mx: 'BLOSUM62'
   popen: 0.02
   pextend: 0.4
+msaprocessing:
+  theta: 0.2
+  use_weights: true
+  preprocess: true
+  threshold_sequence_frac_gaps: 0.5
+  threshold_focus_cols_frac_gaps: 0.5
+  remove_sequences_with_indeterminate_AA_in_focus_cols: true
