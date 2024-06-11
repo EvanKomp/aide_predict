@@ -10,3 +10,4 @@ stages:
       - data/wt.fasta
     outs:
       - data/jackhmmer/
+      - logs/jackhmmer.log

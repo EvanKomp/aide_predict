@@ -16,6 +16,7 @@ import os
 import dvc.api
 
 from aide_predict.utils.jackhmmer import Jackhmmer, JackhmmerArgs
+from aide_predict.utils.msa import convert_sto_a2m
 
 import logging
 logging.basicConfig(level=logging.INFO, filemode='w', filename='./logs/run_jackhmmer.log')
@@ -50,6 +51,12 @@ if __name__ == '__main__':
     if True:
         jackhmmer = Jackhmmer(args)
         jackhmmer.run(os.path.join(EXECDIR, 'data', 'wt.fasta'), os.path.join(EXECDIR, 'data', 'jackhmmer'))
+
+        # convert to a2m and delete massive sto file
+        convert_sto_a2m(
+            os.path.join(EXECDIR, 'data', 'jackhmmer', 'jackhmmer.sto'),
+            os.path.join(EXECDIR, 'data', 'jackhmmer', 'jackhmmer.a2m')
+        )
     else:
         os.makedirs(os.path.join(EXECDIR, 'data', 'jackhmmer'))
 

@@ -24,15 +24,20 @@ In addition to refactoring, we add some additional functionality:
 import os
 from dataclasses import dataclass
 from collections import defaultdict
+import subprocess
+from functools import partial
 
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
+import multiprocessing
 
 import logging
 logger = logging.getLogger(__name__)
 
-def prepare_sto_file(sto_file)
-
+def convert_sto_a2m(sto_file: str, a2m_file: str):
+    """MSAProcessing expects an A2M file, this function converts a Stockholm file to A2M."""
+    subprocess.run(["esl-reformat", "-o", a2m_file, "a2m", sto_file], check=True)
 
 @dataclass
 class MSAProcessingArgs:
@@ -56,13 +61,14 @@ class MSAProcessingArgs:
     threshold_sequence_frac_gaps: float = 0.5
     threshold_focus_cols_frac_gaps: float = 0.3
     remove_sequences_with_indeterminate_AA_in_focus_cols: bool = True
+    multiprocessing: bool = False
 
 class MSAProcessing:
     alphabet = "ACDEFGHIKLMNPQRSTVWY"
     def __init__(self, args: MSAProcessingArgs):
         self.args = args
 
-    def process(self, MSA_location: str, weights_location: str, focus_seq_name: str, additional_weights: dict = None):
+    def process(self, MSA_location: str, weights_location: str, focus_seq_id: str, additional_weights: dict = None, new_a2m_location: str = None):
         """
         Parameters:
         - MSA_location: (path) Location of the MSA data. Constraints on input MSA format: 
@@ -73,15 +79,25 @@ class MSAProcessing:
         - weights_location: (path) Location to load from/save to the sequence weights
         - additional_weights: (dict) Additional weights to apply to sequences. keys should be sequence ids, values should be weights
            the additional weights are scaler multiplied by the computed weights, thus if you have some sequences that are more important
+        - new_a2m_location: (path) If preprocess is turned on, saves the new MSA (eg. with some sequences dropped) to this location)
         """
-        # check the additional weights ids
-        for seq_name in additional_weights.keys():
-            if seq_name not in self.seq_name_to_sequence:
-                raise ValueError(f"Sequence {seq_name} not found in MSA")
+        
+                
+        if new_a2m_location is None and self.args.preprocess_MSA:
+            raise ValueError("Preprocessing MSA is on, but no new_a2m_location provided")
+
+        self.new_a2m_location = new_a2m_location    
         self.MSA_location = MSA_location
         self.weights_location = weights_location
-        self.focus_seq_name = focus_seq_name
+        self.focus_seq_id = focus_seq_id
         self._read_alignment()
+
+        # check the additional weights ids
+        if additional_weights is not None:
+            for seq_name in additional_weights.keys():
+                if seq_name not in self.seq_base_id_to_seq_name:
+                    raise ValueError(f"Sequence {seq_name} not found in MSA")
+
         self._cut_bad_seqs_and_columns()
         self._encode_sequences()
         self._compute_weights(additional_weights)
@@ -93,6 +109,7 @@ class MSAProcessing:
         
         # read the ids and sequences
         self.seq_name_to_sequence = defaultdict(str)
+        self.seq_base_id_to_seq_name = defaultdict(str)
         name = ""
         with open(self.MSA_location, "r") as msa_data:
             found_focus_seq = False
@@ -101,17 +118,20 @@ class MSAProcessing:
 
                 if line.startswith(">"):
                     name = line
-                    if name == self.focus_seq_name:
+                    base_id = name.split("/")[0][1:]
+                    if base_id == self.focus_seq_id:
                         found_focus_seq = True
+                        self.focus_seq_name = name
+                    self.seq_base_id_to_seq_name[base_id] = name
                 else:
                     self.seq_name_to_sequence[name] += line
         if not found_focus_seq:
-            raise ValueError(f"Focus sequence {self.focus_seq_name} not found in MSA")
+            raise ValueError(f"Focus sequence {self.focus_seq_id} not found in MSA")
         logger.info(f"Loaded MSA with {len(self.seq_name_to_sequence)} sequences, target sequence: {self.focus_seq_name}")
 
     def _cut_bad_seqs_and_columns(self):
         """Pre-process the MSA to remove bad sequences and columns."""
-        logger.inf("Original width of MSA: ", len(self.seq_name_to_sequence[self.focus_seq_name]))
+        logger.info(f"Original width of MSA: {len(self.seq_name_to_sequence[self.focus_seq_name])}")
         if self.args.preprocess_MSA:
             msa_df = pd.DataFrame.from_dict(self.seq_name_to_sequence, orient='index', columns=['sequence'])
             # Data clean up - make all gaps "-" and upper case
@@ -132,11 +152,11 @@ class MSAProcessing:
             # Identify fragments with too many gaps
             seq_gaps_frac = gaps_array.mean(axis=1)
             seq_below_threshold = seq_gaps_frac <= self.args.threshold_sequence_frac_gaps
-            print("Proportion of sequences dropped due to fraction of gaps: "+str(round(float(1 - seq_below_threshold.sum()/seq_below_threshold.shape)*100,2))+"%")
+            logger.info("Proportion of sequences dropped due to fraction of gaps: "+str(round(float(1 - seq_below_threshold.sum()/seq_below_threshold.shape)*100,2))+"%")
             # Identify focus columns
             columns_gaps_frac = gaps_array[seq_below_threshold].mean(axis=0)
             index_cols_below_threshold = columns_gaps_frac <= self.args.threshold_focus_cols_frac_gaps
-            print("Proportion of non-focus columns removed: "+str(round(float(1 - index_cols_below_threshold.sum()/index_cols_below_threshold.shape)*100,2))+"%")
+            logger.info("Proportion of non-focus columns removed: "+str(round(float(1 - index_cols_below_threshold.sum()/index_cols_below_threshold.shape)*100,2))+"%")
             # Lower case non focus cols and filter fragment sequences
             msa_df['sequence'] = msa_df['sequence'].apply(lambda x: ''.join([aa.upper() if upper_case_ind else aa.lower() for aa, upper_case_ind in zip(x, index_cols_below_threshold)]))
             msa_df = msa_df[seq_below_threshold]
@@ -144,6 +164,16 @@ class MSAProcessing:
             self.seq_name_to_sequence = defaultdict(str)
             for seq_idx in range(len(msa_df['sequence'])):
                 self.seq_name_to_sequence[msa_df.index[seq_idx]] = msa_df.sequence[seq_idx]
+            
+            # save as a new a2m file
+            if self.new_a2m_location is not None:
+                with open(self.new_a2m_location, 'w') as f:
+                    f.write(f"{self.focus_seq_name}\n")
+                    f.write(msa_df.sequence[self.focus_seq_name]+'\n')
+                    for seq_name, sequence in self.seq_name_to_sequence.items():
+                        f.write(seq_name+'\n')
+                        f.write(sequence+'\n')
+
     
     def _encode_sequences(self):
         """Encode the sequences into one-hot format."""
@@ -156,9 +186,11 @@ class MSAProcessing:
         # Connect local sequence index with uniprot index (index shift inferred from 1st row of MSA)
         try:
             focus_loc = self.focus_seq_name.split("/")[-1]
-            start,stop = focus_loc.split("-")
+            split = focus_loc.split("-")
+            start = split[0]
+            stop = split[1]
         except IndexError:
-            start,stop = 0, len(self.focus_seq)
+            start,stop = 1, len(self.focus_seq)
 
         self.focus_start_loc = int(start)
         self.focus_stop_loc = int(stop)
@@ -191,8 +223,8 @@ class MSAProcessing:
         for i,seq_name in enumerate(self.seq_name_to_sequence.keys()):
             sequence = self.seq_name_to_sequence[seq_name]
             for j,letter in enumerate(sequence):
-                if letter in self.aa_dict: 
-                    k = self.aa_dict[letter]
+                if letter in self._aa_dict: 
+                    k = self._aa_dict[letter]
                     self.one_hot_encoding[i,j,k] = 1.0
         
     def _compute_weights(self, additional_weights: dict):
@@ -204,16 +236,16 @@ class MSAProcessing:
                 logger.info("Computing sequence weights")
                 list_seq = self.one_hot_encoding
                 list_seq = list_seq.reshape((list_seq.shape[0], list_seq.shape[1] * list_seq.shape[2]))
-                def compute_weight(seq):
-                    number_non_empty_positions = np.dot(seq,seq)
-                    if number_non_empty_positions>0:
-                        denom = np.dot(list_seq,seq) / np.dot(seq,seq) 
-                        denom = np.sum(denom > 1 - self.args.theta) 
-                        return 1/denom
-                    else:
-                        return 0.0
-                self.weights = np.array(list(map(compute_weight,list_seq)))
-                np.save(file=self.weights_location, arr=self.weights)
+                weights = []
+                # Parallelize the computation using multiprocessing
+                partial_compute_weight = partial(_compute_weight, list_seq=list_seq, theta=self.args.theta)
+                if self.args.multiprocessing:
+                    with multiprocessing.Pool() as pool:
+                        weights = pool.map(partial_compute_weight, list_seq)
+                else:
+                    for seq in tqdm(list_seq):
+                        weights.append(_compute_weight(seq, list_seq, self.args.theta))
+                self.weights = np.array(weights)
 
         else:
             # If not using weights, use an isotropic weight matrix
@@ -229,11 +261,23 @@ class MSAProcessing:
 
         if additional_weights is not None:
             logger.info("Applying manual sequence weights as a factor")
-            for seq_id, weight in additional_weights.items():
+            for seq_base_id, weight in additional_weights.items():
                 # map the weight to the sequence id...
-                index = list(self.seq_name_to_sequence.keys()).index(seq_id)
+                index = list(self.seq_base_id_to_seq_name.keys()).index(seq_base_id)
                 self.weights[index] *= weight
+        if self.args.use_weights:
+            np.save(file=self.weights_location, arr=self.weights)
 
         logger.info(f"Data Shape = {self.one_hot_encoding.shape}")
         self.seq_name_to_weight = dict(zip(self.seq_name_to_sequence.keys(), self.weights))
 
+
+def _compute_weight(seq, list_seq, theta):
+    """To be mapped."""
+    number_non_empty_positions = np.dot(seq, seq)
+    if number_non_empty_positions > 0:
+        denom = np.dot(list_seq, seq) / number_non_empty_positions
+        denom = np.sum(denom > 1 - theta)
+        return 1 / denom
+    else:
+        return 0.0
