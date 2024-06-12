@@ -15,3 +15,22 @@ msaprocessing:
   threshold_sequence_frac_gaps: 0.5
   threshold_focus_cols_frac_gaps: 0.5
   remove_sequences_with_indeterminate_AA_in_focus_cols: true
+  additional_weights: false
+modeling:
+  use_zero_shot: true
+  use_supervised: true
+  zero_shot:
+    model: 'HMM'
+    model_kwargs: '{}'
+  supervised:
+    type: regression
+    model: 'KernelRidge'
+    model_kwargs: '{alpha: 5.0}'
+    embeddings: ['ESM']
+    run_pca: true
+    min_pca_variance_explained: 0.95
+    standardize_X: true
+    scale_y: true
+validation:
+  cv: 5
+  split_type: 'random'
