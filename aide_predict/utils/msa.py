@@ -32,6 +32,8 @@ import pandas as pd
 from tqdm import tqdm
 import multiprocessing
 
+from aide_predict.io.bio_files import read_fasta_like, write_fasta_like
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -76,6 +78,7 @@ class MSAProcessing:
             - first line is structured as follows: ">focus_seq_name/start_pos-end_pos" (e.g., >SPIKE_SARS2/310-550)
             - corresponding sequence data located on following line(s)
             - then all other sequences follow with ">name" on first line, corresponding data on subsequent lines
+        - focus_seq_id: (str) The sequence id of the focus sequence
         - weights_location: (path) Location to load from/save to the sequence weights
         - additional_weights: (dict) Additional weights to apply to sequences. keys should be sequence ids, values should be weights
            the additional weights are scaler multiplied by the computed weights, thus if you have some sequences that are more important
@@ -118,8 +121,10 @@ class MSAProcessing:
 
                 if line.startswith(">"):
                     name = line
-                    base_id = name.split("/")[0][1:]
-                    if base_id == self.focus_seq_id:
+                    base_id = name.split("/")[0][1:].strip()
+                    if i == 0:
+                        if not base_id == self.focus_seq_id:
+                            raise ValueError(f"Focus sequence {self.focus_seq_id} not found in MSA")
                         found_focus_seq = True
                         self.focus_seq_name = name
                     self.seq_base_id_to_seq_name[base_id] = name
@@ -281,3 +286,15 @@ def _compute_weight(seq, list_seq, theta):
         return 1 / denom
     else:
         return 0.0
+    
+
+def place_target_seq_at_top_of_msa(msa_file: str, target_seq_id: str):
+    """Place the target sequence at the top of the MSA."""
+    sequences = read_fasta_like(msa_file)
+    if target_seq_id not in sequences:
+        raise ValueError(f"Target sequence {target_seq_id} not found in MSA")
+    # make sure target seq is at the top of the dict
+    target_seq = sequences[target_seq_id]
+    del sequences[target_seq_id]
+    sequences = {target_seq_id: target_seq, **sequences}
+    write_fasta_like(msa_file, sequences)

@@ -16,7 +16,8 @@ import os
 import dvc.api
 
 from aide_predict.utils.jackhmmer import Jackhmmer, JackhmmerArgs
-from aide_predict.utils.msa import convert_sto_a2m
+from aide_predict.utils.msa import convert_sto_a2m, place_target_seq_at_top_of_msa
+from aide_predict.io.bio_files import read_fasta
 
 import logging
 logging.basicConfig(level=logging.INFO, filemode='w', filename='./logs/run_jackhmmer.log')
@@ -57,6 +58,22 @@ if __name__ == '__main__':
             os.path.join(EXECDIR, 'data', 'jackhmmer', 'jackhmmer.sto'),
             os.path.join(EXECDIR, 'data', 'jackhmmer', 'jackhmmer.a2m')
         )
+        # remove the sto file
+        os.remove(os.path.join(EXECDIR, 'data', 'jackhmmer', 'jackhmmer.sto'))
+
+        # make sure the wt seq is at the top of the msa
+        # get the wild type sequence ID
+        with open(os.path.join(EXECDIR, 'data', 'wt.fasta'), 'r') as f:
+            lines = f.readlines()
+            wt_id = lines[0][1:].strip()
+        place_target_seq_at_top_of_msa(
+            os.path.join(EXECDIR, 'data', 'jackhmmer', 'jackhmmer.a2m'),
+            wt_id,
+        )
+        # determine size of msa
+        seqs = read_fasta(os.path.join(EXECDIR, 'data', 'jackhmmer', 'jackhmmer.a2m'))
+        logger.info(f"Number of sequences in MSA: {len(seqs)}")
+
     else:
         os.makedirs(os.path.join(EXECDIR, 'data', 'jackhmmer'))
 

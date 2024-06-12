@@ -14,7 +14,7 @@ import os
 import pickle
 import dvc.api
 
-from aide_predict.utils.msa import MSAProcessing, MSAProcessingArgs, convert_sto_a2m
+from aide_predict.utils.msa import MSAProcessing, MSAProcessingArgs, convert_sto_a2m, place_target_seq_at_top_of_msa
 
 import logging
 logger = logging.getLogger(__name__)
@@ -42,7 +42,7 @@ def main():
     # get the wild type sequence ID
     with open(os.path.join(EXECDIR, 'data', 'wt.fasta'), 'r') as f:
         lines = f.readlines()
-        wt_id = lines[0].split()[1].strip()
+        wt_id = lines[0][1:].strip()
     logger.info(f'wt_id: {wt_id}')
 
     # process the MSA
@@ -55,6 +55,7 @@ def main():
     )
 
     # pickle the MSAProcessing object for loading by downstream processes
+    # if necessary
     with open(os.path.join(EXECDIR, 'data', 'msa', 'msa_obj.pkl'), 'wb') as f:
         pickle.dump(msa, f)
     
