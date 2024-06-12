@@ -33,16 +33,20 @@ class ModelWrapperArgs:
     @abstractmethod
     def check_metadata(self):
         raise NotImplementedError("This method must be implemented in the child class.")
+    
+    @property
+    def kwargs(self):
+        """User defined parameters."""
+        # only return no hidden attributes
+        return {key: value for key, value in self.__dict__.items() if not key.startswith('_')}
 
 class ModelWrapper(TransformerMixin, BaseEstimator):
     wrapper_args_class = None
 
-    def __init__(self, args: ModelWrapperArgs):
-    
-        # check that the args class is the correct type
-        if self.wrapper_args_class is None or not isinstance(args, self.wrapper_args_class):
-            raise ValueError(f"args must be of type {self.wrapper_args_class}")
-        
+    def __init__(self, **kwargs):
+        # Create an instance of the wrapper_args_class with the kwargs
+        args = self.wrapper_args_class(**kwargs)
+
         # assign all of the parameters sklearn style
         for key, value in args.__dict__.items():
             setattr(self, key, value)
