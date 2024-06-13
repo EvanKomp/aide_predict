@@ -1,13 +1,25 @@
 stages:
-  run_jackhmmer:
-  # EXPECTED ENVIRONMENTAL VARIABLE 'JACKHMMER_PATH' IF IT IS NOT IN PATH ALREADY
+  run_msa:
+    cmd: python scripts/run_msa.py
     params:
-      - jackhmmer
-    cmd: python scripts/run_jackhmmer.py
-    deps:
-      - scripts/run_jackhmmer.py
-      - aide_predict/utils/jackhmmer.py
-      - data/wt.fasta
-    outs:
-      - data/jackhmmer/
-      - logs/jackhmmer.log
+      - use_msa
+      - msa_creation.msa_mode
+
+      # if msa_mode is known_actives
+      - msa_creation.known_actives.add_training_sequences
+      - msa_creation.known_actives.activity_targets
+      - msa_creation.known_actives.activity_threshold
+
+      # if msa_mode is jackhmmer
+      - msa_creation.jackhmmer.seqdb
+      - msa_creation.jackhmmer.iterations
+      - msa_creation.jackhmmer.domain_threshold
+      - msa_creation.jackhmmer.sequence_threshold
+      - msa_creation.jackhmmer.use_bitscores
+      - msa_creation.jackhmmer.sequence_identity_filter
+      - msa_creation.jackhmmer.cpus
+      - msa_creation.jackhmmer.mx
+  deps:
+    - data/known_actives.fa
+    - data/experimental_data.csv
+    - data/wt.fa

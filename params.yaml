@@ -35,7 +35,7 @@ msa_creation:
     # note that the threshold is non inclusive and greater than
     # if you want your target that is low-better to be considered active, you
     # must reformat the target to be high-better
-    add_training_sequences: false
+    add_training_sequences: false # this requires `data/experimental_data.csv` to be not empty
     activity_targets: [0]
     activity_threshold: 0.0
 
