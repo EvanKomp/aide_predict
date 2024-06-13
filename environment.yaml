@@ -14,3 +14,6 @@ dependencies:
   - pip:
     - dvc
     - tqdm
+    - evcouplings @ git+https://github.com/debbiemarkslab/EVcouplings@af27842
+
+
