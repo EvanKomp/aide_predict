@@ -1,13 +1,61 @@
-jackhmmer:
-  seqdb: /kfs2/projects/proteinml/datasets/uniref/uniref100.fasta
-  iterations: 5
-  evalue: 0.0001
-  tvalue: 0.5
-  use_bitscores: true
-  cpus: 16
-  mx: 'BLOSUM62'
-  popen: 0.02
-  pextend: 0.4
+###########################################################
+# High level parameters
+###########################################################
+
+# if the modeling you want to do does not require and MSA you can skip those steps
+use_msa: true # must be true if model requires MSA input
+
+# Whether to use zero shot, supervised, or both. Note that if both
+# are passed, zero shot is used as input for supervised a la hsu et al
+use_zero_shot: true # whether to use zero_shot for scoring
+use_supervised: true # note requires `data/experimental_data.csv` to be not empty
+
+# If you want to score based on only specific positions instead of the whole sequences
+# you can turn that on here. Not that not all models support this
+# it is also incompatable with training and testing data that are not fixed length.
+# if you do, a list of positiions can be passed eg [3, 4, 5] 1 indexed
+# or a range with a string eg '3-5' inclusive.
+position_specific_scoring: false
+
+
+###########################################################
+# Creation of MSA for zero shot model training
+###########################################################
+msa_creation:
+  # If `known_actives` The MSA is created using `data/known_actives.fa` and optionally, sequences from supervised training data
+  # If `jackhmmer` The MSA is created using `jackhmmer` search against a database
+  msa_mode: jackhmmer
+
+  # for using predefined sequences
+  # msa_mode: known_actives
+  known_actives:
+    # If you want to add sequences from any supervised training data provided
+    # add_training_sequences: true
+    # activity_targets: the target columns to use when determining the known actives to add
+    # note that the threshold is non inclusive and greater than
+    # if you want your target that is low-better to be considered active, you
+    # must reformat the target to be high-better
+    add_training_sequences: false
+    activity_targets: [0]
+    activity_threshold: 0.0
+
+
+  # for searching natural homologs
+  # msa_mode: jackhmmer
+  # note requires `data/wt.fa` to be not empty
+  jackhmmer:
+    seqdb: /kfs2/projects/proteinml/datasets/uniref/uniref100.fasta
+    iterations: 5
+    domain_threshold: 0.5
+    sequence_threshold: 0.5
+    use_bitscores: true
+    sequence_identity_filter: 0.8
+    cpus: 16
+    mx: 'BLOSUM62'
+
+###########################################################
+# Preprocessing of MSA for model training
+###########################################################
 msaprocessing:
   theta: 0.2
   use_weights: true
@@ -16,9 +64,11 @@ msaprocessing:
   threshold_focus_cols_frac_gaps: 0.5
   remove_sequences_with_indeterminate_AA_in_focus_cols: true
   additional_weights: false
+
+###########################################################
+# Training and prediction
+###########################################################
 modeling:
-  use_zero_shot: true
-  use_supervised: true
   zero_shot:
     model: 'HMM'
     model_kwargs: '{}'
@@ -31,6 +81,21 @@ modeling:
     min_pca_variance_explained: 0.95
     standardize_X: true
     scale_y: true
+
+###########################################################
+# If training data given (zero only does not require it)
+###########################################################
 validation:
+  do_cv: false
   cv: 5
   split_type: 'random'
+
+###########################################################
+# Prediction of variants
+###########################################################
+# Requires `data/variants.csv` to be not empty
+# must have columns `id`, `sequence`
+
+# Whether you are comparing the values to the input wild type or not
+prediction_mode: 
+  compare_to_wt: false
