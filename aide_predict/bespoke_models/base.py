@@ -4,13 +4,14 @@
 * Created: 5/7/2024
 * (c) Copyright by Bottle Institute @ National Renewable Energy Lab, Bioeneergy Science and Technology
 
-Base classes for models to be wrapped into the API
+Base classes for models to be wrapped into the API as sklearn estimators
 '''
 from dataclasses import dataclass
 import os
 from abc import abstractmethod
+import inspect
 
-from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.base import BaseEstimator
 
 @dataclass
 class ModelWrapperArgs:
@@ -39,11 +40,27 @@ class ModelWrapperArgs:
         """User defined parameters."""
         # only return no hidden attributes
         return {key: value for key, value in self.__dict__.items() if not key.startswith('_')}
+    
+    def __call__(self):
+        return self.kwargs
 
-class ModelWrapper(TransformerMixin, BaseEstimator):
-    wrapper_args_class = None
+class ModelWrapper(BaseEstimator):
+    _wrapper_args_class = None
+    _requires_msa = None
+    _per_position_capable = None
+    _requires_fixed_length = None
 
     def __init__(self, **kwargs):
+        # Make sure all class variables are set
+        if self.wrapper_args_class is None:
+            raise ValueError("wrapper_args_class must be set for your subclass")
+        if self.requires_msa is None:
+            raise ValueError("requires_msa must be set for your subclass")
+        if self.per_position_capable is None:
+            raise ValueError("per_position_capable must be set for your subclass")
+        if self.requires_fixed_length is None:
+            raise ValueError("requires_fixed_length must be set for your subclass")
+
         # Create an instance of the wrapper_args_class with the kwargs
         args = self.wrapper_args_class(**kwargs)
 
@@ -55,15 +72,34 @@ class ModelWrapper(TransformerMixin, BaseEstimator):
     def fit(self, X, y=None):
         raise NotImplementedError("This method must be implemented in the child class.")
     
-    @abstractmethod
-    def transform(self, X):
-        raise NotImplementedError("This method must be implemented in the child class.")
+    @property
+    def wrapper_args_class(self):
+        """The class that holds the arguments for the model.
+        """
+        return self._wrapper_args_class
     
-class ModelWrapperPreprocessor:
-    """Abstract class that prepares metadata for a model based on """
+    @property
+    def requires_msa(self):
+        """Whether the model requires an MSA as input.
+        
+        Note that this property is used for pipeline checks.
+        """
+        return self._requires_msa
+    
+    @property
+    def per_position_capable(self):
+        """Whether the model can output per position scores.
+        
+        Note that this property is used for pipeline checks.
+        """
+        if 'positions' not in inspect.getargspec(self.transform).args and self._per_position_capable:
+            raise ValueError("If per_position_capable is True, class method transform must accept a 'positions' argument.")
 
-    # TODO: Should the preprocessor occur in a seperate dvc stage, or should it be part of the model?
-    # For example, if it is its own stage, we will more easily be able to atomize preprocessing steps,
-    # but need to think about how eg. an MSA doesn't need to be repeated if jumping from Tranception to EVE, since they both require it.
+        return self._per_position_capable
+    
+    @property
+    def requires_fixed_length(self):
+        return self._requires_fixed_length
+    
     
 

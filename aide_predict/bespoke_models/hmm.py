@@ -65,6 +65,7 @@ import subprocess
 import tempfile
 
 from sklearn.utils import check_array
+from sklearn.base import TransformerMixin, RegressorMixin
 import numpy as np
 import pandas as pd
 
@@ -91,12 +92,13 @@ class HMMWrapperArgs(ModelWrapperArgs):
             logger.info(f"Number of sequences in alignment: {len(sequences)}")
 
 
-class HMMWrapper(ModelWrapper):
+class HMMWrapper(TransformerMixin, RegressorMixin, ModelWrapper):
     """Wrapper for HMMs.
     
     Params:
     - metadata_folder: str, the folder containing the metadata for the model
-    - threshold: float, the bitscore threshold for filtering hits
+    - threshold: float, the bitscore threshold for reporting hits.
+        If the target does not score above this threshold, it will be given a score of 0.
     """
     wrapper_args_class = HMMWrapperArgs
 
@@ -163,6 +165,9 @@ class HMMWrapper(ModelWrapper):
             except ValueError:
                 scores[i] = 0.0
         return scores
+    
+    def predict(self, X):
+        return self.transform(X)
     
     def fit_transform(self, X, y=None):
         self.fit(X, y)
