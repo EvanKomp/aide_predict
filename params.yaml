@@ -1,4 +1,19 @@
 ###########################################################
+# Environmental config
+###########################################################
+# these parameters will not actually be tied to any dvc stages
+# but still referenced in files, thus when you change these
+# it will not trigger dvc
+# instead we assume that these are properly defined.
+
+# change with your locations
+# add as many as you want, they can be refered to by name in the
+# jackhmmer step. That name parameter is DVC tracked, and it cross references
+# the values here
+sequence_databases:
+  uniref100: /kfs2/projects/proteinml/datasets/uniref/uniref100.fasta
+
+###########################################################
 # High level parameters
 ###########################################################
 
@@ -16,6 +31,12 @@ use_supervised: true # note requires `data/experimental_data.csv` to be not empt
 # if you do, a list of positiions can be passed eg [3, 4, 5] 1 indexed
 # or a range with a string eg '3-5' inclusive.
 position_specific_scoring: false
+
+# please change pathings to wherever your databases ares
+# feel free to add databases
+# these parameters will not actually be tied to any dvc stages
+# but still referenced in files, thus when you change these
+
 
 
 ###########################################################
@@ -44,10 +65,10 @@ msa_creation:
   # msa_mode: jackhmmer
   # note requires `data/wt.fa` to be not empty
   jackhmmer:
-    seqdb: /kfs2/projects/proteinml/datasets/uniref/uniref100.fasta
-    iterations: 5
-    domain_threshold: 0.5
-    sequence_threshold: 0.5
+    seqdb: uniref100
+    iterations: 1
+    domain_threshold: 100
+    sequence_threshold: 100
     use_bitscores: true
     sequence_identity_filter: 0.8
     cpus: 16

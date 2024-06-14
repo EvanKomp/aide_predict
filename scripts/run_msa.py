@@ -47,6 +47,7 @@ EXPECTED KWARGS for the Evcouplings pipeline:
 - theta: identity threshold for clustering and computing weights. We can ignore this as we will compute weights later.
 '''
 import os
+import time
 
 import dvc.api
 from aide_predict.utils.common import convert_dvc_params
@@ -54,13 +55,14 @@ from aide_predict.utils.common import convert_dvc_params
 from aide_predict.io.bio_files import read_fasta
 
 import logging
-logging.basicConfig(level=logging.INFO, filemode='w', filename='./logs/run_jackhmmer.log')
+logging.basicConfig(level=logging.INFO, filemode='w', filename='./logs/run_msa.log')
 logger = logging.getLogger(__name__)
 
 PARAMS = convert_dvc_params(dvc.api.params_show())
 EXECDIR = os.getcwd()
 
 if __name__ == '__main__':
+    t0 = time.time()
     # create outpit directory
     outdir = os.path.join(EXECDIR, 'data', 'run_msa')
     os.makedirs(outdir, exist_ok=True)
@@ -86,7 +88,7 @@ if __name__ == '__main__':
             hhfilter = 'hhfilter'
 
         # get the sqequence ID
-        with open(os.path.join(EXECDIR, 'data', 'wt.fasta'), 'r') as f:
+        with open(os.path.join(EXECDIR, 'data', 'wt.fa'), 'r') as f:
             iterator = read_fasta(f)
             sequence_id, _ = next(iterator)
 
@@ -94,20 +96,20 @@ if __name__ == '__main__':
         kwargs = {
             'prefix': os.path.join(outdir, 'jkhmer_step'),
             'sequence_id': sequence_id,
-            'sequence_file': os.path.join(EXECDIR, 'data', 'wt.fasta'),
+            'sequence_file': os.path.join(EXECDIR, 'data', 'wt.fa'),
             'sequence_download_url': None,
             'region': None,
             'first_index': None,
             'use_bitscores': PARAMS.msa_creation.jackhmmer.use_bitscores,
             'domain_threshold': PARAMS.msa_creation.jackhmmer.domain_threshold,
             'sequence_threshold': PARAMS.msa_creation.jackhmmer.sequence_threshold,
-            'database': PARAMS.msa_creation.jackhmmer.seqdb,
+            'database': 'db_'+PARAMS.msa_creation.jackhmmer.seqdb,
             'iterations': PARAMS.msa_creation.jackhmmer.iterations,
             'cpu': PARAMS.msa_creation.jackhmmer.cpus,
             'nobias': True,
             'reuse_alignment': False,
             'checkpoints_hmm': False,
-            'checkpoint_ali': False,
+            'checkpoints_ali': False,
             'jackhmmer': jackhmmer,
             'extract_annotation': True,
             'seqid_filter': PARAMS.msa_creation.jackhmmer.sequence_identity_filter,
@@ -117,8 +119,14 @@ if __name__ == '__main__':
             'compute_num_effective_seqs': False,
             'theta': 1.0
         }
+        # add the user's database locations
+        for db_name, db_loc in PARAMS.sequence_databases.__dict__.items():
+            kwargs['db_'+db_name] = db_loc
+            
+        logger.info(f"Running evcouplings jackhmmer pipeline with params {kwargs}")
 
-        outcfg = evcouplings_pipeline.run(**kwargs)
+        outcfg = evcouplings_pipeline(**kwargs)
+        logger.info(f"jackhmmer complete. evcouplings output config: {outcfg}")
         # outconfig is also saved to file.
 
     elif PARAMS.msa_creation.msa_mode == 'known_actives':
@@ -129,5 +137,9 @@ if __name__ == '__main__':
     
     else:
         raise ValueError(f"Unknown MSA mode: {PARAMS.msa_creation.msa_mode}")
+    
+    t1 = time.time()
+    t = t1 - t0
+    logger.info(f"Successfully terminated, time elapsed: {t/60} mins.")
 
 

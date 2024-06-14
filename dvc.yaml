@@ -19,7 +19,12 @@ stages:
       - msa_creation.jackhmmer.sequence_identity_filter
       - msa_creation.jackhmmer.cpus
       - msa_creation.jackhmmer.mx
-  deps:
-    - data/known_actives.fa
-    - data/experimental_data.csv
-    - data/wt.fa
+    deps:
+      - data/known_actives.fa
+      - data/experimental_data.csv
+      - data/wt.fa
+    outs: 
+      - data/run_msa/
+    metrics:
+      - data/metrics/run_msa.json:
+          cache: false
