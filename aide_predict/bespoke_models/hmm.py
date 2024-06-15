@@ -69,41 +69,25 @@ from sklearn.base import TransformerMixin, RegressorMixin
 import numpy as np
 import pandas as pd
 
-from aide_predict.bespoke_models.base import ModelWrapper, ModelWrapperArgs
-from aide_predict.io.bio_files import read_fasta_like, write_fasta_like
+from aide_predict.bespoke_models.base import ModelWrapperRequiresMSA
+from aide_predict.io.bio_files import write_fasta
 from aide_predict.utils.common import process_amino_acid_sequences
 
 import logging
 logger = logging.getLogger(__name__)
 
-class HMMWrapperArgs(ModelWrapperArgs):
-    """Arguments for the HMMWrapper.
-    """
-    metadata_folder: str
-    threshold: float=100 # the bitscore threshold for filtering hits
 
-    def check_metadata(self):
-        # check there is an alignment file
-        if not os.path.exists(os.path.join(self.metadata_folder, 'alignment.a2m')):
-            raise ValueError(f"alignment.a2m does not exist in {self.metadata_folder}")
-        else:
-            # get the size of the alignment
-            sequences = read_fasta_like(os.path.join(self.metadata_folder, 'alignment.a2m'))
-            logger.info(f"Number of sequences in alignment: {len(sequences)}")
-
-
-class HMMWrapper(TransformerMixin, RegressorMixin, ModelWrapper):
+class HMMWrapper(TransformerMixin, RegressorMixin, ModelWrapperRequiresMSA):
     """Wrapper for HMMs.
-    
-    Params:
-    - metadata_folder: str, the folder containing the metadata for the model
-    - threshold: float, the bitscore threshold for reporting hits.
-        If the target does not score above this threshold, it will be given a score of 0.
     """
-    wrapper_args_class = HMMWrapperArgs
+    _requires_wt_during_inference = False
+    _per_position_capable = False
+    _requires_msa = True
+    _requires_fixed_length = False
 
     def __init__(self, metadata_folder: str=None, threshold=100):
-        super().__init__(metadata_folder=metadata_folder, threshold=threshold)
+        self.threshold = threshold
+        super().__init__(metadata_folder=metadata_folder)
 
     def _more_tags(self):
         return {'stateless': True,
@@ -128,20 +112,20 @@ class HMMWrapper(TransformerMixin, RegressorMixin, ModelWrapper):
         self.fitted_ = True
         return self
     
-    def transform(self, X):
+    def _transform(self, X):
         """Get HMM scores for sequences.
 
         Params:
         - X: np.ndarray of sequence amino acid strings
         """
-        X = list(process_amino_acid_sequences(X))
 
         # create temp directory to call hmmsearch
         with tempfile.TemporaryDirectory() as tmpdirname:
             # write the sequences to a file
             seq_file = os.path.join(tmpdirname, 'seqs.fasta')
             out_tbl = os.path.join(tmpdirname, 'out.tbl')
-            write_fasta_like(seq_file, {'seq_'+str(i): seq for i, seq in enumerate(X)})
+            with open(seq_file, 'w') as f:
+                write_fasta([('seq_'+str(i), seq) for i, seq in enumerate(X)], f)
             cmd = f"hmmsearch --tblout {out_tbl} -T {self.threshold} --domT {self.threshold}" \
                   f" --incT {self.threshold} --incdomT {self.threshold}" \
                   f" {os.path.join(self.metadata_folder, 'alignment.hmm')} {seq_file}"
@@ -166,8 +150,8 @@ class HMMWrapper(TransformerMixin, RegressorMixin, ModelWrapper):
                 scores[i] = 0.0
         return scores
     
-    def predict(self, X):
-        return self.transform(X)
+    def _predict(self, X):
+        return self._transform(X)
     
     def fit_transform(self, X, y=None):
         self.fit(X, y)

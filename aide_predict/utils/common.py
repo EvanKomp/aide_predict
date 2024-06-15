@@ -30,6 +30,17 @@ def process_amino_acid_sequences(sequences: Iterable[str]) -> Iterable[str]:
             raise ValueError(f"Invalid amino acid in sequence: {seq}")
         yield seq.upper()
     
+def fixed_length_sequences(sequences: Iterable[str]):
+    """Check if all sequences are the same length, if not, raise.
+    
+    Params:
+        sequences (Iterable[str]): A list of amino acid sequences.
+    """
+    sequences = process_amino_acid_sequences(sequences)
+    if not all(len(seq) == len(sequences[0]) for seq in sequences):
+        return False
+    else:
+        return True
 
 def convert_dvc_params(dvc_params_dict: dict):
     """DVC Creates a nested dict with the parameters.
