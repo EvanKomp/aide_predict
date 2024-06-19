@@ -69,7 +69,7 @@ from sklearn.base import TransformerMixin, RegressorMixin
 import numpy as np
 import pandas as pd
 
-from aide_predict.bespoke_models.base import ModelWrapperRequiresMSA
+from aide_predict.bespoke_models.base import ProteinModelWrapperRequiresMSA
 from aide_predict.io.bio_files import write_fasta
 from aide_predict.utils.common import process_amino_acid_sequences
 
@@ -77,7 +77,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class HMMWrapper(TransformerMixin, RegressorMixin, ModelWrapperRequiresMSA):
+class HMMWrapper(TransformerMixin, RegressorMixin, ProteinModelWrapperRequiresMSA):
     """Wrapper for HMMs.
     """
     _requires_wt_during_inference = False
