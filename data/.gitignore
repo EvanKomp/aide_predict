@@ -1,4 +1,5 @@
 /jackhmmer
-/known_actives.fa
 /wt.fa
 /experimental_data.csv
+/starting_sequences.a2m
+/starting_sequences.fa

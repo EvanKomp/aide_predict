@@ -20,6 +20,7 @@ Here, we make it more pythonic and readbale.
 In addition to refactoring, we add some additional functionality:
 - Manual sequence weighting. The motivation here is sequences coming from environmental classes that are more important for
    your design task
+- A focus seq need not be present.
 '''
 import os
 from dataclasses import dataclass
@@ -32,7 +33,7 @@ import pandas as pd
 from tqdm import tqdm
 import multiprocessing
 
-from aide_predict.io.bio_files import read_fasta_like, write_fasta_like
+from aide_predict.io.bio_files import read_fasta, write_fasta
 
 import logging
 logger = logging.getLogger(__name__)
@@ -67,7 +68,7 @@ class MSAProcessing:
     def __init__(self, args: MSAProcessingArgs):
         self.args = args
 
-    def process(self, MSA_location: str, weights_location: str, focus_seq_id: str, additional_weights: dict = None, new_a2m_location: str = None):
+    def process(self, MSA_location: str, weights_location: str, focus_seq_id: str = None, additional_weights: dict = None, new_a2m_location: str = None):
         """
         Parameters:
         - MSA_location: (path) Location of the MSA data. Constraints on input MSA format: 
@@ -75,14 +76,12 @@ class MSAProcessing:
             - first line is structured as follows: ">focus_seq_name/start_pos-end_pos" (e.g., >SPIKE_SARS2/310-550)
             - corresponding sequence data located on following line(s)
             - then all other sequences follow with ">name" on first line, corresponding data on subsequent lines
-        - focus_seq_id: (str) The sequence id of the focus sequence
+        - focus_seq_id: (str or None) The sequence id of the focus sequence. If None, all columns in the MSA are considered focus columns.
         - weights_location: (path) Location to load from/save to the sequence weights
         - additional_weights: (dict) Additional weights to apply to sequences. keys should be sequence ids, values should be weights
            the additional weights are scaler multiplied by the computed weights, thus if you have some sequences that are more important
         - new_a2m_location: (path) If preprocess is turned on, saves the new MSA (eg. with some sequences dropped) to this location)
         """
-        
-                
         if new_a2m_location is None and self.args.preprocess_MSA:
             raise ValueError("Preprocessing MSA is on, but no new_a2m_location provided")
 
@@ -120,14 +119,13 @@ class MSAProcessing:
                     name = line
                     base_id = name.split("/")[0][1:].strip()
                     if i == 0:
-                        if not base_id == self.focus_seq_id:
-                            raise ValueError(f"Focus sequence {self.focus_seq_id} not found in MSA")
-                        found_focus_seq = True
-                        self.focus_seq_name = name
+                        if self.focus_seq_id is None or base_id == self.focus_seq_id:
+                            found_focus_seq = True
+                            self.focus_seq_name = name
                     self.seq_base_id_to_seq_name[base_id] = name
                 else:
                     self.seq_name_to_sequence[name] += line
-        if not found_focus_seq:
+        if self.focus_seq_id is not None and not found_focus_seq:
             raise ValueError(f"Focus sequence {self.focus_seq_id} not found in MSA")
         logger.info(f"Loaded MSA with {len(self.seq_name_to_sequence)} sequences, target sequence: {self.focus_seq_name}")
 
@@ -140,12 +138,13 @@ class MSAProcessing:
             msa_df.sequence = msa_df.sequence.apply(lambda x: x.replace(".","-")).apply(lambda x: ''.join([aa.upper() for aa in x]))
 
             # Remove columns that would be gaps in the wild type
-            non_gap_wt_cols = [aa!='-' for aa in msa_df.sequence[self.focus_seq_name]]
-            msa_df['sequence'] = msa_df['sequence'].apply(lambda x: ''.join([aa for aa,non_gap_ind in zip(x, non_gap_wt_cols) if non_gap_ind]))
-            if self.args.threshold_sequence_frac_gaps < 0 or self.args.threshold_sequence_frac_gaps > 1:
-                raise ValueError("Invalid fragment filtering parameter")
-            if self.args.threshold_focus_cols_frac_gaps < 0 or self.args.threshold_focus_cols_frac_gaps > 1:
-                raise ValueError("Invalid focus position filtering parameter")
+            if self.focus_seq_id is not None:
+                non_gap_wt_cols = [aa!='-' for aa in msa_df.sequence[self.focus_seq_name]]
+                msa_df['sequence'] = msa_df['sequence'].apply(lambda x: ''.join([aa for aa,non_gap_ind in zip(x, non_gap_wt_cols) if non_gap_ind]))
+                if self.args.threshold_sequence_frac_gaps < 0 or self.args.threshold_sequence_frac_gaps > 1:
+                    raise ValueError("Invalid fragment filtering parameter")
+                if self.args.threshold_focus_cols_frac_gaps < 0 or self.args.threshold_focus_cols_frac_gaps > 1:
+                    raise ValueError("Invalid focus position filtering parameter")
             logger.info(f"Removed gap columns in target sequence: remaining width {len(msa_df.sequence[self.focus_seq_name])}")
             
             msa_array = np.array([list(seq) for seq in msa_df.sequence])
@@ -180,7 +179,10 @@ class MSAProcessing:
     def _encode_sequences(self):
         """Encode the sequences into one-hot format."""
         self.focus_seq = self.seq_name_to_sequence[self.focus_seq_name]
-        self.focus_cols = [ix for ix, s in enumerate(self.focus_seq) if s == s.upper() and s!='-'] 
+        if self.focus_seq_id is None:
+            self.focus_cols = list(range(len(self.focus_seq)))
+        else:
+            self.focus_cols = [ix for ix, s in enumerate(self.focus_seq) if s == s.upper() and s!='-'] 
         self.focus_seq_trimmed = [self.focus_seq[ix] for ix in self.focus_cols]
         self.seq_len = len(self.focus_cols)
         self.alphabet_size = len(self.alphabet)
@@ -286,12 +288,17 @@ def _compute_weight(seq, list_seq, theta):
     
 
 def place_target_seq_at_top_of_msa(msa_file: str, target_seq_id: str):
-    """Place the target sequence at the top of the MSA."""
-    sequences = read_fasta_like(msa_file)
+    """Place the target sequence at the top of the MSA.
+    
+    Also checks for 
+    """
+    with open(msa_file, 'r') as f:
+        sequences = dict(list(read_fasta(f)))
     if target_seq_id not in sequences:
         raise ValueError(f"Target sequence {target_seq_id} not found in MSA")
     # make sure target seq is at the top of the dict
     target_seq = sequences[target_seq_id]
     del sequences[target_seq_id]
-    sequences = {target_seq_id: target_seq, **sequences}
-    write_fasta_like(msa_file, sequences)
+    sequences = [(target_seq_id, target_seq)] + [(k, v) for k, v in sequences.items()]
+    with open(msa_file, 'w') as f:
+        write_fasta(sequences, f)
