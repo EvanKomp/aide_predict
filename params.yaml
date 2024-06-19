@@ -18,11 +18,15 @@ sequence_databases:
 ###########################################################
 
 # if the modeling you want to do does not require and MSA you can skip those steps
-use_msa: true # must be true if model requires MSA input
+use_msa: true # must be true if a protein model requires MSA input
 
-# Whether to use zero shot, supervised, or both. Note that if both
-# are passed, zero shot is used as input for supervised a la hsu et al
-use_zero_shot: true # whether to use zero_shot for scoring
+# Whether to use protein models, supervised, or both. Note that if both
+# are passed, protein models is used as input for supervised a la hsu et al
+# protein models are in most cases zero-shot or covariation methods that do not
+# require training data, but this is not always the case.
+# Experimental data can safely be passed to any protein model
+# even if the model does not actually use it.
+use_protein_models: true # whether to use protein models for scoring
 use_supervised: true # note requires `data/experimental_data.csv` to be not empty
 
 # If you want to score based on only specific positions instead of the whole sequences
@@ -32,24 +36,19 @@ use_supervised: true # note requires `data/experimental_data.csv` to be not empt
 # or a range with a string eg '3-5' inclusive.
 position_specific_scoring: false
 
-# please change pathings to wherever your databases ares
-# feel free to add databases
-# these parameters will not actually be tied to any dvc stages
-# but still referenced in files, thus when you change these
-
-
 
 ###########################################################
-# Creation of MSA for zero shot model training
+# Creation of MSA for covariation model training
 ###########################################################
 msa_creation:
-  # If `known_actives` The MSA is created using `data/known_actives.fa` and optionally, sequences from supervised training data
+  # If `starting_sequences` The MSA is created using `data/starting_sequences.fa` and optionally, sequences from supervised training data
   # If `jackhmmer` The MSA is created using `jackhmmer` search against a database
   msa_mode: jackhmmer
 
   # for using predefined sequences
-  # msa_mode: known_actives
-  known_actives:
+  # msa_mode: starting_sequences
+  starting_sequences:
+    prealigned: false # if true, the sequences are already aligned in a3m format
     # If you want to add sequences from any supervised training data provided
     # add_training_sequences: true
     # activity_targets: the target columns to use when determining the known actives to add
@@ -90,14 +89,18 @@ msaprocessing:
 # Training and prediction
 ###########################################################
 modeling:
-  zero_shot:
-    model: 'HMM'
-    model_kwargs: '{}'
+  protein_models:
+    # these are models that use protein sequences directly as input
+    # Eg. HMM score, ESM log likelihood
+    # If supervised is used, these will be used as input to the supervised model
+    models: ['HMM']
+    models_kwargs: '{"HMM": {}}'
   supervised:
     type: regression
     model: 'KernelRidge'
     model_kwargs: '{alpha: 5.0}'
     embeddings: ['ESM']
+    embeddings_kwargs: '{"ESM": {}}'
     run_pca: true
     min_pca_variance_explained: 0.95
     standardize_X: true

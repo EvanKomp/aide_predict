@@ -129,7 +129,7 @@ if __name__ == '__main__':
         logger.info(f"jackhmmer complete. evcouplings output config: {outcfg}")
         # outconfig is also saved to file.
 
-    elif PARAMS.msa_creation.msa_mode == 'known_actives':
+    elif PARAMS.msa_creation.msa_mode == 'starting_sequences':
         # here we simply need to align the sequences
         # at data/known_actives.fasta
         # potentially also align actives in data/experimental_data.csv

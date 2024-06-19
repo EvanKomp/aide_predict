@@ -5,10 +5,11 @@ stages:
       - use_msa
       - msa_creation.msa_mode
 
-      # if msa_mode is known_actives
-      - msa_creation.known_actives.add_training_sequences
-      - msa_creation.known_actives.activity_targets
-      - msa_creation.known_actives.activity_threshold
+      # if msa_mode is starting_sequences
+      - msa_creation.starting_sequences.prealigned
+      - msa_creation.starting_sequences.add_training_sequences
+      - msa_creation.starting_sequences.activity_targets
+      - msa_creation.starting_sequences.activity_threshold
 
       # if msa_mode is jackhmmer
       - msa_creation.jackhmmer.seqdb
@@ -20,7 +21,8 @@ stages:
       - msa_creation.jackhmmer.cpus
       - msa_creation.jackhmmer.mx
     deps:
-      - data/known_actives.fa
+      - data/starting_sequences.fa
+      - data/starting_sequences.a3m
       - data/experimental_data.csv
       - data/wt.fa
     outs: 
