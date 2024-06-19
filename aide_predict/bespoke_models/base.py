@@ -15,14 +15,15 @@ import warnings
 
 from sklearn.base import BaseEstimator
 from sklearn.utils import check_array
+from sklearn.utils.validation import check_is_fitted
 
 from aide_predict.utils.common import process_amino_acid_sequences, fixed_length_sequences
 
 #############################################
 # BASE CLASSES FOR DOWNSTREAM MODELS
 #############################################
-class ModelWrapper(BaseEstimator):
-    """Base class for bespoke models.
+class ProteinModelWrapper(BaseEstimator):
+    """Base class for bespoke models that take Amino Acids as Input.
 
     Ensure that this init is supered in the child class.
 
@@ -92,7 +93,7 @@ class ModelWrapper(BaseEstimator):
         if not os.path.exists(metadata_folder):
             os.makedirs(metadata_folder)
         self.metadata_folder = metadata_folder
-        self._wt=wt
+        self.wt=wt
 
         # call check metadata
         self.check_metadata()
@@ -128,6 +129,7 @@ class ModelWrapper(BaseEstimator):
     def predict(self, X):
         """Predict the scores for the sequences.
         """
+        check_is_fitted(self)
         X = list(process_amino_acid_sequences(X))
         if self.requires_fixed_length:
             if not fixed_length_sequences(X):
@@ -148,6 +150,7 @@ class ModelWrapper(BaseEstimator):
     def transform(self, X):
         """Transform the sequences.
         """
+        check_is_fitted(self)
         X = list(process_amino_acid_sequences(X))
         if self.requires_fixed_length:
             assert all(len(x) == len(X[0]) for x in X), "All sequences must have the same length."
@@ -241,7 +244,7 @@ class ModelWrapper(BaseEstimator):
 
 # This is simply give the user the option to not have to write metadata checks
 # If all it requires is an MSA
-class ModelWrapperRequiresMSA(ModelWrapper):
+class ProteinModelWrapperRequiresMSA(ProteinModelWrapper):
     """Base class for bespoke models that require an MSA.
 
     This class simply checks the metadata folder for the presence of an MSA
@@ -271,7 +274,7 @@ class ModelWrapperRequiresMSA(ModelWrapper):
 #############################################
 
 class PositionSpecificMixin:
-    """Mixin for models that can output per position scores.
+    """Mixin for protein models that can output per position scores.
     
     This mixin:
     1. Overrides the per_position_capable attribute to be True.
