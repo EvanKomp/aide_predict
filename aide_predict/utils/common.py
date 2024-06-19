@@ -37,10 +37,29 @@ def fixed_length_sequences(sequences: Iterable[str]):
         sequences (Iterable[str]): A list of amino acid sequences.
     """
     sequences = process_amino_acid_sequences(sequences)
-    if not all(len(seq) == len(sequences[0]) for seq in sequences):
+    lens = [len(seq) for seq in sequences]
+    if not len(set(lens)) == 1:
         return False
     else:
         return True
+    
+def mutated_positions(sequences: Iterable[str]):
+    """Find the positions of mutations in a list of sequences.
+    
+    Params:
+        sequences (Iterable[str]): A list of amino acid sequences.
+    
+    Returns:
+        list[int]: A list of positions that are mutated, zero indexed
+    """
+    sequences = list(process_amino_acid_sequences(sequences))
+    if not fixed_length_sequences(sequences):
+        raise ValueError("All sequences must be the same length.")
+    positions = []
+    for i in range(len(sequences[0])):
+        if len(set(seq[i] for seq in sequences)) > 1:
+            positions.append(i)
+    return positions
 
 def convert_dvc_params(dvc_params_dict: dict):
     """DVC Creates a nested dict with the parameters.

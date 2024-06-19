@@ -82,17 +82,28 @@ There is a lot of here. Let's lay out a logic table to determine how to be most 
 Conclusions:
   1. If Variable length sequences, must pool. Cannot pass positions. wild_type marginal not available
   2. If no wild type is given, only mutant or masked marginal is available.
+  3. Masked marginal removed for the case where wt is not given or sequences are variable length.
+     For these cases, masks will have to be applied to all sequences not just the WT, vastly increasing cost.
 
 Oh boy.
 
 '''
+import warnings
+
 from sklearn.base import TransformerMixin, RegressorMixin
+import numpy as np
 
-from aide_predict.bespoke_models.base import ModelWrapper, PositionSpecificMixin
+from aide_predict.bespoke_models.base import PositionSpecificMixin, ProteinModelWrapper
 
-from aide_predict.utils.common import fixed_length_sequences
+from aide_predict.utils.common import fixed_length_sequences, mutated_positions
 
-class ESMPredictorWrapper(PositionSpecificMixin, TransformerMixin, RegressorMixin, ModelWrapper):
+try:
+    import torch
+    from transformers import EsmForMaskedLM, AutoTokenizer
+except ImportError:
+    raise ImportError("You must install transformers to use this model. See `requirements-transformers.txt`.")
+
+class ESMPredictorWrapper(PositionSpecificMixin, TransformerMixin, RegressorMixin, ProteinModelWrapper):
     """Pretrained ESM as a log likelihood predictor.
 
     Params:
@@ -119,20 +130,37 @@ class ESMPredictorWrapper(PositionSpecificMixin, TransformerMixin, RegressorMixi
     def __init__(
         self,
         metadata_folder: str=None,
-        model_checkpoint: str='esm1v_t33_650M_UR90S_1',
+        model_checkpoint: str='esm2_t6_8M_UR50D',
         marginal_method: str='mutant_marginal',
         positions: list=None,
         pool: bool=True,
         wt: str=None,
-        batch_size: int=4
+        batch_size: int=2,
+        device: str='cuda'
     ):
         self.positions = positions
         self.pool = pool
-        self.wt = wt
         self.model_checkpoint = model_checkpoint
         self.marginal_method = marginal_method
         self.batch_size = batch_size
-        super().__init__(metadata_folder=metadata_folder)
+        self.device = device
+
+        self._model = None
+        self._tokenizer = None
+        
+        super().__init__(metadata_folder=metadata_folder, wt=wt)
+
+    @property
+    def model_(self):
+        if self._model is None:
+            self._model = EsmForMaskedLM.from_pretrained('facebook/'+self.model_checkpoint).to(self.device)
+        return self._model
+    
+    @property
+    def tokenizer_(self):
+        if self._tokenizer is None:
+            self._tokenizer = AutoTokenizer.from_pretrained('facebook/'+self.model_checkpoint)
+        return self._tokenizer          
 
     def _more_tags(self):
         return {'stateless': True,
@@ -166,14 +194,121 @@ class ESMPredictorWrapper(PositionSpecificMixin, TransformerMixin, RegressorMixi
         """Check if positions are to specifify"""
         if self.positions is not None and not self._check_fixed_length_sequences(X):
             raise ValueError("Positions can only be specified with fixed length sequences.")
+    
+    def _assert_if_marginal_available(self, X):
+        """Check if the marginal method is available"""
+        if self.marginal_method == 'wildtype_marginal' and not self._check_fixed_length_sequences(X):
+            raise ValueError("Wildtype marginal is not available with variable length sequences.")
+        if self.marginal_method == 'wildtype_marginal' and self.wt is None:
+            raise ValueError("Wildtype marginal requires a wild type sequence.")
+        if self.marginal_method == 'masked_marginal' and self.wt is None:
+            raise ValueError("Masked marginal requires a wild type sequence.")
+        if self.marginal_method == 'masked_marginal' and not self._check_fixed_length_sequences(X):
+            raise ValueError("Masked marginal is not available with variable length sequences.")
+
+    def _tokenize(self, sequences, on_device=True):
+        """Tokenize the sequences.
+        
+        Params:
+        - sequences: list of amino acid sequences. These should be ready for the tokenizer eg. including masks.
+        """
+        if on_device:
+            return self.tokenizer_(sequences, add_special_tokens=True, return_tensors='pt', padding=True).to(self.device)
+        else:
+            return self.tokenizer_(sequences, add_special_tokens=False, return_tensors='np', padding=True)
 
     def _call_esm(self, sequences):
         """Call the ESM model on sequences.
         
         Params:
-        - sequences: list of amino acid sequences.
+        - sequences: list of amino acid sequences. These should be ready for the tokenizer eg. indluding masks.
           These should be ready for the tokenizer
         """
+        with torch.no_grad():
+            for i in range(0, len(sequences), self.batch_size):
+                tokenized = self._tokenize(sequences[i:i+self.batch_size], on_device=True)
+                # these tokens have ESM start tokens and end tokens
+                # get probabilities over amino acids
+                logits = self.model_(tokenized.input_ids, attention_mask=tokenized.attention_mask).logits
+                # get log probabilities over amino acids
+                log_probs = torch.nn.functional.log_softmax(logits, dim=-1)
+
+                # return list of log probabilities, back to original sequence lengths
+                # use attention mask to get only the relevant positions
+                # if not all sequence lengths were the same, there will be masks
+                for j in range(len(tokenized.input_ids)):
+                    log_probs_j = log_probs[j][tokenized.attention_mask[j].bool()].cpu().numpy()
+                    # this has the extra index of the start and end tokens
+                    # remove them
+                    yield log_probs_j[1:-1]
+
+    def _marginal_likelihood(self, X):
+        """Get marginal likelihoods for sequences.
+
+        This method is for full sequence marginals. For masked marginals, see `_masked_marginal_likelihood`.
+        Here, returned log likelihoods are for each position of the passed sequence.
+        
+        Params:
+        - X: 2d np.ndarray of sequence amino acid strings
+
+        Returns:
+        - list of np.ndarray of log likelihoods for each sequence
+           each array is of shape (len sequence, vocab size)
+        """
+        # get ready for tokenizer
+        new_sequences = [' '.join(x) for x in X]
+        # call the model
+        yield from self._call_esm(new_sequences)
+
+    
+    def _masked_marginal_likelihood(self, X, only_positions=None):
+        """Get masked marginal likelihoods for sequences.
+
+        This method is for masked marginals. For full sequence marginals, see `_marginal_likelihood`.
+        Here, each position is masked individually. The log likelihood vector for each of those masks
+        are concatenated. This requires a call for each position in each sequences.
+        
+        Params:
+        - X: 2d np.ndarray of sequence amino acid strings
+        - only_positions: list of int
+            The positions to mask. If None, all positions are masked.
+
+        Returns:
+        - list of np.ndarray of log likelihoods for each sequence
+           each array is of shape (len sequence, vocab size)
+           if only_positions is not None, the shape is (len only_positions, vocab size)
+        """
+        # first, raise if not fixed length and only_positions is not None
+        if only_positions is not None and not self._check_fixed_length_sequences(X):
+            raise ValueError("Cannot specify positions to masked marginals with variable length sequences.")
+        
+        # since we have to run multiple passes for sequence, let's construct superbatches, one for
+        # each input sequence
+        for x in X:
+            # prepare for tokenizer
+            x = list(x)
+            # determine positions to mask
+            if only_positions is None:
+                positions = range(len(x))
+            else:
+                positions = only_positions
+            # construct the super batch
+            super_batch = []
+            for pos in positions:
+                # mask the position
+                masked = x.copy()
+                masked[pos] = self.tokenizer_.mask_token
+                super_batch.append(' '.join(masked))
+            # call the model
+            log_probs = list(self._call_esm(super_batch))
+            log_probs = np.vstack([np.expand_dims(lp, axis=0) for lp in log_probs])
+            # this is of shape (len positions, sequence length, vocab size)
+            # we want to extract the probs from only the masked positions
+            pivoted_log_probs = []
+            for i, pos in enumerate(positions):
+                pivoted_log_probs.append(log_probs[i, pos]) # these should be shape (vocab size,)
+            # reshape so that it is an array of size (len positions, vocab size)
+            yield np.vstack(pivoted_log_probs)
         
 
     def _transform(self, X):
@@ -184,8 +319,156 @@ class ESMPredictorWrapper(PositionSpecificMixin, TransformerMixin, RegressorMixi
         """
         self._assert_if_not_pooling_possible(X)
         self._assert_if_positions_possible(X)
+        self._assert_if_marginal_available(X)
 
-        # Start with the easier part to code... non fixed length sequences
+        fixed_length = self._check_fixed_length_sequences(X)
 
+        # temporary warning for method testing
+        if not self.marginal_method == 'masked_marginal' and not fixed_length:
+            warnings.warn("The ESMWrapper has been tested using masked marginal likelihoods on fixed length sequences and it reproduced ProteinGym benchmark on ENVZ_ECOLI_Ghose_2023, however, it has not been tested on other methods or variable length sequences. Use at your own risk.")
 
+        # start with easy one - WT marginal
+        if self.marginal_method == 'wildtype_marginal':
+            # we are gauranteed fixed length in this indent
+            wild_type_log_probs = self._marginal_likelihood([self.wt])[0]
+            # compare variants to wild type
+            # first tokenize the sequences
+            variants = [' '.join(x) for x in X]
+            input_ids = self._tokenize(variants, on_device=False).input_ids
+            # shape is (len X, sequence length)
+            # index the wt loh probs with the input ids
+            # this will give us the log likelihoods of the true AA at each position given the WT
+            # output should be shape (len X, sequence length)
+            rows = np.arange(wild_type_log_probs.shape[0])
+            rows_expanded = np.expand_dims(rows, axis=0)
+            variants_log_prob_vector = wild_type_log_probs[rows_expanded, input_ids]
+            assert variants_log_prob_vector.shape == (len(X), len(X[0]))
+
+            # subtract the wild type value
+            wt_tokens = self._tokenize([self.wt], on_device=False).input_ids[0]
+            wt_log_probs = wild_type_log_probs[wt_tokens]
+            # subtract the wild type value
+            variant_log_prob_vector -= wt_log_probs
+            
+            # if positions were passed, only return those positions
+            if self.positions is not None:
+                variants_log_prob_vector = variants_log_prob_vector[:, self.positions]
+            
+            if self.pool:
+                return np.mean(variants_log_prob_vector, axis=1).reshape(-1, 1)
+            else:
+                return variants_log_prob_vector
+            
+        # mutant marginal
+        elif self.marginal_method == 'mutant_marginal':
+            # we are not guaranteed fixed length in this indent...
+            # first tokenize the sequences and get log prob vectors for each
+            variants = [' '.join(x) for x in X]
+            variant_log_probs = list(self._marginal_likelihood(variants))
+
+            # tokenize WT if present, we will need it if comparing to WT
+            if self.wt is not None:
+                wt_ids = self._tokenize([self.wt], on_device=False).input_ids[0]
+
+            # shape is (len X, sequence length, vocab size), note that 
+            # sequence length may vary so it is actually a list of array
+            # get the likelihood of the observed AA at each position
+            variants_log_prob_vector = []
+            for variant_log_prob in variant_log_probs:
+                # tokenize the sequence
+                variant_ids = self._tokenize(variants, add_special_tokens=False, return_tensors='np').input_ids
+                assert len(variant_log_prob) == len(variant_ids)
+                # get the log likelihood of the observed AA at each position
+                rows = np.arange(len(variant_log_prob))
+                rows_expanded = np.expand_dims(rows, axis=0)
+                variant_log_prob_vector = variant_log_prob[rows_expanded, variant_ids]
+
+                # if we have a wild type and we are fixed lenth, we need to determine
+                # probability of wt AA on mutant vector
+                if self.wt is not None and fixed_length:
+                    # get the log likelihood of the observed AA at each position
+                    wt_log_probs = variant_log_prob[rows_expanded, wt_ids]
+                    # subtract the wild type value
+                    variant_log_prob_vector -= wt_log_probs 
+                
+                assert variant_log_prob_vector.shape == (1, len(X[0]))
+
+                # shape should be (1, sequence length)
+                if self.positions is not None:
+                    # we should be good here, if it is not None
+                    # we have already checked fixed length sequences
+                    variant_log_prob_vector = variant_log_prob_vector[:, self.positions]
+                variants_log_prob_vector.append(variant_log_prob_vector)
+
+            # this is a list of log prob values of the observed AA at each position
+            # or a subset of positions
+            # they arrays in the list need not be the same length
+            # if sequences WERE the same length, we have already normalized
+            # the log prob vector by WT. If they were not, we coulf not, so must now after pooling
+            if self.wt is not None and not fixed_length:
+                wt_on_wt_log_probs = self._marginal_likelihood([self.wt])[0]
+                rows = np.arange(wt_on_wt_log_probs.shape[0])
+                rows_expanded = np.expand_dims(rows, axis=0)
+                wt_on_wt_log_probs_vector = wt_on_wt_log_probs[rows_expanded, wt_ids]
+                wt_base_log_prob_pooled = np.mean(wt_on_wt_log_probs_vector)
+                assert wt_base_log_prob_pooled.shape == (1,)
+            else:
+                wt_base_log_prob_pooled = 0
+
+            # time to pool!
+            if self.pool:
+                # if fixed length, we have already normalized by WT
+                variant_log_probs = np.array([np.mean(x, axis=1) for x in variants_log_prob_vector]).reshape(-1, 1)
+                variant_log_probs -= wt_base_log_prob_pooled
+                return variant_log_probs
+            else:
+                # we should be guaranteed fixed length here
+                # if pool is False, we already checked that we are fixed length
+                return np.vstack(variants_log_prob_vector)
+            
+
+        # masked marginal
+        elif self.marginal_method == 'masked_marginal':
+            # like WT marginal, we are guaranteed fixed length and wt is present
+            # first get the positions that need to be masked
+            if self.positions is not None:
+                masked_positions = self.positions
+            else:
+                # determine where there are mutations
+                masked_positions = mutated_positions(X)
+
+            # get the masked marginal likelihoods
+            masked_log_probs = list(self._masked_marginal_likelihood([self.wt], only_positions=masked_positions))[0]
+            # this output is the size of the positions passed as opposed to the full length
+            # rectify this so that they can be indexed by inserting zero rows
+            masked_log_probs_full = np.zeros((len(masked_positions), masked_log_probs.shape[1]))
+            masked_log_probs_full[masked_positions] = masked_log_probs
+
+            # index the masked log probs with the input ids
+            # of wt
+            wt_ids = self._tokenize([self.wt], on_device=False).input_ids[0]
+            rows = np.arange(masked_log_probs_full.shape[0])
+            rows_expanded = np.expand_dims(rows, axis=0)
+            wt_log_probs_vector = masked_log_probs_full[rows_expanded, wt_ids]
+
+            # repeat for each variant
+            variant_ids = self._tokenize([' '.join(x) for x in X], on_device=False).input_ids
+            # shape is (len X, sequence length)
+            # index the masked log probs with the input ids
+            # this will give us the log likelihoods of the true AA at each position given the WT masked
+            # output should be shape (len X, sequence length)
+            rows = np.arange(masked_log_probs_full.shape[0])
+            rows_expanded = np.expand_dims(rows, axis=0)
+            variants_log_prob_vector = masked_log_probs_full[rows_expanded, variant_ids]
+            assert variants_log_prob_vector.shape == (len(X), len(X[0]))
+
+            # subtract the wild type value
+            variants_log_prob_vector -= wt_log_probs_vector
+            if self.pool:
+                return np.mean(variants_log_prob_vector, axis=1).reshape(-1, 1)
+            else:
+                return variants_log_prob_vector
         
+
+    def _predict(self, X):
+        return self._transform(X)
