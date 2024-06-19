@@ -1,6 +1,6 @@
 # aide_predict/utils/msa.py
 '''
-* Refactored from Frazer et al. 
+* MSAProcessing class Refactored from Frazer et al. 
 @article{Frazer2021DiseaseVP,
   title={Disease variant prediction with deep generative models of evolutionary data.},
   author={Jonathan Frazer and Pascal Notin and Mafalda Dias and Aidan Gomez and Joseph K Min and Kelly P. Brock and Yarin Gal and Debora S. Marks},
@@ -13,7 +13,7 @@
 * (c) Copyright by Bottle Institute @ National Renewable Energy Lab, Bioeneergy Science and Technology
 
 Peocessing of MSAs for preparation of input data for the zero-shot model.
-Note that THIS IS A REFACTORING  of the MSA processing class from The marks Lab https://github.com/OATML-Markslab/EVE/blob/master/utils/data_utils.py
+Note that The MSAProcessing class IS A REFACTORING  of the MSA processing class from The marks Lab https://github.com/OATML-Markslab/EVE/blob/master/utils/data_utils.py
 Credit is given to them for the original implementation and the methodology of sequence weighting.
 Here, we make it more pythonic and readbale.
 
@@ -37,9 +37,6 @@ from aide_predict.io.bio_files import read_fasta_like, write_fasta_like
 import logging
 logger = logging.getLogger(__name__)
 
-def convert_sto_a2m(sto_file: str, a2m_file: str):
-    """MSAProcessing expects an A2M file, this function converts a Stockholm file to A2M."""
-    subprocess.run(["esl-reformat", "-o", a2m_file, "a2m", sto_file], check=True)
 
 @dataclass
 class MSAProcessingArgs:

@@ -6,7 +6,7 @@ channels:
 
 dependencies:
   - python=3.9
-  - numpy
+  - numpy<1.20
   - pandas
   - hmmer
   - scikit-learn
@@ -14,3 +14,7 @@ dependencies:
   - pip:
     - dvc
     - tqdm
+    - evcouplings @ git+https://github.com/debbiemarkslab/EVcouplings@af27842
+    - ruamel.yaml<0.18.0
+
+

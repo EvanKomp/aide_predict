@@ -1,12 +1,12 @@
-# aide_predict/io/bio_files.py
+# aide_predict/utils/alignment_calls.py
 '''
 * Author: Evan Komp
-* Created: 5/22/2024
+* Created: 6/12/2024
 * Company: Bottle Institute @ National Renewable Energy Lab, Bioeneergy Science and Technology
 * License: MIT
 
-Importing EVcouplings alignment IO into the namespace. All credit goes to the EVcouples team:
-
+Wrapper of EVCouplings alignment functions. All credit goes to the EVcouplings team:
 Hopf T. A., Green A. G., Schubert B., et al. The EVcouplings Python framework for coevolutionary sequence analysis. Bioinformatics 35, 1582–1584 (2019)
+
 '''
-from evcouplings.align.alignment import *
+from evcouplings.align.tools import *

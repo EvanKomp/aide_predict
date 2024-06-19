@@ -1,2 +1,4 @@
-/wt.fasta
 /jackhmmer
+/known_actives.fa
+/wt.fa
+/experimental_data.csv
