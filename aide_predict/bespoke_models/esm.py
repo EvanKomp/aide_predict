@@ -92,6 +92,7 @@ import warnings
 
 from sklearn.base import TransformerMixin, RegressorMixin
 import numpy as np
+from tqdm import tqdm
 
 from aide_predict.bespoke_models.base import PositionSpecificMixin, ProteinModelWrapper
 
@@ -102,6 +103,9 @@ try:
     from transformers import EsmForMaskedLM, AutoTokenizer
 except ImportError:
     raise ImportError("You must install transformers to use this model. See `requirements-transformers.txt`.")
+
+import logging
+logger = logging.getLogger(__name__)
 
 class ESMPredictorWrapper(PositionSpecificMixin, TransformerMixin, RegressorMixin, ProteinModelWrapper):
     """Pretrained ESM as a log likelihood predictor.
@@ -149,6 +153,7 @@ class ESMPredictorWrapper(PositionSpecificMixin, TransformerMixin, RegressorMixi
         self._tokenizer = None
         
         super().__init__(metadata_folder=metadata_folder, wt=wt)
+        logger.debug(f"ESM model inititalized with {self.__dict__}")
 
     @property
     def model_(self):
@@ -224,23 +229,26 @@ class ESMPredictorWrapper(PositionSpecificMixin, TransformerMixin, RegressorMixi
         - sequences: list of amino acid sequences. These should be ready for the tokenizer eg. indluding masks.
           These should be ready for the tokenizer
         """
+        logger.info(f"Calling ESM on {len(sequences)} sequences, in {len(sequences)/self.batch_size} batches.")
         with torch.no_grad():
-            for i in range(0, len(sequences), self.batch_size):
-                tokenized = self._tokenize(sequences[i:i+self.batch_size], on_device=True)
-                # these tokens have ESM start tokens and end tokens
-                # get probabilities over amino acids
-                logits = self.model_(tokenized.input_ids, attention_mask=tokenized.attention_mask).logits
-                # get log probabilities over amino acids
-                log_probs = torch.nn.functional.log_softmax(logits, dim=-1)
+            with tqdm(total=len(sequences), desc="ESM forward passes...") as pbar:
+                for i in range(0, len(sequences), self.batch_size):
+                    tokenized = self._tokenize(sequences[i:i+self.batch_size], on_device=True)
+                    # these tokens have ESM start tokens and end tokens
+                    # get probabilities over amino acids
+                    logits = self.model_(tokenized.input_ids, attention_mask=tokenized.attention_mask).logits
+                    # get log probabilities over amino acids
+                    log_probs = torch.nn.functional.log_softmax(logits, dim=-1)
+                    pbar.update(len(tokenized))
 
-                # return list of log probabilities, back to original sequence lengths
-                # use attention mask to get only the relevant positions
-                # if not all sequence lengths were the same, there will be masks
-                for j in range(len(tokenized.input_ids)):
-                    log_probs_j = log_probs[j][tokenized.attention_mask[j].bool()].cpu().numpy()
-                    # this has the extra index of the start and end tokens
-                    # remove them
-                    yield log_probs_j[1:-1]
+                    # return list of log probabilities, back to original sequence lengths
+                    # use attention mask to get only the relevant positions
+                    # if not all sequence lengths were the same, there will be masks
+                    for j in range(len(tokenized.input_ids)):
+                        log_probs_j = log_probs[j][tokenized.attention_mask[j].bool()].cpu().numpy()
+                        # this has the extra index of the start and end tokens
+                        # remove them
+                        yield log_probs_j[1:-1]
 
     def _marginal_likelihood(self, X):
         """Get marginal likelihoods for sequences.
@@ -330,6 +338,7 @@ class ESMPredictorWrapper(PositionSpecificMixin, TransformerMixin, RegressorMixi
         # start with easy one - WT marginal
         if self.marginal_method == 'wildtype_marginal':
             # we are gauranteed fixed length in this indent
+            logger.info("Getting wild type marginal likelihoods, this requires 1 forward pass.")
             wild_type_log_probs = self._marginal_likelihood([self.wt])[0]
             # compare variants to wild type
             # first tokenize the sequences
@@ -363,6 +372,7 @@ class ESMPredictorWrapper(PositionSpecificMixin, TransformerMixin, RegressorMixi
         elif self.marginal_method == 'mutant_marginal':
             # we are not guaranteed fixed length in this indent...
             # first tokenize the sequences and get log prob vectors for each
+            logger.info(f"Getting mutant marginal likelihoods, this requires {len(X)} forward passes.")
             variants = [' '.join(x) for x in X]
             variant_log_probs = list(self._marginal_likelihood(variants))
 
@@ -438,6 +448,7 @@ class ESMPredictorWrapper(PositionSpecificMixin, TransformerMixin, RegressorMixi
                 masked_positions = mutated_positions(X)
 
             # get the masked marginal likelihoods
+            logger.info(f"Getting masked marginal likelihoods for mutate positions, this requires {len(masked_positions)} forward passes.")
             masked_log_probs = list(self._masked_marginal_likelihood([self.wt], only_positions=masked_positions))[0]
             # this output is the size of the positions passed as opposed to the full length
             # rectify this so that they can be indexed by inserting zero rows
