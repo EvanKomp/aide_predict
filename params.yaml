@@ -43,12 +43,12 @@ position_specific_scoring: false
 msa_creation:
   # If `starting_sequences` The MSA is created using `data/starting_sequences.fa` and optionally, sequences from supervised training data
   # If `jackhmmer` The MSA is created using `jackhmmer` search against a database
-  msa_mode: jackhmmer
+  msa_mode: starting_sequences
 
   # for using predefined sequences
   # msa_mode: starting_sequences
   starting_sequences:
-    prealigned: false # if true, the sequences are already aligned in a3m format
+    prealigned: true # if true, the sequences are already aligned in a3m format
     # If you want to add sequences from any supervised training data provided
     # add_training_sequences: true
     # activity_targets: the target columns to use when determining the known actives to add

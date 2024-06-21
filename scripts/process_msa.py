@@ -11,10 +11,11 @@ Note that we can also add additional weights manually via IDs.
 
 '''
 import os
-import pickle
 import dvc.api
+import json
 
-from aide_predict.utils.msa import MSAProcessing, MSAProcessingArgs, convert_sto_a2m, place_target_seq_at_top_of_msa
+from aide_predict.utils.msa import MSAProcessing, MSAProcessingArgs
+from aide_predict.io.bio_files import read_fasta
 
 import logging
 logger = logging.getLogger(__name__)
@@ -25,8 +26,8 @@ PARAMS = dvc.api.params_show()['msaprocessing']
 def main():
     # first prepare directories
     EXECDIR = os.getcwd()
-    if not os.path.exists(os.path.join(EXECDIR, 'data', 'msa')):
-        os.makedirs(os.path.join(EXECDIR, 'data', 'msa'))
+    if not os.path.exists(os.path.join(EXECDIR, 'data', 'process_msa')):
+        os.makedirs(os.path.join(EXECDIR, 'data', 'process_msa'))
 
     # prepare the arguments
     args = MSAProcessingArgs(
@@ -39,26 +40,30 @@ def main():
     )
     msa = MSAProcessing(args)
 
-    # get the wild type sequence ID
-    with open(os.path.join(EXECDIR, 'data', 'wt.fasta'), 'r') as f:
-        lines = f.readlines()
-        wt_id = lines[0][1:].strip()
+    # get the sqequence ID
+    with open(os.path.join(EXECDIR, 'data', 'wt.fa'), 'r') as f:
+        try:
+            iterator = read_fasta(f)
+            wt_id, _ = next(iterator)
+        except StopIteration:
+            wt_id = None
     logger.info(f'wt_id: {wt_id}')
 
     # process the MSA
     msa.process(
-        MSA_location=os.path.join(EXECDIR, 'data', 'jackhmmer', 'jackhmmer.a2m'),
-        weights_location=os.path.join(EXECDIR, 'data', 'msa', 'raw_weights.npy'),
+        MSA_location=os.path.join(EXECDIR, 'data', 'run_msa', 'alignment.a2m'),
+        weights_location=os.path.join(EXECDIR, 'data', 'process_msa', 'weights.npy'),
         focus_seq_id=wt_id,
         additional_weights=None,
-        new_a2m_location=os.path.join(EXECDIR, 'data', 'msa', 'msa_clean.a2m'),
+        new_a2m_location=os.path.join(EXECDIR, 'data', 'process_msa', 'alignment.a2m'),
     )
-
-    # pickle the MSAProcessing object for loading by downstream processes
-    # if necessary
-    with open(os.path.join(EXECDIR, 'data', 'msa', 'msa_obj.pkl'), 'wb') as f:
-        pickle.dump(msa, f)
-    
+    metrics = {
+        'msa_Neff': msa.Neff,
+        'msa_num_seqs': msa.num_sequences,
+        'msa_Neff_norm': msa.Neff / len(msa.seq_name_to_sequence[wt_id]),
+    }
+    with open(os.path.join(EXECDIR, 'data', 'metrics', 'process_msa.json'), 'w') as f:
+        json.dump(metrics, f)
 
 if __name__ == '__main__':
     main()

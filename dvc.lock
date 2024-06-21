@@ -33,3 +33,88 @@ stages:
       md5: ea7a9ff5cdb4a795b63d838c42e73b50.dir
       size: 42340850998
       nfiles: 2
+  run_msa:
+    cmd: python scripts/run_msa.py
+    deps:
+    - path: data/experimental_data.csv
+      hash: md5
+      md5: d41d8cd98f00b204e9800998ecf8427e
+      size: 0
+    - path: data/starting_sequences.a2m
+      hash: md5
+      md5: 624275f98f9f67c5939e3aba6e4a873d
+      size: 173269062
+    - path: data/starting_sequences.fa
+      hash: md5
+      md5: d41d8cd98f00b204e9800998ecf8427e
+      size: 0
+    - path: data/wt.fa
+      hash: md5
+      md5: 592b18586d4530aaef6557b77c963ee3
+      size: 78
+    - path: scripts/run_msa.py
+      hash: md5
+      md5: 0ef6b9083d6ebd257d39cbb9bff52734
+      size: 7401
+    params:
+      params.yaml:
+        msa_creation.jackhmmer.cpus: 16
+        msa_creation.jackhmmer.domain_threshold: 100
+        msa_creation.jackhmmer.iterations: 1
+        msa_creation.jackhmmer.mx: BLOSUM62
+        msa_creation.jackhmmer.seqdb: uniref100
+        msa_creation.jackhmmer.sequence_identity_filter: 0.8
+        msa_creation.jackhmmer.sequence_threshold: 100
+        msa_creation.jackhmmer.use_bitscores: true
+        msa_creation.msa_mode: starting_sequences
+        msa_creation.starting_sequences.activity_targets:
+        - 0
+        msa_creation.starting_sequences.activity_threshold: 0.0
+        msa_creation.starting_sequences.add_training_sequences: false
+        msa_creation.starting_sequences.prealigned: true
+        use_msa: true
+    outs:
+    - path: data/metrics/run_msa.json
+      hash: md5
+      md5: 8d205654d9b81dbfb76c9799add5bc43
+      size: 61
+    - path: data/run_msa/
+      hash: md5
+      md5: 95ce7fb78568780b4c41bee915e29b69.dir
+      size: 173269062
+      nfiles: 1
+  process_msa:
+    cmd: python scripts/process_msa.py
+    deps:
+    - path: data/run_msa/
+      hash: md5
+      md5: 95ce7fb78568780b4c41bee915e29b69.dir
+      size: 173269062
+      nfiles: 1
+    - path: data/wt.fa
+      hash: md5
+      md5: 592b18586d4530aaef6557b77c963ee3
+      size: 78
+    - path: scripts/process_msa.py
+      hash: md5
+      md5: 2c829feb65d96f4a77628fe0d42bcfa2
+      size: 2433
+    params:
+      params.yaml:
+        msaprocessing.additional_weights: false
+        msaprocessing.preprocess: true
+        msaprocessing.remove_sequences_with_indeterminate_AA_in_focus_cols: true
+        msaprocessing.theta: 0.2
+        msaprocessing.threshold_focus_cols_frac_gaps: 0.5
+        msaprocessing.threshold_sequence_frac_gaps: 0.5
+        msaprocessing.use_weights: true
+    outs:
+    - path: data/metrics/process_msa.json
+      hash: md5
+      md5: 3f86e048d9c8f117fdfd3e89c83f1c6b
+      size: 83
+    - path: data/process_msa/
+      hash: md5
+      md5: 844813c4a68d4abe187d81facf8c2cbf.dir
+      size: 188291636
+      nfiles: 2

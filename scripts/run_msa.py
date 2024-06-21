@@ -48,9 +48,14 @@ EXPECTED KWARGS for the Evcouplings pipeline:
 '''
 import os
 import time
+import shutil
+import json
 
 import dvc.api
+import numpy as np
+
 from aide_predict.utils.common import convert_dvc_params
+from aide_predict.utils.msa import place_target_seq_at_top_of_msa
 
 from aide_predict.io.bio_files import read_fasta
 
@@ -71,6 +76,13 @@ if __name__ == '__main__':
     if not PARAMS.use_msa:
         logger.info('MSA not needed for this model.')
         exit(0)
+    # get the sqequence ID
+    with open(os.path.join(EXECDIR, 'data', 'wt.fa'), 'r') as f:
+        try:
+            iterator = read_fasta(f)
+            sequence_id, _ = next(iterator)
+        except StopIteration:
+            sequence_id = None
 
     # determine what type of MSA we will do
     if PARAMS.msa_creation.msa_mode == 'jackhmmer':
@@ -87,14 +99,10 @@ if __name__ == '__main__':
         else:
             hhfilter = 'hhfilter'
 
-        # get the sqequence ID
-        with open(os.path.join(EXECDIR, 'data', 'wt.fa'), 'r') as f:
-            iterator = read_fasta(f)
-            sequence_id, _ = next(iterator)
 
         # prepare the arguments
         kwargs = {
-            'prefix': os.path.join(outdir, 'jkhmer_step'),
+            'prefix': os.path.join(outdir, 'jck'),
             'sequence_id': sequence_id,
             'sequence_file': os.path.join(EXECDIR, 'data', 'wt.fa'),
             'sequence_download_url': None,
@@ -131,12 +139,44 @@ if __name__ == '__main__':
 
     elif PARAMS.msa_creation.msa_mode == 'starting_sequences':
         # here we simply need to align the sequences
-        # at data/known_actives.fasta
+        # or use existing alignment
+        # at data/starting_sequences.fa/a2m
         # potentially also align actives in data/experimental_data.csv
-        raise NotImplementedError('Not yet implemented.')
+        if PARAMS.msa_creation.starting_sequences.prealigned:
+            # rename to alignment.a2m
+            shutil.copy(os.path.join(EXECDIR, 'data', 'starting_sequences.a2m'), os.path.join(outdir, 'alignment.a2m'))
+        else:
+            raise NotImplementedError('Not yet implemented.')
+        
+        if PARAMS.msa_creation.starting_sequences.add_training_sequences:
+            # need to add the additional sequences to the alignment
+            raise NotImplementedError('Not yet implemented.')
+
     
     else:
         raise ValueError(f"Unknown MSA mode: {PARAMS.msa_creation.msa_mode}")
+    
+    # ensure that the resulting alignment has the WT sequence at the top
+    if sequence_id:
+        place_target_seq_at_top_of_msa(msa_file=os.path.join(outdir, 'alignment.a2m'), target_seq_id=sequence_id)
+
+    # get the count of sequences in the MSA
+    with open(os.path.join(outdir, 'alignment.a2m'), 'r') as f:
+        sequences = read_fasta(f)
+        sequences = list(sequences)
+        num_seqs = len(sequences)
+        sequences = [list(s) for _, s in sequences]
+        sequence_array = np.array(sequences)
+        num_gaps = np.sum(sequence_array == '-') + np.sum(sequence_array == '.')
+        gap_frac = num_gaps / (sequence_array.size)
+    metrics = {
+        'msa_num_seqs': num_seqs,
+        'msa_gap_frac': gap_frac,
+    }
+    with open(os.path.join(EXECDIR, 'data', 'metrics', 'run_msa.json'), 'w') as f:
+        json.dump(metrics, f)
+
+
     
     t1 = time.time()
     t = t1 - t0

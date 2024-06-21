@@ -22,11 +22,31 @@ stages:
       - msa_creation.jackhmmer.mx
     deps:
       - data/starting_sequences.fa
-      - data/starting_sequences.a3m
+      - data/starting_sequences.a2m
       - data/experimental_data.csv
       - data/wt.fa
+      - scripts/run_msa.py
     outs: 
       - data/run_msa/
     metrics:
       - data/metrics/run_msa.json:
+          cache: false
+  process_msa:
+    cmd: python scripts/process_msa.py
+    params:
+      - msaprocessing.theta
+      - msaprocessing.use_weights
+      - msaprocessing.preprocess
+      - msaprocessing.threshold_sequence_frac_gaps
+      - msaprocessing.threshold_focus_cols_frac_gaps
+      - msaprocessing.remove_sequences_with_indeterminate_AA_in_focus_cols
+      - msaprocessing.additional_weights
+    deps:
+      - data/run_msa/
+      - scripts/process_msa.py
+      - data/wt.fa
+    outs:
+      - data/process_msa/
+    metrics:
+      - data/metrics/process_msa.json:
           cache: false

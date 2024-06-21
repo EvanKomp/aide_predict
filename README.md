@@ -7,8 +7,10 @@ This project provides tools for ML aided prediction of protein mutation combinat
 This repo is build with DVC such that it can be blanket applied to any combo library by changing the input data.
 
 ## TODO:
+- Write sequence data structures and make embedders and predictor capable models inherit from the same base
 - Write embeddings classes
 - Write EVcouplings wrapper
+- Write EVE wrapper
 - Write Tranception wrapper * (low priority, PN did not provide a clear entry point so will require some finagling)
 - Write MSATransformer wrapper. should be esasy if we enforce WT and fixed length. Maybe in the future extend to no WT compare by ensureing all sequences are in the passed are in the MSA
 - Write "training" pipeline to init, potentially fit, and save all sklearn estimators and pipelines

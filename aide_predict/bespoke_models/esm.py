@@ -112,7 +112,7 @@ class ESMPredictorWrapper(PositionSpecificMixin, TransformerMixin, RegressorMixi
 
     Params:
     - metadata_folder: str
-        The folder containing the ESM model.
+        Essentially ignored.
     - model_checkpoint: str
         Name of the ESM model to use
     - marginal_method: str
