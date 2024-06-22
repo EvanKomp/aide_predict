@@ -13,16 +13,16 @@ from abc import abstractmethod
 import inspect
 import warnings
 
-from sklearn.base import BaseEstimator
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
-from aide_predict.utils.common import process_amino_acid_sequences, fixed_length_sequences
+from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
 
 #############################################
 # BASE CLASSES FOR DOWNSTREAM MODELS
 #############################################
-class ProteinModelWrapper(BaseEstimator):
+class ProteinModelWrapper(TransformerMixin, BaseEstimator):
     """Base class for bespoke models that take Amino Acids as Input.
 
     Ensure that this init is supered in the child class.
@@ -35,9 +35,9 @@ class ProteinModelWrapper(BaseEstimator):
     to construct the class.
     
     Class attributes, please overload as necessary:
-    - `requires_msa`: Whether the model requires an MSA as input. If so, please inherit from ModelWrapperRequiresMSA instead of this class,
-      and it will automatically check for the presence of an MSA.
-      This attribute also helps ensure that the user is allowed to turn the MSA step of the pipeline off.
+    - `requires_msa_for_fit`: Whether the model requires an MSA as input for fitting. If so, please inherit from ModelWrapperRequiresMSA instead of this class,
+      and it will automatically handle fitting on unaligned sequences by aligning them.
+      This attribute also helps ensure that the user is allowed to run predictions without first fitting on sequences.
        
     - `requires_wt_during_inference`: Whether the model requires the wild type sequence during inference
       if the intention is to get a score relative to wild type.
@@ -54,6 +54,11 @@ class ProteinModelWrapper(BaseEstimator):
     - `requires_fixed_length`: Whether the model requires a fixed length input.
       Besides being informative, this is used to check whether the user is allowed to
       pass variable length sequences to the model.
+    
+    - `can_regress`: Whether the model outputs from transform can also be considered estimates of activity label.
+       Eg. HMM scores can be correlated to activity (predictions) in addition to being input as features to a supervised
+       model (transforms). This class method lets us check that the estimators at exposed at the end of the pipeline
+       are capable of regression.
 
     Attributes:
     - `metadata_folder`: The folder where the metadata is stored.
@@ -62,22 +67,24 @@ class ProteinModelWrapper(BaseEstimator):
     To create a subclass, please implement the following methods:
     - If your model has any parameters, implement `__init__` and call `super().__init__` with the
         metadata_folder and wild type sequence.
-    - `fit`
-    - `_predict`
-    - `_transform` if the model can be within a pipeline as well as final predictor
-    NOTE: The desired behavior of transform and predict is to normalize scores by wild type if present.
+    - `_fit` : this method shoudl accept X (of class ProteinSequences) and y (of class np.ndarray) and fit the model.
+    - `_transform` : this method should accept X (of class ProteinSequences) and return the transformed sequences as an array
+    NOTE: The desired behavior of transform is to normalize scores by wild type if present.
           For models where `requires_wt_during_inference` is False, the exposed methods will automatically
           call the hidden methods on the wt sequence and normalize, However, `requires_wt_during_inference` is true
-          your implementations of `_predict` and `_transform` are expected to handle the normalization.
+          your implementations `_transform` are expected to handle the normalization.
     - `check_metadata`: This method should check that all necessary metadata is present in the metadata folder
       if the model requires anything
     - `_construct_necessary_metadata`: This method scan be implemented to construct the necessary metadata for the model
       from arguments, instead of making the user manually set up the metadata folder.
+    - Inherit from RegressorMixin if the model outputs are also capable of being correlated to protein activity, and set the class attribute
+      `_can_regress` to True.
     """
-    _requires_msa = False
+    _requires_msa_for_fit = False
     _requires_wt_during_inference = False
     _per_position_capable = False # be conservative for the default here
     _requires_fixed_length = True  # and here
+    _can_regress = False
 
     def __init__(self, metadata_folder: str=None, wt: str=None):
         # Make sure all class variables are set
@@ -111,55 +118,41 @@ class ProteinModelWrapper(BaseEstimator):
     def wt(self, wt):
         # check that it is a valid sequences
         if wt is not None:
-            wt = next(process_amino_acid_sequences([wt]))
+            wt = ProteinSequence(wt)
+            if wt.has_gaps:
+                raise ValueError("Wild type sequence cannot have gaps.")
         self._wt = wt
 
     @abstractmethod
-    def fit(self, X, y=None):
+    def _fit(self, X, y=None):
         raise NotImplementedError("This method must be implemented in the child class.")
     
-    @abstractmethod
-    def _predict(self, X):
-        raise NotImplementedError("This method must be implemented in the child class.")
+    def fit(self, X, y=None):
+        """Fit the model.
+        """
+        if not isinstance(X, ProteinSequences):
+            X = ProteinSequences(list(X))
+
+        return self._fit(X, y)
     
     @abstractmethod
     def _transform(self, X):
         raise NotImplementedError("This method must be implemented in the child class.")
-    
-    def predict(self, X):
-        """Predict the scores for the sequences.
-        """
-        check_is_fitted(self)
-        X = list(process_amino_acid_sequences(X))
-        if self.requires_fixed_length:
-            if not fixed_length_sequences(X):
-                raise ValueError("All sequences must have the same length for this model.")
-            if self.wt is not None:
-                assert len(self.wt) == len(X[0]), "Wild type sequence must have the same length as sequences for this model."
-        if not self.requires_wt_during_inference and self.wt is not None:
-            outs = self._predict(X)
-            check_array(outs, ensure_2d=True)
-            wt_outs = self._predict([self.wt])
-            check_array(wt_outs, ensure_2d=True)
-            return outs - wt_outs
-        else:
-            outs = self._predict(X)
-            check_array(outs, ensure_2d=True)
-            return outs
         
     def transform(self, X):
         """Transform the sequences.
         """
-        check_is_fitted(self)
-        X = list(process_amino_acid_sequences(X))
+        if not isinstance(X, ProteinSequences):
+            X = ProteinSequences(list(X))
         if self.requires_fixed_length:
-            assert all(len(x) == len(X[0]) for x in X), "All sequences must have the same length."
+            if not X.aligned:
+                raise ValueError("Sequences must be aligned.")
             if self.wt is not None:
-                assert len(self.wt) == len(X[0]), "Wild type sequence must have the same length as sequences."
+                assert len(self.wt) == X.width, "Wild type sequence must be the same length as the sequences."
         if not self.requires_wt_during_inference and self.wt is not None:
             outs = self._transform(X)
             check_array(outs, ensure_2d=True)
-            wt_outs = self._transform([self.wt])
+            wt_outs = self._transform(ProteinSequences([self.wt]))
             check_array(wt_outs, ensure_2d=True)
             return outs - wt_outs
         else:
@@ -167,6 +160,13 @@ class ProteinModelWrapper(BaseEstimator):
             check_array(outs, ensure_2d=True)
             return outs
     
+    def predict(self, X):
+        """Predict the sequences.
+        """
+        if not self.can_regress:
+            raise ValueError("This model is not capable of regression.")
+        return self.transform(X)
+
     @property
     def requires_msa(self):
         """Whether the model requires an MSA as input.
@@ -191,22 +191,9 @@ class ProteinModelWrapper(BaseEstimator):
     def requires_wt_during_inference(self):
         return self._requires_wt_during_inference
 
-    @classmethod
-    def help(cls):
-        """Helper function to print out useful information about the model class and
-        how to use it.
-        """
-        print(f"Help for {cls.__name__}")
-        print(f"Requires MSA: {cls.requires_msa}")
-        print(f"Per position capable: {cls.per_position_capable}")
-        print(f"Requires fixed length: {cls.requires_fixed_length}")
-        print(f"Input arguments: {inspect.signature(cls.__init__)}")
-        if hasattr(cls, 'fit'):
-            print(f"Fit arguments: {inspect.signature(cls.fit)}")
-        if hasattr(cls, 'predict'):
-            print(f"Predict arguments: {inspect.signature(cls.predict)}")
-        if hasattr(cls, 'transform'):
-            print(f"Transform arguments: {inspect.signature(cls.transform)}")
+    @property
+    def can_regress(self):
+        return self._can_regress
 
     @staticmethod
     def _construct_necessary_metadata(model_directory: str, necessary_metadata: dict):
@@ -240,46 +227,47 @@ class ProteinModelWrapper(BaseEstimator):
         """
         cls._construct_necessary_metadata(model_directory, necessary_metadata)
         return cls(metadata_folder=model_directory, wt=wt, **kwargs)
-
-
-# This is simply give the user the option to not have to write metadata checks
-# If all it requires is an MSA
-class ProteinModelWrapperRequiresMSA(ProteinModelWrapper):
-    """Base class for bespoke models that require an MSA.
-
-    This class simply checks the metadata folder for the presence of an MSA
-    such that the downstream classes do not have to
-    """
-    _requires_msa = True
-    def check_metadata(self):
-        if not os.path.exists(os.path.join(self.metadata_folder, 'alignment.a2m')):
-            raise ValueError(f"alignment.a2m does not exist in {self.metadata_folder}")
     
-    @staticmethod
-    def _construct_necessary_metadata(model_directory: str, necessary_metadata: dict):
-        if not os.path.exists(model_directory):
-            os.makedirs(model_directory)
-        # move the alignment file to the correct name.
-        if not 'alignment_location' in necessary_metadata:
-            raise ValueError("alignment_location must be provided in necessary_metadata.")
-        alignment_location = necessary_metadata['alignment_location']
-        if not os.path.exists(alignment_location):
-            raise ValueError(f"Alignment file does not exist at {alignment_location}")
-        # copy the file
-        shutil.copy(alignment_location, os.path.join(model_directory, 'alignment.a2m'))
+
 
 
 #############################################
 # MIXINS FOR MODELS
 #############################################
 
+class RequiresMSAMixin:
+    """Mixin to ensure model recieves aligned sequences at fit.
+
+    This mixin:
+    1. Overrides the requires_msa_for_fit attribute to be True.
+    2. Wraps the fit method to ensure that the input sequences are aligned before fitting.
+    """
+    _requires_msa_for_fit = True
+
+    def fit(self, X, y=None):
+        """Fit the model.
+        
+        Params:
+        - X: ProteinSequences or str
+           If string, assumed to be path to fasta file.
+        """
+        if not isinstance(X, ProteinSequences):
+            X = ProteinSequences(list(X))
+
+        if not X.aligned:
+            X.align_all()
+            assert X.aligned, "Sequences should be aligned."
+
+        return ProteinModelWrapper.fit(self, X, y)
+        
+    
 class PositionSpecificMixin:
     """Mixin for protein models that can output per position scores.
     
     This mixin:
     1. Overrides the per_position_capable attribute to be True.
-    2. checks that positions is an attribute
-    3. Wraps the predict and transform methods to check that if positions were passed, the output is the same length as the positions.
+    2. checks that positions and pool is an attribute
+    3. Wraps the predict and transform methods to check that if positions were passed and not pooling, the output is the same length as the positions.
     """
     _per_position_capable = True
 
@@ -288,22 +276,17 @@ class PositionSpecificMixin:
 
         if not hasattr(self, 'positions'):
             raise ValueError("This model was specified as PositionSpecific, but does not have a positions attribute. Make sure `positions` is a parameter in the __init__ method.")
+        if not hasattr(self, 'pool'):
+            raise ValueError("This model was specified as PositionSpecific, but does not have a pool attribute. Make sure `pool` is a parameter in the __init__ method.")
 
-        # Wrap the predict method
-        self.predict = self._wrap_predict(self.predict)
-        self.transform = self._wrap_predict(self.transform)
 
-    def _wrap_predict(self, func):
-        @wraps(func)
-        def wrapper(X):
-            # if positions is not None, check that the output second dimension has the same length as number of positions
-            result = func(X)
-            if self.positions is not None:
-                dims = len(self.positions)
-                if result.shape[1] != dims:
-                    raise ValueError("The output second dimension must have the same length as number of positions.")
-            return result
-        return wrapper
+    def transform(self, X):
+        result = ProteinModelWrapper.transform(self, X)
+        if self.positions is not None and not self.pool:
+            dims = len(self.positions)
+            if result.shape[1] != dims:
+                raise ValueError("The output second dimension must have the same length as number of positions.")
+        return result
 
     
     

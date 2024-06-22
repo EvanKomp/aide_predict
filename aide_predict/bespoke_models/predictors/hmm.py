@@ -69,15 +69,14 @@ from sklearn.base import TransformerMixin, RegressorMixin
 import numpy as np
 import pandas as pd
 
-from aide_predict.bespoke_models.base import ProteinModelWrapperRequiresMSA
-from aide_predict.io.bio_files import write_fasta
+from aide_predict.bespoke_models.base import ProteinModelWrapper, RequiresMSAMixin
 from aide_predict.utils.common import process_amino_acid_sequences
 
 import logging
 logger = logging.getLogger(__name__)
 
 
-class HMMWrapper(TransformerMixin, RegressorMixin, ProteinModelWrapperRequiresMSA):
+class HMMWrapper(RegressorMixin, RequiresMSAMixin, ProteinModelWrapper):
     """Wrapper for HMMs.
     """
     _requires_wt_during_inference = False
@@ -98,7 +97,9 @@ class HMMWrapper(TransformerMixin, RegressorMixin, ProteinModelWrapperRequiresMS
         """Fit the model.
         
         Params:
-        - X: ignored. Model is fit based on alignment in metadata_folder."""
+        - X: alignment or sequences to HMM on
+        """
+        X.to_fasta(os.path.join(self.metadata_folder, 'alignment.a2m'))
         if os.path.exists(os.path.join(self.metadata_folder, 'alignment.hmm')):
             logger.debug("Model already exists, skipping fit.")
         else:
@@ -124,8 +125,7 @@ class HMMWrapper(TransformerMixin, RegressorMixin, ProteinModelWrapperRequiresMS
             # write the sequences to a file
             seq_file = os.path.join(tmpdirname, 'seqs.fasta')
             out_tbl = os.path.join(tmpdirname, 'out.tbl')
-            with open(seq_file, 'w') as f:
-                write_fasta([('seq_'+str(i), seq) for i, seq in enumerate(X)], f)
+            X.to_fasta(seq_file)
             cmd = f"hmmsearch --tblout {out_tbl} -T {self.threshold} --domT {self.threshold}" \
                   f" --incT {self.threshold} --incdomT {self.threshold}" \
                   f" {os.path.join(self.metadata_folder, 'alignment.hmm')} {seq_file}"
@@ -145,17 +145,11 @@ class HMMWrapper(TransformerMixin, RegressorMixin, ProteinModelWrapperRequiresMS
         scores = np.zeros(len(X))
         for i, seq in enumerate(X):
             try:
-                scores[i] = float(data[data[0] == 'seq_'+str(i)][5])
+                scores[i] = float(data[data[0] == hash(seq)][5])
             except ValueError:
                 scores[i] = 0.0
         return scores
     
-    def _predict(self, X):
-        return self._transform(X)
-    
-    def fit_transform(self, X, y=None):
-        self.fit(X, y)
-        return self.transform(X)
 
 
 

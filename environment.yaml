@@ -10,6 +10,7 @@ dependencies:
   - pandas
   - hmmer
   - scikit-learn
+  - mafft
   - pip
   - pip:
     - dvc

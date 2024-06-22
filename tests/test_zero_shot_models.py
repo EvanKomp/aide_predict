@@ -27,7 +27,7 @@ else:
 
 def test_esm_zero_shot():
     # this model requires no MSA
-    from aide_predict.bespoke_models.esm import ESMPredictorWrapper
+    from aide_predict.bespoke_models.predictors.esm import ESMPredictorWrapper
 
     model = ESMPredictorWrapper(
         model_checkpoint="esm2_t6_8M_UR50D",
@@ -49,6 +49,21 @@ def test_esm_zero_shot():
     spearman = spearmanr(scores, predictions)[0]
     print(f"ESM Spearman: {spearman}")
     assert abs(spearman - 0.2) < 0.05
+
+    # run it with positions specified and get position specific scores
+    model = ESMPredictorWrapper(
+        model_checkpoint="esm2_t6_8M_UR50D",
+        marginal_method="masked_marginal",
+        positions=[8, 9, 10],
+        device=DEVICE,
+        pool=False,
+        wt="LADDRTLLMAGVSHDLRTPLTRIRLATEMMSEQDGYLAESINKDIEECNAIIEQFIDYLR",
+        metadata_folder='./tmp/esm',
+    )
+    model.fit(sequences) # does nothing
+    predictions = model.predict(sequences)
+    assert len(predictions) == len(sequences)
+    assert len(predictions[0]) == 3
 
 if __name__ == "__main__":
     test_esm_zero_shot()

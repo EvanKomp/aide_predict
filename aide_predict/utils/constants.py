@@ -7,7 +7,7 @@
 '''
 
 
-AA_ALPHABET_MAP = {
+AA_MAP = {
     'A': 'ALA',
     'R': 'ARG',
     'N': 'ASN',
@@ -28,6 +28,7 @@ AA_ALPHABET_MAP = {
     'W': 'TRP',
     'Y': 'TYR',
     'V': 'VAL',
-    '-': '-',
 }
-AA_ALPHABET = set(AA_ALPHABET_MAP.keys())
+AA_SINGLE = set(AA_MAP.keys())
+GAP_CHARACTERS = set(['-', '.'])
+NON_CONONICAL_AA_SINGLE = set(['B', 'Z', 'X', 'J', 'O', 'U'])

@@ -95,8 +95,7 @@ import numpy as np
 from tqdm import tqdm
 
 from aide_predict.bespoke_models.base import PositionSpecificMixin, ProteinModelWrapper
-
-from aide_predict.utils.common import fixed_length_sequences, mutated_positions
+from aide_predict.utils.data_structures import ProteinSequences
 
 try:
     import torch
@@ -107,7 +106,7 @@ except ImportError:
 import logging
 logger = logging.getLogger(__name__)
 
-class ESMPredictorWrapper(PositionSpecificMixin, TransformerMixin, RegressorMixin, ProteinModelWrapper):
+class ESMPredictorWrapper(PositionSpecificMixin, RegressorMixin, ProteinModelWrapper):
     """Pretrained ESM as a log likelihood predictor.
 
     Params:
@@ -130,6 +129,7 @@ class ESMPredictorWrapper(PositionSpecificMixin, TransformerMixin, RegressorMixi
     _requires_fixed_length = False
     _requires_msa = False
     _per_position_capable = True
+    _can_regress = True
 
     def __init__(
         self,
@@ -181,9 +181,9 @@ class ESMPredictorWrapper(PositionSpecificMixin, TransformerMixin, RegressorMixi
 
 
     def _check_fixed_length_sequences(self, X):
-        if not fixed_length_sequences(X):
+        if not X.aligned:
             return False
-        if self.wt is not None and len(self.wt) != len(X[0]):
+        if self.wt is not None and len(self.wt) != X.width:
             return False
         return True
 
@@ -287,7 +287,7 @@ class ESMPredictorWrapper(PositionSpecificMixin, TransformerMixin, RegressorMixi
            if only_positions is not None, the shape is (len only_positions, vocab size)
         """
         # first, raise if not fixed length and only_positions is not None
-        if only_positions is not None and not self._check_fixed_length_sequences(X):
+        if only_positions is not None and not self._check_fixed_length_sequences(ProteinSequences(X)):
             raise ValueError("Cannot specify positions to masked marginals with variable length sequences.")
         
         # since we have to run multiple passes for sequence, let's construct superbatches, one for
@@ -354,7 +354,7 @@ class ESMPredictorWrapper(PositionSpecificMixin, TransformerMixin, RegressorMixi
             assert variants_log_prob_vector.shape == (len(X), len(X[0]))
 
             # subtract the wild type value
-            wt_tokens = self._tokenize([self.wt], on_device=False).input_ids[0]
+            wt_tokens = self._tokenize([' '.join(str(self.wt))], on_device=False).input_ids[0]
             wt_log_probs = wild_type_log_probs[wt_tokens]
             # subtract the wild type value
             variant_log_prob_vector -= wt_log_probs
@@ -378,7 +378,7 @@ class ESMPredictorWrapper(PositionSpecificMixin, TransformerMixin, RegressorMixi
 
             # tokenize WT if present, we will need it if comparing to WT
             if self.wt is not None:
-                wt_ids = self._tokenize([self.wt], on_device=False).input_ids[0]
+                wt_ids = self._tokenize([' '.join(str(self.wt))], on_device=False).input_ids[0]
 
             # shape is (len X, sequence length, vocab size), note that 
             # sequence length may vary so it is actually a list of array
@@ -445,19 +445,19 @@ class ESMPredictorWrapper(PositionSpecificMixin, TransformerMixin, RegressorMixi
                 masked_positions = self.positions
             else:
                 # determine where there are mutations
-                masked_positions = mutated_positions(X)
+                masked_positions = X.mutated_positions
 
             # get the masked marginal likelihoods
             logger.info(f"Getting masked marginal likelihoods for mutate positions, this requires {len(masked_positions)} forward passes.")
             masked_log_probs = list(self._masked_marginal_likelihood([self.wt], only_positions=masked_positions))[0]
             # this output is the size of the positions passed as opposed to the full length
             # rectify this so that they can be indexed by inserting zero rows
-            masked_log_probs_full = np.zeros((len(masked_positions), masked_log_probs.shape[1]))
+            masked_log_probs_full = np.zeros((len(self.wt), masked_log_probs.shape[1]))
             masked_log_probs_full[masked_positions] = masked_log_probs
 
             # index the masked log probs with the input ids
             # of wt
-            wt_ids = self._tokenize([self.wt], on_device=False).input_ids[0]
+            wt_ids = self._tokenize([' '.join(str(self.wt))], on_device=False).input_ids[0]
             rows = np.arange(masked_log_probs_full.shape[0])
             rows_expanded = np.expand_dims(rows, axis=0)
             wt_log_probs_vector = masked_log_probs_full[rows_expanded, wt_ids]
@@ -475,11 +475,12 @@ class ESMPredictorWrapper(PositionSpecificMixin, TransformerMixin, RegressorMixi
 
             # subtract the wild type value
             variants_log_prob_vector -= wt_log_probs_vector
+
+            # if positions were passed, only return those positions
+            if self.positions is not None:
+                variants_log_prob_vector = variants_log_prob_vector[:, self.positions]
+
             if self.pool:
                 return np.mean(variants_log_prob_vector, axis=1).reshape(-1, 1)
             else:
                 return variants_log_prob_vector
-        
-
-    def _predict(self, X):
-        return self._transform(X)
