@@ -65,18 +65,16 @@ import subprocess
 import tempfile
 
 from sklearn.utils import check_array
-from sklearn.base import TransformerMixin, RegressorMixin
 import numpy as np
 import pandas as pd
 
-from aide_predict.bespoke_models.base import ProteinModelWrapper, RequiresMSAMixin
-from aide_predict.utils.common import process_amino_acid_sequences
+from aide_predict.bespoke_models.base import ProteinModelWrapper, RequiresMSAMixin, CanRegressMixin
 
 import logging
 logger = logging.getLogger(__name__)
 
 
-class HMMWrapper(RegressorMixin, RequiresMSAMixin, ProteinModelWrapper):
+class HMMWrapper(CanRegressMixin, RequiresMSAMixin, ProteinModelWrapper):
     """Wrapper for HMMs.
     """
     _requires_wt_during_inference = False
@@ -93,7 +91,7 @@ class HMMWrapper(RegressorMixin, RequiresMSAMixin, ProteinModelWrapper):
                 'preserves_dtype': [],
                 }
 
-    def fit(self, X, y=None):
+    def _fit(self, X, y=None):
         """Fit the model.
         
         Params:

@@ -23,62 +23,121 @@ from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
 # BASE CLASSES FOR DOWNSTREAM MODELS
 #############################################
 class ProteinModelWrapper(TransformerMixin, BaseEstimator):
-    """Base class for bespoke models that take Amino Acids as Input.
-
-    Ensure that this init is supered in the child class.
-
-    Construction of a ModelWrapper from __init__ expects
-    that the metadata is already present in the metadata folder, and
-    we will do the appropriate checks. If you want to be able to construct
-    the metadata necessary for the class algorithmically, you should implement
-    the _construct_necessary_metadata method and use the from_basic_info classmethod
-    to construct the class.
+    """Writing new docstrings.
     
-    Class attributes, please overload as necessary:
-    - `requires_msa_for_fit`: Whether the model requires an MSA as input for fitting. If so, please inherit from ModelWrapperRequiresMSA instead of this class,
-      and it will automatically handle fitting on unaligned sequences by aligning them.
-      This attribute also helps ensure that the user is allowed to run predictions without first fitting on sequences.
-       
-    - `requires_wt_during_inference`: Whether the model requires the wild type sequence during inference
-      if the intention is to get a score relative to wild type.
-      If this is False, the model will automatically normalize the output by the wild type sequence if present
-      and the user does not have to worry about it.
-      If this is True, the model is expected to handle the normalization in the _predict and _transform methods.
-
-    - `per_position_capable`: Whether the model can output per position scores.
-      If so, the model should have a positions attribute.
-      If your model has position specific capabilities, you should inherit from PositionSpecificMixin and
-      all you have to do is ensure that your _predict and `_transform` methods are implemented to output the correct shape.
-      as well as have a `positions` attribute.
-
-    - `requires_fixed_length`: Whether the model requires a fixed length input.
-      Besides being informative, this is used to check whether the user is allowed to
-      pass variable length sequences to the model.
+    Base class for bespoke models that take proteins as input.
     
-    - `can_regress`: Whether the model outputs from transform can also be considered estimates of activity label.
-       Eg. HMM scores can be correlated to activity (predictions) in addition to being input as features to a supervised
-       model (transforms). This class method lets us check that the estimators at exposed at the end of the pipeline
-       are capable of regression.
+    All models that take proteins as input should inherit from this class.
+    All are considered transformers such that they can be used natively to
+    produce features in the AIDE pipeline.
+    Models can additionally be made regressors by inheriting from RegressorMixin.
 
-    Attributes:
-    - `metadata_folder`: The folder where the metadata is stored.
-    - `wt`: The wild type sequence.
+    X values for fit, transform, predict are expected to be ProteinSequences objects.
 
-    To create a subclass, please implement the following methods:
+    Params
+    ------
+    metadata_folder : str
+        The folder where the metadata is stored. All models should have a metadata folder.
+        Any that require additional metadata other than input sequences and parameters to train
+        should implement the check_metadata method to ensure that the metadata is present.
+        Additionally, models that create artifacts outside of the python should
+        save them in the metadata folder.
+    wt : str
+        The wild type sequence if present. If so, outputs will be normalized by the wild type sequence.
+
+        
+    Attributes
+    ----------
+    metadata_folder : str
+        The folder where the metadata is stored.
+    wt : str
+        The wild type sequence.
+    
+    Class Attributes
+    ----------------
+    requires_msa_for_fit : bool
+        Whether the model requires an MSA as input for fitting. If so, please inherit from
+        RequiresMSAMixin. If true, the model will check for alignment of input sequences
+        at fit time. If not aligned, it will attempt to align them.
+    requires_wt_during_inference : bool
+        Whether the model requires the wild type sequence during inference if the intention is to get a score
+        relative to wild type.
+        If this is False, the model will automatically normalize the output by the wild type sequence if present
+        and the user does not have to worry about it.
+        If this is True, the child class is expected to implement its own normalization in _transform
+        If so, please inherit from RequiresWTDuringInferenceMixin.
+    per_position_capable : bool
+        Whether the model can output per position scores.
+        If so, the model should have a positions and a pool attribute.
+        If your model has position specific capabilities, you should inherit from PositionSpecificMixin and
+        all you have to do is ensure that your `_transform` method monitors self.postitions and self.pool
+        to output the correct shape.
+        If so, please inherit from PositionSpecificMixin.
+    requires_fixed_length : bool
+        Whether the model requires a fixed length input.
+        If so, the model will check that the input sequences are fixed length.
+        Please inherit from RequiresFixedLengthMixin if this is the case.
+        If so, please inherit from RequiresFixedLengthMixin.
+    can_regress : bool
+        Whether the model outputs from transform can also be considered estimates of activity label.
+        Eg. HMM scores can be correlated to activity (predictions) in addition to being input as features to a supervised
+        If so, please inherit from CanRegressMixin.
+    
+    Methods
+    -------
+    fit(X, y=None)
+        Fit the model.
+    transform(X)
+        Transform the sequences.
+    fit_transform(X, y=None)
+        Fit the model and transform the sequences.
+    predict(X)
+        Predict the sequences.
+    check_metadata()
+        Ensure that all necessary metadata is present in the metadata folder.
+    _fit(X, y=None)
+        YOU MUST IMPLEMENT.
+    _transform(X)
+        YOU MUST IMPLEMENT.
+    _construct_necessary_metadata(model_directory, necessary_metadata)
+        YOU CAN IMPLEMENT (if your model requires additional metadata).
+    from_basic_info(model_directory, necessary_metadata, wt, **kwargs)
+        Construct the model from basic information and instantiate.
+
+    To subclass, please implement the following methods:
     - If your model has any parameters, implement `__init__` and call `super().__init__` with the
-        metadata_folder and wild type sequence.
-    - `_fit` : this method shoudl accept X (of class ProteinSequences) and y (of class np.ndarray) and fit the model.
-    - `_transform` : this method should accept X (of class ProteinSequences) and return the transformed sequences as an array
-    NOTE: The desired behavior of transform is to normalize scores by wild type if present.
-          For models where `requires_wt_during_inference` is False, the exposed methods will automatically
-          call the hidden methods on the wt sequence and normalize, However, `requires_wt_during_inference` is true
-          your implementations `_transform` are expected to handle the normalization.
-    - `check_metadata`: This method should check that all necessary metadata is present in the metadata folder
-      if the model requires anything
-    - `_construct_necessary_metadata`: This method scan be implemented to construct the necessary metadata for the model
-      from arguments, instead of making the user manually set up the metadata folder.
-    - Inherit from RegressorMixin if the model outputs are also capable of being correlated to protein activity, and set the class attribute
-      `_can_regress` to True.
+        `metadata_folder` and `wt`.
+    - `_fit` : 
+        his method should accept `X` (of class `ProteinSequences`) and `y` (of class `np.ndarray)
+        and fit the model. Assign at least one trailing _ attribute to self so that the model is considered fitted.
+    - `_transform` :
+        This method should accept `X` (of class `ProteinSequences`) and return the transformed sequences as an array.
+    - `check_metadata` :
+        This method should check that all necessary metadata is present in the metadata folder
+        if the model requires anything. If your model requires something, overload this.
+    - `_construct_necessary_metadata` :
+        This method can be implemented to construct the necessary metadata for the model
+        from arguments, instead of making the user manually set up the metadata folder.
+    
+    Mixins to constrain model behavior:
+    - RequiresMSAMixin :
+        If the model requires an MSA for fitting, inherit from this mixin. The X that your _fit method
+        receives will be aligned.
+    - RequiresFixedLengthMixin :
+        If the model requires fixed length sequences, inherit from this mixin. The model will check that
+        the input sequences are fixed length.
+    - CanRegressMixin :
+        If the model outputs are also capable of being correlated to protein activity, inherit from this mixin.
+        Predict will be available as a method.
+    - RequiresWTDuringInferenceMixin :
+        If the model, in order to get a score relative to wild type, requires the wild type sequence during inference,
+        inherit from this mixin. Your _transform method will be expected to handle the normalization to wt scores.
+    - PositionSpecificMixin :
+        If the model can output per position scores, inherit from this mixin. You should ensure that your
+        __init__ assigns a `positions` attribute and a `pool` attribute. In your _transform method, `positions` can
+        be accessed to subset positions of the overal sequence to return. If `pool` is False, the output should be the same
+        size as the number of positions, else you should implement some pooling like mean pooling over the specified positions.
+    
     """
     _requires_msa_for_fit = False
     _requires_wt_during_inference = False
