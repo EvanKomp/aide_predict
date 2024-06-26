@@ -25,7 +25,7 @@ class ProteinCharacter(str):
         return str.__new__(cls, character)
 
     def __post_init__(self):
-        if self.character not in AA_SINGLE.union(GAP_CHARACTERS).union(NON_CONONICAL_AA_SINGLE):
+        if self.character.upper() not in AA_SINGLE.union(GAP_CHARACTERS).union(NON_CONONICAL_AA_SINGLE):
             raise ValueError(f"Invalid character {self.character} for protein sequence.")
         
     @property
@@ -35,6 +35,13 @@ class ProteinCharacter(str):
     @property
     def is_non_canonical(self):
         return self.character in NON_CONONICAL_AA_SINGLE
+    
+    @property
+    def is_not_focus(self):
+        if not self.is_gap:
+            return self.character == self.character.lower()
+        else:
+            return True
 
 
 class ProteinSequence(str, MutableSequence):
