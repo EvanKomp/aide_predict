@@ -13,13 +13,13 @@ import pytest
 from aide_predict.utils.data_structures import ProteinCharacter, ProteinSequence, ProteinSequences, ProteinSequencesOnFile
 
 
-def test_protein_character()
+def test_protein_character():
     
 
     # smoke test creation
     # bad character
     with pytest.raises(ValueError):
-        ProteinCharacter("Z")
+        ProteinCharacter("/")
 
     # good character
     ProteinCharacter("A")

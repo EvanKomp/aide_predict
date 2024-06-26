@@ -53,12 +53,11 @@ import urllib
 
 import pandas as pd
 
-from aide_predict.bespoke_models.base import ModelWrapper, ModelWrapperArgs
+from aide_predict.bespoke_models.base import ModelWrapperRequiresMSA
 
 # EXPOSURE OF TRANCEPTION
 # MEANT TO MIMIC ORIGINAL SCRIPT
 # DO NOT USE DIRECTLY
-
 @dataclass
 class _TranceptionArgs:
     """Defaults taken from the original script.
@@ -207,12 +206,13 @@ class _Tranception:
 ###############
 # Public Api
 
-class TranceptionWrapperArgs(ModelWrapperArgs):
-    """Tranceptions arguemnts, with the input data and metadata refactored."""
+class Tranception(ModelWrapperRequiresMSA):
 
-
+    # We have a lot more metadata to check now.
     def check_metadata(self):
-        """Determine if the given metadatafolder contains all of the necessary files for Tranception.
+        """Ensures that eveything this model class needs is in the metadata folder.
+        
+        Tranception requires:
+        - the input MSA, 
         """
-        # required files: MSA, MSA weights, checkpoint
-        if not 
+        

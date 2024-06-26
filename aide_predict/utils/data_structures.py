@@ -44,7 +44,7 @@ class ProteinCharacter(str):
             return True
 
 
-class ProteinSequence(str, MutableSequence):
+class ProteinSequence(str):
 
     def __new__(cls, sequence: str):
         obj = str.__new__(cls, sequence)
@@ -52,20 +52,8 @@ class ProteinSequence(str, MutableSequence):
         obj._sequence = characters
         return obj
 
-    def __getitem__(self, index):
-        return self._sequence[index]
-    
-    def __setitem__(self, index, value):
-        self._sequence[index] = value
-
-    def __delitem__(self, index):
-        del self._sequence[index]
-
-    def __len__(self):
-        return len(self._sequence)
-    
-    def insert(self, index, value):
-        self._sequence.insert(index, value)
+    def __str__(self):
+        return "".join(c.character for c in self._sequence)
 
     def __repr__(self):
         """Have it show up wrapped in the class name and some attributes."""
@@ -91,6 +79,22 @@ class ProteinSequence(str, MutableSequence):
             return self.with_no_gaps == other.with_no_gaps and self.width == other.width
         else:
             return False
+    
+    def mutate(self, position: int, new_character: str):
+        new_character = ProteinCharacter(new_character)
+        if self[position] == new_character:
+            return self
+        else:
+            new_sequence = list(self._sequence)
+            new_sequence[position] = new_character
+            return ProteinSequence("".join(c.character for c in new_sequence))
+        
+    def mutated_positions(self, other: str):
+        positions = []
+        for i, (a, b) in enumerate(zip(self, other)):
+            if a != b:
+                positions.append(i)
+        return positions
     
 class ProteinSequences(MutableSequence):
 
@@ -154,7 +158,7 @@ class ProteinSequences(MutableSequence):
     
     def to_fasta(self, outfile: str):
         as_dict = self.to_dict()
-        sequences = zip(*as_dict.items())
+        sequences = list(as_dict.items())
         with open(outfile, "w") as f:
             write_fasta(sequences, f)
 

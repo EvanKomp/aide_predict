@@ -142,23 +142,20 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
     _requires_msa_for_fit = False
     _requires_wt_during_inference = False
     _per_position_capable = False # be conservative for the default here
-    _requires_fixed_length = True  # and here
+    _requires_fixed_length = False  # and here
     _can_regress = False
 
-    def __init__(self, metadata_folder: str=None, wt: str=None):
-        # Make sure all class variables are set
-        if self.requires_msa is None:
-            raise ValueError("requires_msa must be set for your subclass")
-        if self.per_position_capable is None:
-            raise ValueError("per_position_capable must be set for your subclass")
-        if self.requires_fixed_length is None:
-            raise ValueError("requires_fixed_length must be set for your subclass")
+    def __init__(self, metadata_folder: str=None, wt: ProteinSequence=None):
         
         if metadata_folder is None:
             raise ValueError("metadata_folder must be provided.")
         if not os.path.exists(metadata_folder):
             os.makedirs(metadata_folder)
         self.metadata_folder = metadata_folder
+        if not isinstance(wt, ProteinSequence) and wt is not None:
+            wt = ProteinSequence(wt)
+            if wt.has_gaps:
+                raise ValueError("Wild type sequence cannot have gaps.")
         self.wt=wt
 
         # call check metadata
@@ -200,7 +197,7 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         # Check if the model requires an MSA for fitting
         # If so and the inputs are not aligned, align them
         if not X.aligned and self.requires_msa_for_fit:
-            X.align_all()
+            X = X.align_all()
             assert X.aligned, "Sequences should be aligned."
 
         # Check if the model requires fixed length sequences
@@ -263,12 +260,12 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         return self.transform(X)
 
     @property
-    def requires_msa(self):
-        """Whether the model requires an MSA as input.
+    def requires_msa_for_fit(self):
+        """Whether the model requires an MSA for fitting.
         
         Note that this property is used for pipeline checks.
         """
-        return self._requires_msa
+        return self._requires_msa_for_fit
     
     @property
     def per_position_capable(self):

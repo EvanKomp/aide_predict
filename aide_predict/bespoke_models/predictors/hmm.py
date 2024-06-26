@@ -76,15 +76,17 @@ logger = logging.getLogger(__name__)
 
 class HMMWrapper(CanRegressMixin, RequiresMSAMixin, ProteinModelWrapper):
     """Wrapper for HMMs.
-    """
-    _requires_wt_during_inference = False
-    _per_position_capable = False
-    _requires_msa = True
-    _requires_fixed_length = False
 
-    def __init__(self, metadata_folder: str=None, threshold=100):
+    This wrapper uses HMMsearch to get scores for sequences.
+
+    Params:
+    - metadata_folder: folder to store metadata
+    - threshold: threshold for HMMsearch
+    - wt: wildtype sequence
+    """
+    def __init__(self,threshold=100, metadata_folder=None, wt=None):
         self.threshold = threshold
-        super().__init__(metadata_folder=metadata_folder)
+        super().__init__(metadata_folder=metadata_folder, wt=wt)
 
     def _more_tags(self):
         return {'stateless': True,
@@ -124,11 +126,15 @@ class HMMWrapper(CanRegressMixin, RequiresMSAMixin, ProteinModelWrapper):
             seq_file = os.path.join(tmpdirname, 'seqs.fasta')
             out_tbl = os.path.join(tmpdirname, 'out.tbl')
             X.to_fasta(seq_file)
+
+            # supress output to logs
             cmd = f"hmmsearch --tblout {out_tbl} -T {self.threshold} --domT {self.threshold}" \
                   f" --incT {self.threshold} --incdomT {self.threshold}" \
                   f" {os.path.join(self.metadata_folder, 'alignment.hmm')} {seq_file}"
             logger.info(f"Running hmmsearch: {cmd}")
-            subprocess.run(cmd, shell=True, check=True)
+            process = subprocess.run(cmd, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            logger.info(process.stdout.decode())
+            logger.error(process.stderr.decode())
 
             # load and read the tblout to get scores
             data = []
@@ -140,10 +146,10 @@ class HMMWrapper(CanRegressMixin, RequiresMSAMixin, ProteinModelWrapper):
         data = pd.DataFrame(data)
         # get the scores
         # they need to be mapped back to the correct order
-        scores = np.zeros(len(X))
+        scores = np.zeros((len(X),1))
         for i, seq in enumerate(X):
             try:
-                scores[i] = float(data[data[0] == hash(seq)][5])
+                scores[i] = float(data[data[0] == str(hash(seq))][5])
             except ValueError:
                 scores[i] = 0.0
         return scores

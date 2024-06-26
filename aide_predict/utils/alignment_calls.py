@@ -60,7 +60,7 @@ def mafft(
 
         elif isinstance(sequences, ProteinSequences):
             seq_file = os.path.join(temp_dir, 'sequences.fasta')
-            sequences.write_fasta(seq_file)
+            sequences.to_fasta(seq_file)
         else:
             raise ValueError(f"Invalid type for sequences: {type(sequences)}")
 
@@ -71,7 +71,7 @@ def mafft(
                 existing_alignment = existing_alignment.fasta_file
             elif isinstance(existing_alignment, ProteinSequences):
                 existing_alignment_file = os.path.join(temp_dir, 'existing_alignment.fasta')
-                existing_alignment.write_fasta(existing_alignment_file)
+                existing_alignment.to_fasta(existing_alignment_file)
                 existing_alignment = existing_alignment_file
             else:
                 raise ValueError(f"Invalid type for existing_alignment: {type(existing_alignment)}")
@@ -95,8 +95,5 @@ def mafft(
         logger.debug(f"Running MAFFT: {' '.join(cmd)}")
         subprocess.run(' '.join(cmd), shell=True)
 
-        if to_outfile is not None:
-            return None
-        else:
-            return ProteinSequences.from_fasta(alignment_file)
+        return ProteinSequences.from_fasta(alignment_file)
 
