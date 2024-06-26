@@ -1,4 +1,10 @@
-# tests/test_zero_shot_models.py
+# tests/test_bespoke_models/test_predictors/test_esm2_likelihood.py
+'''
+* Author: Evan Komp
+* Created: 6/26/2024
+* Company: Bottle Institute @ National Renewable Energy Lab, Bioeneergy Science and Technology
+* License: MIT
+'''
 '''
 * Author: Evan Komp
 * Created: 6/18/2024
@@ -17,6 +23,8 @@ import pytest
 import pandas as pd
 from scipy.stats import spearmanr
 
+from aide_predict.utils.data_structures import ProteinSequences, ProteinSequencesOnFile
+
 import torch
 if torch.cuda.is_available():
     DEVICE = "cuda"
@@ -27,9 +35,9 @@ else:
 
 def test_esm_zero_shot():
     # this model requires no MSA
-    from aide_predict.bespoke_models.predictors.esm import ESMPredictorWrapper
+    from aide_predict.bespoke_models.predictors.esm2 import ESM2PredictorWrapper
 
-    model = ESMPredictorWrapper(
+    model = ESM2PredictorWrapper(
         model_checkpoint="esm2_t6_8M_UR50D",
         marginal_method="masked_marginal",
         positions=None,
@@ -64,6 +72,3 @@ def test_esm_zero_shot():
     predictions = model.predict(sequences)
     assert len(predictions) == len(sequences)
     assert len(predictions[0]) == 3
-
-if __name__ == "__main__":
-    test_esm_zero_shot()
