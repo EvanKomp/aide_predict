@@ -13,7 +13,7 @@ from abc import abstractmethod
 import inspect
 import warnings
 
-from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.base import BaseEstimator, TransformerMixin, RegressorMixin
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
@@ -129,9 +129,28 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
     
     def fit(self, X, y=None):
         """Fit the model.
+        
+        Params:
+        - X: ProteinSequences or Iterable
+            If Iterable, assumed to be a list of sequence strings.
+        - y: np.ndarray or None
         """
         if not isinstance(X, ProteinSequences):
             X = ProteinSequences(list(X))
+
+        # Check if the model requires an MSA for fitting
+        # If so and the inputs are not aligned, align them
+        if not X.aligned and self.requires_msa_for_fit:
+            X.align_all()
+            assert X.aligned, "Sequences should be aligned."
+
+        # Check if the model requires fixed length sequences
+        # If so, ensure that the sequences are fixed length
+        if self.requires_fixed_length:
+            assert X.aligned, "Sequences must be fixed length."
+            if self.wt is not None:
+                assert len(self.wt) == X.width, "Wild type sequence must be the same length as the sequences."
+            self.length_ = X.width
 
         return self._fit(X, y)
     
@@ -141,14 +160,27 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         
     def transform(self, X):
         """Transform the sequences.
+
+        Params:
+        - X: ProteinSequences or Iterable
+            If Iterable, assumed to be a list of sequence strings.
         """
+        check_is_fitted(self)
         if not isinstance(X, ProteinSequences):
             X = ProteinSequences(list(X))
+
+        # Do fixed length checks if necessary
+        # 1. Ensure input sequences are fixed length
+        # 2. Ensure incoming sequences are the same size as was determined at fit
         if self.requires_fixed_length:
             if not X.aligned:
                 raise ValueError("Sequences must be aligned.")
-            if self.wt is not None:
-                assert len(self.wt) == X.width, "Wild type sequence must be the same length as the sequences."
+            if X.width != self.length_:
+                raise ValueError("Sequences must be the same length as the training sequences.")
+        
+        # Behavior is dependent on whether the model requires the wild type sequence during inference
+        # If so, it is expected that the model will handle the normalization in the _transform method.
+        # else, the model will automatically normalize the output by the wild type sequence if present.
         if not self.requires_wt_during_inference and self.wt is not None:
             outs = self._transform(X)
             check_array(outs, ensure_2d=True)
@@ -162,6 +194,10 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
     
     def predict(self, X):
         """Predict the sequences.
+
+        Params:
+        - X: ProteinSequences or Iterable
+            If Iterable, assumed to be a list of sequence strings.
         """
         if not self.can_regress:
             raise ValueError("This model is not capable of regression.")
@@ -230,7 +266,6 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
     
 
 
-
 #############################################
 # MIXINS FOR MODELS
 #############################################
@@ -240,27 +275,34 @@ class RequiresMSAMixin:
 
     This mixin:
     1. Overrides the requires_msa_for_fit attribute to be True.
-    2. Wraps the fit method to ensure that the input sequences are aligned before fitting.
     """
     _requires_msa_for_fit = True
 
-    def fit(self, X, y=None):
-        """Fit the model.
         
-        Params:
-        - X: ProteinSequences or str
-           If string, assumed to be path to fasta file.
-        """
-        if not isinstance(X, ProteinSequences):
-            X = ProteinSequences(list(X))
-
-        if not X.aligned:
-            X.align_all()
-            assert X.aligned, "Sequences should be aligned."
-
-        return ProteinModelWrapper.fit(self, X, y)
-        
+class RequiresFixedLengthMixin:
+    """Mixin to ensure model recieves fixed length sequences at transform.
     
+    This mixin:
+    1. Overrides the requires_fixed_length attribute to be True.
+    """
+    _requires_fixed_length = True
+
+class CanRegressMixin(RegressorMixin):
+    """Mixin to ensure model can regress.
+    
+    This mixin:
+    1. Overrides the can_regress attribute to be True.
+    """
+    _can_regress = True
+
+class RequiresWTDuringInferenceMixin:
+    """Mixin to ensure model requires wild type during inference.
+    
+    This mixin:
+    1. Overrides the requires_wt_during_inference attribute to be True.
+    """
+    _requires_wt_during_inference = True
+
 class PositionSpecificMixin:
     """Mixin for protein models that can output per position scores.
     
