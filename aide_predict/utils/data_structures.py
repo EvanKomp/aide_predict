@@ -61,7 +61,8 @@ class ProteinSequence(str, MutableSequence):
         self._sequence.insert(index, value)
 
     def __repr__(self):
-        return str(self.__class__) + f"{(c.character for c in self._sequence)}"
+        """Have it show up wrapped in the class name and some attributes."""
+        return f"{self.__class__.__name__}(length={len(self)}, has_gaps={self.has_gaps}, has_non_canonical={self.has_non_canonical})"
     
     @property
     def has_gaps(self):
@@ -139,7 +140,7 @@ class ProteinSequences(MutableSequence):
 
 
     def __repr__(self):
-        return str(self.__class__) + f"(num_sequences={self.num_sequences}, aligned={self.aligned}, has_gaps={self.has_gaps}, has_non_canonical={self.has_non_canonical}, width={self.width})"
+        return f"{self.__class__.__name__}(num_sequences={self.num_sequences}, width={self.width}, aligned={self.aligned}, has_gaps={self.has_gaps}, has_non_canonical={self.has_non_canonical})"
     
     def to_dict(self):
         return {hash(s): s for s in self._sequences}
