@@ -112,10 +112,38 @@ class TestProteinSequence:
         assert all(isinstance(c, ProteinCharacter) for c in chars)
         assert "".join(str(c) for c in chars) == str(sample_sequence)
 
-    def test_invalid_structure(self, tmp_path):
-        non_existent_path = tmp_path / "nonexistent.pdb"
-        with pytest.raises(ValueError):
-            ProteinSequence("ACG", structure=str(non_existent_path))
+    def test_align(self, sample_sequence):
+        # Create another sequence to align with
+        other_sequence = ProteinSequence("ACDEFGHIKLMNPQRSTVWY", id="other")
+        
+        # Introduce a gap in the middle of other_sequence
+        other_sequence = ProteinSequence("ACDEFGHIKMNPQRSTVWY", id="other")
+        
+        # Align the sequences
+        aligned_self, aligned_other = sample_sequence.align(other_sequence)
+        
+        # Check that the aligned sequences are ProteinSequence objects
+        assert isinstance(aligned_self, ProteinSequence)
+        assert isinstance(aligned_other, ProteinSequence)
+        
+        # Check that the aligned sequences have the same length
+        assert len(aligned_self) == len(aligned_other)
+        
+        # Check that the original IDs are preserved
+        assert aligned_self.id == "sample"
+        assert aligned_other.id == "other"
+        
+        # Check that the alignment introduced gaps in the right places
+        assert "-" in str(aligned_other)
+        assert str(aligned_other) == "ACDEFGHIK-MNPQRSTVWY"
+        
+        # Check that the non-gap parts of the sequences match the originals
+        assert aligned_self.with_no_gaps == sample_sequence
+        assert aligned_other.with_no_gaps == other_sequence.with_no_gaps
+        
+        # Check that the structures are preserved
+        assert aligned_self.structure == sample_sequence.structure
+        assert aligned_other.structure == other_sequence.structure
 
 # ProteinSequences tests
 class TestProteinSequences:

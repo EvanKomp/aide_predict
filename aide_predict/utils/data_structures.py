@@ -25,6 +25,7 @@ import os
 import warnings
 
 from aide_predict.io.bio_files import read_fasta, write_fasta
+from aide_predict.utils.alignment_calls import sw_global_pairwise
 
 from typing import List, Optional, Union, Iterator, Dict, Iterable
 
@@ -281,6 +282,22 @@ class ProteinSequence(UserString):
     def __hash__(self) -> int:
         """Compute a hash value for the ProteinSequence."""
         return hash((str(self.with_no_gaps), self._id, self._structure))
+    
+    def align(self, other: 'ProteinSequence') -> 'ProteinSequence':
+        """
+        Align this sequence with another using global pairwise alignment.
+
+        Args:
+            other (ProteinSequence): The sequence to align with.
+
+        Returns:
+            ProteinSequence: The aligned sequence.
+        """
+        base_self = self.with_no_gaps
+        base_other = other.with_no_gaps
+
+        aligned_seq, aligned_other = sw_global_pairwise(base_self, base_other)
+        return aligned_seq, aligned_other
 
 
 class ProteinSequences(UserList):
