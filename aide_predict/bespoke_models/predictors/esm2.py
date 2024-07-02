@@ -1,4 +1,4 @@
-# aide_predict/bespoke_models/esm.py
+# aide_predict/bespoke_models/esm2.py
 '''
 * Author: Evan Komp
 * Created: 6/14/2024
@@ -90,11 +90,10 @@ Oh boy.
 '''
 import warnings
 
-from sklearn.base import TransformerMixin, RegressorMixin
 import numpy as np
 from tqdm import tqdm
 
-from aide_predict.bespoke_models.base import PositionSpecificMixin, ProteinModelWrapper
+from aide_predict.bespoke_models.base import PositionSpecificMixin, ProteinModelWrapper, CanRegressMixin
 from aide_predict.utils.data_structures import ProteinSequences
 
 try:
@@ -106,7 +105,7 @@ except ImportError:
 import logging
 logger = logging.getLogger(__name__)
 
-class ESMPredictorWrapper(PositionSpecificMixin, RegressorMixin, ProteinModelWrapper):
+class ESM2PredictorWrapper(PositionSpecificMixin, CanRegressMixin, ProteinModelWrapper):
     """Pretrained ESM as a log likelihood predictor.
 
     Params:
@@ -125,11 +124,6 @@ class ESMPredictorWrapper(PositionSpecificMixin, RegressorMixin, ProteinModelWra
     - batch_size: int
         The batch size for inference. If you are hitting OOM, try reducing this.
     """
-    _requires_wt_during_inference = True
-    _requires_fixed_length = False
-    _requires_msa = False
-    _per_position_capable = True
-    _can_regress = True
 
     def __init__(
         self,

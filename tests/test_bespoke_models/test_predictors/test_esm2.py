@@ -59,7 +59,7 @@ def test_esm_zero_shot():
     assert abs(spearman - 0.2) < 0.05
 
     # run it with positions specified and get position specific scores
-    model = ESMPredictorWrapper(
+    model = ESM2PredictorWrapper(
         model_checkpoint="esm2_t6_8M_UR50D",
         marginal_method="masked_marginal",
         positions=[8, 9, 10],
@@ -72,3 +72,6 @@ def test_esm_zero_shot():
     predictions = model.predict(sequences)
     assert len(predictions) == len(sequences)
     assert len(predictions[0]) == 3
+
+if __name__ == "__main__":
+    test_esm_zero_shot()
