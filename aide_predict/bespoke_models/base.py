@@ -8,7 +8,6 @@ Base classes for models to be wrapped into the API as sklearn estimators
 '''
 import os
 from abc import abstractmethod
-import warnings
 
 from sklearn.base import BaseEstimator, TransformerMixin, RegressorMixin
 from sklearn.utils.validation import check_is_fitted
