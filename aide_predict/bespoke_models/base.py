@@ -173,7 +173,7 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
             ProteinSequences: Validated input sequences.
         """
         if not isinstance(X, ProteinSequences):
-            return ProteinSequences(X)
+            X = ProteinSequences([ProteinSequence(seq) for seq in X])
         return X
 
     def _assert_aligned(self, X: ProteinSequences) -> None:

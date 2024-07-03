@@ -207,6 +207,13 @@ class TestProteinSequences:
         assert sequences[0].id == "seq1"
         os.unlink(temp_file.name)
 
+    def test_from_dict(self):
+        d = {"seq1": "ACDE", "seq2": "ACDF", "seq3": "ACD-"}
+        sequences = ProteinSequences.from_dict(d)
+        assert len(sequences) == 3
+        assert str(sequences[0]) == "ACDE"
+        assert sequences[0].id == "seq1"
+
     def test_to_on_file(self, sample_sequences, tmp_path):
         output_path = tmp_path / "test.fasta"
         on_file = sample_sequences.to_on_file(str(output_path))

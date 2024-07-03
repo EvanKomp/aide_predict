@@ -33,6 +33,8 @@ elif torch.backends.mps.is_available():
 else:
     DEVICE = "cpu"
 
+
+@pytest.mark.optional
 def test_esm_zero_shot():
     # this model requires no MSA
     from aide_predict.bespoke_models.predictors.esm2 import ESM2PredictorWrapper
@@ -72,6 +74,3 @@ def test_esm_zero_shot():
     predictions = model.predict(sequences)
     assert len(predictions) == len(sequences)
     assert len(predictions[0]) == 3
-
-if __name__ == "__main__":
-    test_esm_zero_shot()

@@ -298,6 +298,9 @@ class ProteinSequences(UserList):
         Args:
             sequences (List[ProteinSequence]): A list of ProteinSequence objects.
         """
+        for s in sequences:
+            if not isinstance(s, ProteinSequence):
+                raise ValueError("All elements must be ProteinSequence objects")
         super().__init__(sequences)
 
     @property
@@ -400,6 +403,19 @@ class ProteinSequences(UserList):
             for id, seq in read_fasta(f):
                 sequences.append(ProteinSequence(seq, id=id))
         return cls(sequences)
+    
+    @classmethod
+    def from_dict(cls, sequences: Dict[str, str]) -> 'ProteinSequences':
+        """
+        Create a ProteinSequences object from a dictionary.
+
+        Args:
+            sequences (Dict[str, str]): A dictionary with sequence IDs as keys and sequences as values.
+
+        Returns:
+            ProteinSequences: A new ProteinSequences object containing the sequences from the dictionary.
+        """
+        return cls([ProteinSequence(seq, id=id) for id, seq in sequences.items()])
 
     def __repr__(self) -> str:
         """
@@ -791,7 +807,11 @@ class ProteinSequencesOnFile(ProteinSequences):
             ProteinSequencesOnFile: A new ProteinSequencesOnFile object.
         """
         return cls(input_path)
-
+    
+    @classmethod
+    def from_dict(cls, sequences: Dict[str, str]) -> ProteinSequences:
+        return super().from_dict(sequences)
+    
     def __repr__(self) -> str:
         """
         Return a string representation of the ProteinSequencesOnFile object.
