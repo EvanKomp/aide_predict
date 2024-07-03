@@ -9,9 +9,7 @@ We should be able to handle on file and in memory protein sequences, both aligne
 '''
 
 import pytest
-import shutil
-from io import StringIO
-from tempfile import NamedTemporaryFile, mkdtemp
+from tempfile import NamedTemporaryFile
 import os
 import numpy as np
 

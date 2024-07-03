@@ -6,21 +6,8 @@
 * License: MIT
 
 Base data structures for the AIDE Predict package Where they do not exist in sklearn.
-
-TODO: Rework class with gpt. priorities:
-1. Include option 'id' param which is used instead of hash if present
-2. Include optional 'struct' param which sotres the location to a pdb file associated witht he sequence
-    Create a helper class to find PDBs from a storehouse of pdbs by id
-3. Differential between fixed length and aligned. Fixed length requires that the base length of all sequences
-    is the same. Aligned that the raw sequence strings have the same length
-4. Provide a tool to colapse an aligned but not fixed length set of sequences to fixed length, and also return a position
-   mapping to the original alignment
-   - add a class method that allows you to "align" unaligned sequences without calling alignment by passing this map.
 '''
-from dataclasses import dataclass
-from collections import UserList, UserString
-import shutil
-import tempfile
+from collections import UserList
 import os
 import warnings
 import numpy as np
