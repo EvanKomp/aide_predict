@@ -28,7 +28,7 @@ jobs:
     - name: Install dependencies
       shell: bash -l {0}
       run: |
-        conda env update --file environment.yml --name base
+        conda env update --file environment.yaml --name base
         conda install pytest pytest-cov
 
     - name: Run tests with pytest and coverage
