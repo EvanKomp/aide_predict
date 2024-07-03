@@ -42,10 +42,6 @@ class TestProteinCharacter:
         pc = ProteinCharacter("X")
         assert pc.is_non_canonical
 
-    def test_not_focus(self):
-        pc = ProteinCharacter("a")
-        assert pc.is_not_focus
-
     def test_equality(self):
         pc1 = ProteinCharacter("A")
         pc2 = ProteinCharacter("A")
@@ -55,6 +51,11 @@ class TestProteinCharacter:
     def test_hash(self):
         pc = ProteinCharacter("A")
         assert hash(pc) == hash("A")
+
+    def test_is_not_focus(self):
+        assert ProteinCharacter('-').is_not_focus
+        assert ProteinCharacter('a').is_not_focus
+        assert not ProteinCharacter('A').is_not_focus
 
 class TestProteinSequence:
     @pytest.fixture(scope="class")
@@ -82,6 +83,11 @@ class TestProteinSequence:
         assert str(sample_sequence) == "ACDEFGHIKLMNPQRSTVWY"
         assert sample_sequence.id == "sample"
         assert sample_sequence.structure == str(temp_pdb_file)
+    
+    def test_structure_setter_invalid_file(self):
+        seq = ProteinSequence("ACDE")
+        with pytest.raises(ValueError):
+            seq.structure = "non_existent_file.pdb"
 
     def test_properties(self, sample_sequence):
         assert not sample_sequence.has_gaps
@@ -203,6 +209,12 @@ class TestProteinSequences:
         assert sequences[0].id == "seq1"
         os.unlink(temp_file.name)
 
+    def test_to_on_file(self, sample_sequences, tmp_path):
+        output_path = tmp_path / "test.fasta"
+        on_file = sample_sequences.to_on_file(str(output_path))
+        assert isinstance(on_file, ProteinSequencesOnFile)
+        assert on_file.file_path == str(output_path)
+
     def test_with_no_gaps(self, sample_sequences):
         no_gaps = sample_sequences.with_no_gaps()
         assert isinstance(no_gaps, ProteinSequences)
@@ -287,6 +299,27 @@ class TestProteinSequencesOnFile:
         assert isinstance(in_memory, ProteinSequences)
         assert len(in_memory) == 3
         assert str(in_memory[0]) == "ACDE"
+
+    def test_to_dict(self, sample_fasta_file):
+        sequences = ProteinSequencesOnFile(sample_fasta_file)
+        d = sequences.to_dict()
+        assert isinstance(d, dict)
+        assert len(d) == 3
+        assert d["seq1"] == "ACDE"
+
+    def test_to_fasta(self, sample_fasta_file, tmp_path):
+        sequences = ProteinSequencesOnFile(sample_fasta_file)
+        output_path = tmp_path / "output.fasta"
+        sequences.to_fasta(str(output_path))
+        assert output_path.is_file()
+
+    def test_iter_batches(self, sample_fasta_file):
+        sequences = ProteinSequencesOnFile(sample_fasta_file)
+        batches = list(sequences.iter_batches(2))
+        assert len(batches) == 2
+        assert isinstance(batches[0], ProteinSequences)
+        assert len(batches[0]) == 2
+        assert len(batches[1]) == 1
 
 # Integration tests
 def test_integration():
