@@ -18,7 +18,7 @@ from evcouplings.align.tools import *
 from Bio import pairwise2
 from Bio.Align import substitution_matrices
 
-from typing import Union
+from typing import Union, Optional
 
 import logging
 logger = logging.getLogger(__name__)
@@ -37,6 +37,9 @@ def sw_global_pairwise(seq1: "ProteinSequence", seq2: "ProteinSequence", matrix:
     Returns:
         tuple[ProteinSequence, ProteinSequence]: A tuple containing the aligned sequences as ProteinSequence objects.
     """
+    if seq1.has_gaps or seq2.has_gaps:
+        raise ValueError("Input sequences should not contain gaps to be aligned")
+
     # Load the substitution matrix
     subst_matrix = substitution_matrices.load(matrix)
 
@@ -54,80 +57,84 @@ def sw_global_pairwise(seq1: "ProteinSequence", seq2: "ProteinSequence", matrix:
     return aligned_seq1, aligned_seq2
 
 
+def mafft_align(sequences: "ProteinSequences",
+                existing_alignment: Optional["ProteinSequences"] = None,
+                realign: bool = False,
+                output_fasta: Optional[str] = None) -> "ProteinSequences":
+    """
+    Perform multiple sequence alignment using MAFFT.
+
+    Args:
+        sequences (ProteinSequences): The sequences to align.
+        existing_alignment (Optional[ProteinSequences]): An existing alignment to add sequences to.
+        realign (bool): If True, realign all sequences from scratch. If False, add new sequences to existing alignment.
+        output_fasta (Optional[str]): Path to save the alignment. If None, a temporary file is used.
+
+    Returns:
+        ProteinSequences: The aligned sequences, either in memory or on file depending on output_fasta.
+
+    Raises:
+        subprocess.CalledProcessError: If MAFFT execution fails.
+        FileNotFoundError: If MAFFT is not installed or not in PATH.
+    """
+    # Create a temporary directory for input and output files
+    from aide_predict.utils.data_structures import ProteinSequences, ProteinSequencesOnFile
+
+    # check that the sequences are not already gap containing
+    if sequences.has_gaps:
+        raise ValueError("Input sequences should not contain gaps to be aligned")
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        # Prepare input file
+        if isinstance(sequences, ProteinSequencesOnFile):
+            input_fasta = sequences.file_path
+        else:
+            input_fasta = os.path.join(temp_dir, "input.fasta")
+            sequences.to_fasta(input_fasta)
+
+        # Prepare output file
+        if output_fasta:
+            output_file = output_fasta
+        else:
+            output_file = os.path.join(temp_dir, "output.fasta")
+
+        # Prepare MAFFT command
+        mafft_cmd = ["mafft"]
 
 
-# def mafft(
-#         sequences: Union[ProteinSequences, str],
-#         existing_alignment: Union[ProteinSequences, str] = None,
-#         realign: bool = False,
-#         to_outfile: str = None,
-#     ):
-#     """
-#     Wrapper for MAFFT alignment function.
-
-#     Parameters
-#     ----------
-#     sequences : ProteinSequences, str
-#         Sequences to align
-#         if string, assumed to be path to fasta file
-#     existing_alignment : ProteinSequences, str
-#         Existing alignment align with current sequences
-#         if string, assumed to be path to fasta file
-#     realign : bool
-#         If true and existing alignemnt provided, realigns all sequences from scratch
-#         otherwise keeps existing alignment fixed and adds new sequences.
-#     to_outfile : str
-#         Path to write alignment to.
-
-#     Returns
-#     -------
-#     ProteinSequences
-#         Aligned sequences
-#     or None if to_outfile is provided
-#     """
-#     with tempfile.TemporaryDirectory() as temp_dir:
-
-#         if isinstance(sequences, str):
-#             seq_file = sequences
-#         elif isinstance(sequences, ProteinSequencesOnFile):
-#             seq_file = sequences.fasta_file
-
-#         elif isinstance(sequences, ProteinSequences):
-#             seq_file = os.path.join(temp_dir, 'sequences.fasta')
-#             sequences.to_fasta(seq_file)
-#         else:
-#             raise ValueError(f"Invalid type for sequences: {type(sequences)}")
-
-#         if existing_alignment is not None:
-#             if isinstance(existing_alignment, str):
-#                 pass
-#             elif isinstance(existing_alignment, ProteinSequencesOnFile):
-#                 existing_alignment = existing_alignment.fasta_file
-#             elif isinstance(existing_alignment, ProteinSequences):
-#                 existing_alignment_file = os.path.join(temp_dir, 'existing_alignment.fasta')
-#                 existing_alignment.to_fasta(existing_alignment_file)
-#                 existing_alignment = existing_alignment_file
-#             else:
-#                 raise ValueError(f"Invalid type for existing_alignment: {type(existing_alignment)}")
-
-#         if to_outfile is not None:
-#             alignment_file = to_outfile
-#         else:
-#             alignment_file = os.path.join(temp_dir, 'alignment.fasta')
-
-
-#         cmd = ['mafft']
-#         if existing_alignment is not None:
-#             cmd.extend(['--add', seq_file])
-#             if not realign:
-#                 cmd.append('--keeplength')
-#             cmd.append(existing_alignment)
-#         else:
-#             cmd.append(seq_file)
+        # prepare existing alignment
+        if existing_alignment is not None:
+            if not existing_alignment.aligned:
+                raise ValueError("Existing alignment must be aligned")
+            if isinstance(existing_alignment, ProteinSequencesOnFile):
+                existing_fasta = existing_alignment.file_path
+            else:
+                existing_fasta = os.path.join(temp_dir, "existing.fasta")
+                existing_alignment.to_fasta(existing_fasta)
         
-#         cmd.extend(['>', alignment_file])
-#         logger.debug(f"Running MAFFT: {' '.join(cmd)}")
-#         subprocess.run(' '.join(cmd), shell=True)
+        if existing_alignment is not None and not realign:
+            # Add to existing alignment
+            mafft_cmd.extend(["--add", input_fasta, "--keeplength", existing_fasta])
 
-#         return ProteinSequences.from_fasta(alignment_file)
+        elif existing_alignment is not None and realign:
+            # Realignment
+            mafft_cmd.extend(["--add", input_fasta, existing_fasta])
+        else:
+            # New alignment or realignment
+            mafft_cmd.extend([input_fasta])
 
+        mafft_cmd.extend([">", output_file])
+
+        # Run MAFFT
+        try:
+            subprocess.run(" ".join(mafft_cmd), shell=True, check=True, stderr=subprocess.PIPE)
+        except subprocess.CalledProcessError as e:
+            raise RuntimeError(f"MAFFT alignment failed: {e.stderr.decode()}") from e
+        except FileNotFoundError:
+            raise FileNotFoundError("MAFFT is not installed or not in PATH")
+
+        # Return aligned sequences
+        if output_fasta:
+            return ProteinSequencesOnFile(output_fasta)
+        else:
+            return ProteinSequences.from_fasta(output_file)

@@ -23,16 +23,23 @@ import shutil
 import tempfile
 import os
 import warnings
+import numpy as np
 
 from aide_predict.io.bio_files import read_fasta, write_fasta
-from aide_predict.utils.alignment_calls import sw_global_pairwise
+from aide_predict.utils.alignment_calls import sw_global_pairwise, mafft_align
 
-from typing import List, Optional, Union, Iterator, Dict, Iterable
+from typing import List, Optional, Union, Iterator, Dict, Iterable, Any
 
 from .constants import AA_SINGLE, GAP_CHARACTERS, NON_CONONICAL_AA_SINGLE
 
 
-class ProteinCharacter(UserString):
+############################################
+# A class to store a single protein character and sequence
+# They are treated like strings, eg you can do all that you expect from an AA string
+# but also stores id, structure, and has additional methods to check for gaps, non-canonical AAs, etc.
+############################################
+
+class ProteinCharacter(str):
     """
     Represents a single character in a protein sequence.
 
@@ -40,31 +47,32 @@ class ProteinCharacter(UserString):
     to check the nature of the amino acid character.
     """
 
-    def __init__(self, seq: str):
+    def __new__(cls, seq: str):
         """
-        Initialize a ProteinCharacter.
+        Create a new ProteinCharacter object.
 
         Args:
             seq (str): A single character representing an amino acid or gap.
 
-        Raises:
-            ValueError: If the input is not a single character or is invalid.
+        Returns:
+            ProteinCharacter: The new ProteinCharacter object.
         """
-        if len(seq) != 1:
+        obj =  str.__new__(cls, seq)
+        if len(obj) != 1:
             raise ValueError("ProteinCharacter must be initialized with a single character")
-        if seq.upper() not in AA_SINGLE.union(GAP_CHARACTERS).union(NON_CONONICAL_AA_SINGLE):
-            raise ValueError(f"Invalid character {seq} for protein sequence.")
-        super().__init__(seq)
+        if obj.upper() not in AA_SINGLE.union(GAP_CHARACTERS).union(NON_CONONICAL_AA_SINGLE):
+            raise ValueError(f"Invalid character {obj} for protein sequence.")
+        return obj
 
     @property
     def is_gap(self) -> bool:
         """Check if the character represents a gap in the sequence."""
-        return self.data in GAP_CHARACTERS
+        return self in GAP_CHARACTERS
 
     @property
     def is_non_canonical(self) -> bool:
         """Check if the character represents a non-canonical amino acid."""
-        return self.data in NON_CONONICAL_AA_SINGLE
+        return self in NON_CONONICAL_AA_SINGLE
     
     @property
     def is_not_focus(self) -> bool:
@@ -73,59 +81,43 @@ class ProteinCharacter(UserString):
         
         A character is considered not in focus if it's a gap or a lowercase letter.
         """
-        return self.is_gap or self.data.islower()
+        return self.is_gap or self.islower()
 
     def __repr__(self) -> str:
         """Return a string representation of the ProteinCharacter."""
-        return f"ProteinCharacter('{self.data}')"
-
-    def __eq__(self, other: object) -> bool:
-        """
-        Check if this ProteinCharacter is equal to another.
-
-        Args:
-            other (object): The object to compare with.
-
-        Returns:
-            bool: True if the characters are the same, False otherwise.
-        """
-        if isinstance(other, ProteinCharacter):
-            return self.data == other.data
-        if isinstance(other, str):
-            return self.data == other
-        return False
-
-    def __hash__(self) -> int:
-        """Compute a hash value for the ProteinCharacter."""
-        return hash(self.data)
+        return f"ProteinCharacter('{self}')"
 
 
-class ProteinSequence(UserString):
+class ProteinSequence(str):
     """
     Represents a protein sequence.
 
     This class inherits from UserString and provides additional methods and properties
     for analyzing and manipulating protein sequences.
     """
-
-    def __init__(self, seq: str, id: Optional[str] = None, structure: Optional[str] = None):
+    def __new__(cls, seq: str, id: Optional[str] = None, structure: Optional[str] = None):
         """
-        Initialize a ProteinSequence.
+        Create a new ProteinSequence object.
 
         Args:
             seq (str): The amino acid sequence.
             id (Optional[str]): An identifier for the sequence.
             structure (Optional[str]): The structure of the protein sequence.
+
+        Returns:
+            ProteinSequence: The new ProteinSequence object.
         """
-        super().__init__(seq)
-        self._characters: List[ProteinCharacter] = [ProteinCharacter(c) for c in seq]
-        self._id: Optional[str] = None
-        self._structure: Optional[str] = None
+        obj = str.__new__(cls, seq)
+        obj._characters: List[ProteinCharacter] = [ProteinCharacter(c) for c in seq]
+        obj._id: Optional[str] = None
+        obj._structure: Optional[str] = None
 
         if id is not None:
-            self.id = id
+            obj.id = id
         if structure is not None:
-            self.structure = structure
+            obj.structure = structure
+
+        return obj
 
     @property
     def id(self) -> Optional[str]:
@@ -137,6 +129,22 @@ class ProteinSequence(UserString):
         """Get the structure of the sequence."""
         return self._structure
     
+    def __hash__(self) -> int:
+        """Compute a hash value for the ProteinSequence."""
+        return hash((tuple(self._characters), self._id))
+    
+    def __eq__(self, other: object) -> bool:
+        """Check if two ProteinSequence objects are equal."""
+        return hash(self) == hash(other)
+    
+    def __ne__(self, other: object) -> bool:
+        """Check if two ProteinSequence objects are not equal."""
+        return not self == other
+
+    def __repr__(self) -> str:
+        """Return a string representation of the ProteinSequence."""
+        return f"ProteinSequence(id={self._id!r}, seq='{self[:20]}{'...' if len(self) > 20 else ''}')"
+
     @property
     def has_gaps(self) -> bool:
         """Check if the sequence contains any gaps."""
@@ -147,12 +155,16 @@ class ProteinSequence(UserString):
         """Check if the sequence contains any non-canonical amino acids."""
         return any(c.is_non_canonical for c in self._characters)
 
-    @property
     def with_no_gaps(self) -> 'ProteinSequence':
         """Return a new ProteinSequence with all gaps removed."""
-        return ProteinSequence("".join(c for c in self.data if c not in GAP_CHARACTERS),
+        return ProteinSequence("".join(c for c in self if c not in GAP_CHARACTERS),
                                id=self._id, structure=self._structure)
     
+    @property
+    def as_array(self) -> np.ndarray:
+        """Convert the sequence to a numpy array of characters."""
+        return np.array([c for c in self._characters]).reshape(1,-1)
+
     @property
     def num_gaps(self) -> int:
         """Get the number of gaps in the sequence."""
@@ -162,33 +174,6 @@ class ProteinSequence(UserString):
     def base_length(self) -> int:
         """Get the length of the sequence excluding gaps."""
         return len(self) - self.num_gaps
-    
-    def __hash__(self) -> int:
-        """Compute a hash value for the ProteinSequence."""
-        return hash((self.with_no_gaps, self._id))
-    
-    def __eq__(self, other: object) -> bool:
-        """
-        Check if this ProteinSequence is equal to another.
-
-        Two ProteinSequences are considered equal if they have the same sequence
-        (ignoring gaps) and the same id.
-
-        Args:
-            other (object): The object to compare with.
-
-        Returns:
-            bool: True if the sequences are equal, False otherwise.
-        """
-        if isinstance(other, ProteinSequence):
-            return (str(self.with_no_gaps) == str(other.with_no_gaps) and
-                    len(self) == len(other) and
-                    self._id == other._id)
-        return False
-
-    def __repr__(self) -> str:
-        """Return a string representation of the ProteinSequence."""
-        return f"ProteinSequence(id={self._id!r}, seq='{self.data[:20]}{'...' if len(self) > 20 else ''}')"
 
     def mutate(self, position: int, new_character: str) -> 'ProteinSequence':
         """
@@ -203,7 +188,7 @@ class ProteinSequence(UserString):
         """
         if position < 0 or position >= len(self):
             raise ValueError("Position out of range")
-        new_seq = self.data[:position] + new_character + self.data[position+1:]
+        new_seq = self[:position] + new_character + self[position+1:]
         return ProteinSequence(new_seq, structure=self._structure)  # Note: id is not passed to indicate mutation
 
     def mutated_positions(self, other: Union[str, 'ProteinSequence']) -> List[int]:
@@ -216,8 +201,8 @@ class ProteinSequence(UserString):
         Returns:
             List[int]: A list of positions where the sequences differ.
         """
-        other_seq = other.data if isinstance(other, ProteinSequence) else other
-        return [i for i, (a, b) in enumerate(zip(self.data, other_seq)) if a != b]
+        other_seq = other if isinstance(other, ProteinSequence) else other
+        return [i for i, (a, b) in enumerate(zip(self, other_seq)) if a != b]
 
     def get_protein_character(self, position: int) -> ProteinCharacter:
         """
@@ -244,7 +229,7 @@ class ProteinSequence(UserString):
         Returns:
             ProteinSequence: A new ProteinSequence containing the specified slice.
         """
-        return ProteinSequence(self.data[start:end], id=self._id, structure=self._structure)
+        return ProteinSequence(self[start:end], id=self._id, structure=self._structure)
 
     def iter_protein_characters(self) -> Iterator[ProteinCharacter]:
         """
@@ -278,10 +263,6 @@ class ProteinSequence(UserString):
         else:
             raise ValueError(f"Structure file {new_structure} does not exist.")
         self._structure = new_structure
-
-    def __hash__(self) -> int:
-        """Compute a hash value for the ProteinSequence."""
-        return hash((str(self.with_no_gaps), self._id, self._structure))
     
     def align(self, other: 'ProteinSequence') -> 'ProteinSequence':
         """
@@ -293,12 +274,18 @@ class ProteinSequence(UserString):
         Returns:
             ProteinSequence: The aligned sequence.
         """
-        base_self = self.with_no_gaps
-        base_other = other.with_no_gaps
+        base_self = self.with_no_gaps()
+        base_other = other.with_no_gaps()
 
         aligned_seq, aligned_other = sw_global_pairwise(base_self, base_other)
         return aligned_seq, aligned_other
 
+############################################
+# A class to store multiple ProteinSequence objects
+# Think of this as a dataset of protein sequences, no labels eg. the X for proteins
+# Useful additional functionalities built in: alignment, fasta read/write, testing for alignment, gaps,
+# fixed length, etc.
+############################################
 
 class ProteinSequences(UserList):
     """
@@ -446,7 +433,146 @@ class ProteinSequences(UserList):
         with open(output_path, 'w') as f:
             write_fasta(((seq.id or hash(seq), str(seq)) for seq in self), f)
         return ProteinSequencesOnFile(output_path)
+    
+    def as_array(self) -> np.ndarray:
+        """Convert the sequence to a numpy array of characters."""
+        if not self.aligned:
+            raise ValueError("Sequences must be aligned to convert to array.")
+        return np.vstack([seq.as_array for seq in self])
 
+
+    def iter_batches(self, batch_size: int) -> Iterable['ProteinSequences']:
+        """
+        Iterate over batches of sequences.
+
+        Args:
+            batch_size (int): The size of each batch.
+
+        Yields:
+            ProteinSequences: A batch of sequences.
+        """
+        for i in range(0, len(self), batch_size):
+            yield ProteinSequences(self[i:i+batch_size])
+
+
+    def align_all(self, output_fasta: Optional[str] = None) -> Union['ProteinSequences', 'ProteinSequencesOnFile']:
+        """
+        Align the sequences within this ProteinSequences object using MAFFT.
+
+        Args:
+            output_fasta (Optional[str]): Path to save the alignment. If None, a temporary file is used.
+
+        Returns:
+            Union[ProteinSequences, ProteinSequencesOnFile]: The aligned sequences, either in memory or on file 
+            depending on output_fasta.
+
+        Raises:
+            ValueError: If the sequences already contain gaps.
+            RuntimeError: If MAFFT alignment fails.
+            FileNotFoundError: If MAFFT is not installed or not in PATH.
+        """
+        if self.has_gaps:
+            raise ValueError("Sequences already contain gaps. Cannot perform alignment on gapped sequences.")
+
+        return mafft_align(self, output_fasta=output_fasta)
+    
+    def align_to(self, existing_alignment: Union['ProteinSequences', 'ProteinSequencesOnFile'], 
+                 realign: bool = False, 
+                 output_fasta: Optional[str] = None) -> Union['ProteinSequences', 'ProteinSequencesOnFile']:
+        """
+        Align this ProteinSequences object to an existing alignment using MAFFT.
+
+        Args:
+            existing_alignment (Union[ProteinSequences, ProteinSequencesOnFile]): The existing alignment to align to.
+            realign (bool): If True, realign all sequences from scratch. If False, add new sequences to existing alignment.
+            output_fasta (Optional[str]): Path to save the alignment. If None, a temporary file is used.
+
+        Returns:
+            Union[ProteinSequences, ProteinSequencesOnFile]: The aligned sequences, either in memory or on file 
+            depending on output_fasta.
+
+        Raises:
+            ValueError: If the sequences already contain gaps or if the existing alignment is not aligned.
+            RuntimeError: If MAFFT alignment fails.
+            FileNotFoundError: If MAFFT is not installed or not in PATH.
+        """
+        if self.has_gaps:
+            raise ValueError("Sequences already contain gaps. Cannot perform alignment on gapped sequences.")
+
+        if not existing_alignment.aligned:
+            raise ValueError("Existing alignment must be aligned.")
+
+        return mafft_align(self, existing_alignment=existing_alignment, realign=realign, output_fasta=output_fasta)
+    
+    def with_no_gaps(self) -> 'ProteinSequences':
+        """Return a new ProteinSequences with all gaps removed."""
+        return ProteinSequences([seq.with_no_gaps() for seq in self])
+
+    def get_alignment_mapping(self) -> Dict[int, List[Optional[int]]]:
+        """
+        Create a mapping of original sequence positions to aligned positions for each sequence.
+
+        Returns:
+            Dict[int, List[Optional[int]]]: A dictionary where keys are sequence indices and values are
+            lists of integers. Each integer represents the position in the aligned sequence
+            corresponding to the original sequence position. Eg. [0,1,2,5,6,7] incidates that the 
+            there is a gap between amino acid 2 and 3, and 3 is in position 5 in the aligned sequence.
+
+        Raises:
+            ValueError: If the sequences are not aligned.
+        """
+        if not self.aligned:
+            raise ValueError("Sequences must be aligned to create an alignment mapping.")
+
+        mapping = {}
+        for i, seq in enumerate(self):
+            seq_mapping = []
+            original_pos = 0
+            for aligned_pos, char in enumerate(seq.iter_protein_characters()):
+                if not char.is_gap:
+                    seq_mapping.append(aligned_pos)
+                    original_pos += 1
+                else:
+                    pass
+            mapping[i] = seq_mapping
+
+        return mapping
+
+    def apply_alignment_mapping(self, mapping: Dict[int, List[Optional[int]]]) -> 'ProteinSequences':
+        """
+        Apply an alignment mapping to the current sequences.
+
+        Args:
+            mapping (Dict[int, List[Optional[int]]]): The alignment mapping to apply.
+
+        Returns:
+            ProteinSequences: A new ProteinSequences object with aligned sequences.
+
+        Raises:
+            ValueError: If a sequence index is not found in the mapping or if the mapping is invalid.
+        """
+        if self.has_gaps:
+            raise ValueError("Sequences already contain gaps. Cannot apply alignment mapping to gapped sequences.")
+
+        aligned_sequences = []
+        for i, seq in enumerate(self):
+            if i not in mapping:
+                raise ValueError(f"Sequence index {i} not found in the alignment mapping.")
+
+            seq_mapping = mapping[i]
+            aligned_seq = ['-'] * (max(filter(None, seq_mapping)) + 1)
+            for original_pos, aligned_pos in enumerate(seq_mapping):
+                if original_pos >= len(seq):
+                    raise ValueError(f"Invalid mapping for sequence at index {i}: original position {original_pos} out of range.")
+                aligned_seq[aligned_pos] = seq[original_pos]
+
+            aligned_sequences.append(ProteinSequence(''.join(aligned_seq), id=seq.id, structure=seq.structure))
+
+        return ProteinSequences(aligned_sequences)
+    
+############################################
+# A class with the same API as ProteinSequences but on file instead of in memory
+############################################
 
 class ProteinSequencesOnFile(ProteinSequences):
     """
@@ -696,6 +822,19 @@ class ProteinSequencesOnFile(ProteinSequences):
             ProteinSequences: A new ProteinSequences object containing all sequences.
         """
         return ProteinSequences(list(self))
+    
+    def iter_batches(self, batch_size: int) -> Iterable[ProteinSequences]:
+        """
+        Iterate over batches of sequences.
+
+        Args:
+            batch_size (int): The size of each batch.
+
+        Yields:
+            ProteinSequences: A batch of sequences.
+        """
+        for i in range(0, len(self), batch_size):
+            yield ProteinSequences([self[id] for id in list(self._index.keys())[i:i+batch_size]])
     
 
     

@@ -13,6 +13,7 @@ import shutil
 from io import StringIO
 from tempfile import NamedTemporaryFile, mkdtemp
 import os
+import numpy as np
 
 from aide_predict.utils.data_structures import ProteinCharacter, ProteinSequence, ProteinSequences, ProteinSequencesOnFile
 from aide_predict.utils.constants import AA_SINGLE, GAP_CHARACTERS, NON_CONONICAL_AA_SINGLE
@@ -27,7 +28,7 @@ class TestProteinCharacter:
     def test_valid_initialization(self):
         for aa in VALID_AA:
             pc = ProteinCharacter(aa)
-            assert pc.data == aa
+            assert pc == aa
 
     def test_invalid_initialization(self):
         with pytest.raises(ValueError):
@@ -70,6 +71,12 @@ class TestProteinSequence:
     @pytest.fixture
     def sample_sequence(self, temp_pdb_file):
         return ProteinSequence("ACDEFGHIKLMNPQRSTVWY", id="sample", structure=str(temp_pdb_file))
+    
+    def test_as_array(self, sample_sequence):
+        arr = sample_sequence.as_array
+        assert isinstance(arr, np.ndarray)
+        assert arr.shape == (1, 20)
+        assert ''.join(arr[0]) == str(sample_sequence)
 
     def test_initialization(self, sample_sequence, temp_pdb_file):
         assert str(sample_sequence) == "ACDEFGHIKLMNPQRSTVWY"
@@ -86,7 +93,7 @@ class TestProteinSequence:
         assert gapped.has_gaps
         assert gapped.num_gaps == 1
         assert gapped.base_length == 3
-        assert gapped.with_no_gaps == ProteinSequence("ACD")
+        assert gapped.with_no_gaps() == ProteinSequence("ACD")
 
 
     def test_mutation(self, sample_sequence):
@@ -138,12 +145,21 @@ class TestProteinSequence:
         assert str(aligned_other) == "ACDEFGHIK-MNPQRSTVWY"
         
         # Check that the non-gap parts of the sequences match the originals
-        assert aligned_self.with_no_gaps == sample_sequence
-        assert aligned_other.with_no_gaps == other_sequence.with_no_gaps
+        assert aligned_self.with_no_gaps() == sample_sequence
+        assert aligned_other.with_no_gaps() == other_sequence.with_no_gaps()
         
         # Check that the structures are preserved
         assert aligned_self.structure == sample_sequence.structure
         assert aligned_other.structure == other_sequence.structure
+
+    def test_hash(self, sample_sequence):
+        assert isinstance(hash(sample_sequence), int)
+
+    def test_equality(self, sample_sequence):
+        same_sequence = ProteinSequence("ACDEFGHIKLMNPQRSTVWY", id="sample")
+        different_sequence = ProteinSequence("ACDEFGHIKLMNPQRSTVWY", id="different")
+        assert sample_sequence == same_sequence
+        assert sample_sequence != different_sequence
 
 # ProteinSequences tests
 class TestProteinSequences:
@@ -186,6 +202,46 @@ class TestProteinSequences:
         assert str(sequences[0]) == "ACDE"
         assert sequences[0].id == "seq1"
         os.unlink(temp_file.name)
+
+    def test_with_no_gaps(self, sample_sequences):
+        no_gaps = sample_sequences.with_no_gaps()
+        assert isinstance(no_gaps, ProteinSequences)
+        assert len(no_gaps) == 3
+        assert str(no_gaps[2]) == "ACD"
+
+    def test_get_alignment_mapping(self, sample_sequences):
+        sample_sequences.append(ProteinSequence("A-DE", id="seq4"))
+        mapping = sample_sequences.get_alignment_mapping()
+        assert isinstance(mapping, dict)
+        assert len(mapping) == 4
+        assert mapping[3] == [0, 2, 3] # this should not inclide the gat at position 1
+
+    def test_apply_alignment_mapping(self, sample_sequences):
+        sample_sequences = sample_sequences.with_no_gaps()
+        mapping = {
+            0: [0,1, 2, 5],
+            1: [0,1, 2, 5],
+            2: [0,1, 5]
+        }
+        aligned = sample_sequences.apply_alignment_mapping(mapping)
+        assert isinstance(aligned, ProteinSequences)
+        assert len(aligned) == 3
+        assert str(aligned[0]) == "ACD--E"
+        assert str(aligned[1]) == "ACD--F"
+        assert str(aligned[2]) == "AC---D"
+
+    def test_as_array(self, sample_sequences):
+        arr = sample_sequences.as_array()
+        assert isinstance(arr, np.ndarray)
+        assert arr.shape == (3, 4)
+        assert ''.join(arr[0]) == "ACDE"
+
+    def test_iter_batches(self, sample_sequences):
+        batches = list(sample_sequences.iter_batches(2))
+        assert len(batches) == 2
+        assert isinstance(batches[0], ProteinSequences)
+        assert len(batches[0]) == 2
+        assert len(batches[1]) == 1
 
 # ProteinSequencesOnFile tests
 class TestProteinSequencesOnFile:
