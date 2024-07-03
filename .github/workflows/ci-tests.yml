@@ -33,7 +33,7 @@ jobs:
         conda install -n base conda-libmamba-solver
         conda config --set solver libmamba
         conda install mamba -n base -c conda-forge
-        mamba env create --file environment.yml --name test_env
+        mamba env create --file environment.yaml --name test_env
         conda activate test_env
         mamba install pytest pytest-cov
 
