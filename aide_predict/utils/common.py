@@ -8,9 +8,6 @@
 Common utility functions
 
 '''
-from aide_predict.utils.constants import AA_ALPHABET
-
-from typing import Iterable
 from types import SimpleNamespace
 
 
@@ -28,3 +25,11 @@ def convert_dvc_params(dvc_params_dict: dict):
         else:
             return d
     return _dict_to_obj(dvc_params_dict)
+
+class MessageBool:
+    def __init__(self, value, message):
+        self.message = message
+        self.value = value
+
+    def __bool__(self):
+        return self.value
