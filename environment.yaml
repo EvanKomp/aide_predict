@@ -3,7 +3,7 @@ channels:
   - defaults
   - conda-forge
   - bioconda
-
+channel_priority: flexible
 dependencies:
   - python=3.9
   - numpy<1.20
