@@ -34,7 +34,8 @@ jobs:
         conda config --set solver libmamba
         conda install mamba -n base -c conda-forge
         mamba env update --file environment.yaml --name test_env
-        mamba activate test_env
+        conda activate test_env
+        echo $(which python)
         mamba install pytest pytest-cov
         pip install pytest pytest-cov
 
