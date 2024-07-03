@@ -46,7 +46,7 @@ jobs:
       run: |
         conda activate test_env
         echo "Python being used: $(which python)"
-        echo "Pytest version: $(pytest --version)
+        echo "Pytest version: $(pytest --version)"
         pytest -v -m "not slow and not optional" --cov=aide_predict --cov-report=xml --cov-config=.coveragerc
 
 
