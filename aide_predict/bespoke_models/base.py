@@ -49,6 +49,7 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         per_position_capable (bool): Whether the model can output per position scores.
         requires_fixed_length (bool): Whether the model requires a fixed length input.
         can_regress (bool): Whether the model outputs from transform can also be considered estimates of activity label.
+        can_handle_aligned_sequences (bool): Whether the model can handle unaligned sequences at predict time.
         _available (bool): Flag to indicate whether the model is available for use.
 
     To subclass ProteinModelWrapper:
@@ -104,6 +105,7 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
     _per_position_capable: bool = False
     _requires_fixed_length: bool = False
     _can_regress: bool = False
+    _can_handle_aligned_sequences: bool = False
     _available: bool = MessageBool(True, "This model is available for use.")
 
     def __init__(self, metadata_folder: str, wt: Optional[Union[str, ProteinSequence]] = None):
@@ -185,7 +187,7 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         Raises:
             ValueError: If input sequences are not aligned and alignment is required.
         """
-        if self.requires_msa_for_fit and not X.aligned:
+        if not X.aligned:
             raise ValueError("Input sequences must be aligned for this model.")
 
     def _assert_fixed_length(self, X: ProteinSequences) -> None:
@@ -198,11 +200,10 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         Raises:
             ValueError: If input sequences are not of fixed length and fixed length is required.
         """
-        if self.requires_fixed_length:
-            if not X.fixed_length:
-                raise ValueError("Input sequences must be aligned and of fixed length for this model.")
-            if self.wt is not None and len(self.wt) != X.width:
-                raise ValueError("Wild type sequence must be the same length as the sequences.")
+        if not X.fixed_length:
+            raise ValueError("Input sequences must be aligned and of fixed length for this model.")
+        if self.wt is not None and len(self.wt) != X.width:
+            raise ValueError("Wild type sequence must be the same length as the sequences.")
     
     def _enforce_aligned(self, X: ProteinSequences) -> ProteinSequences:
         """
@@ -244,11 +245,8 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         logger.info(f"Fitting {self.__class__.__name__}")
         X = self._validate_input(X)
         
-        try:
-            self._assert_aligned(X)
-        except ValueError:
+        if self.requires_msa_for_fit:
             X = self._enforce_aligned(X)
-            self._assert_aligned(X)
         
         self._fit(X, y)
         
@@ -269,8 +267,10 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         """
         logger.info(f"Partial fitting {self.__class__.__name__}")
         X = self._validate_input(X)
-        self._assert_aligned(X)
-        self._assert_fixed_length(X)
+        
+        if self.requires_msa_for_fit:
+            X = self._enforce_aligned(X)
+
         self._partial_fit(X, y)
         return self
 
@@ -311,7 +311,12 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         check_is_fitted(self)
         X = self._validate_input(X)
 
-        self._assert_fixed_length(X)
+        if self.requires_fixed_length:
+            self._assert_fixed_length(X)
+
+        if not self.can_handle_aligned_sequences and X.has_gaps:
+            logger.info("Input sequences have gaps and the model cannot handle them. Removing gaps.")
+            X = X.with_no_gaps()
         
         outputs = self._transform(X)
         if not self.requires_wt_during_inference and self.wt is not None:
@@ -400,6 +405,11 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
     def can_regress(self) -> bool:
         """Whether the model can perform regression."""
         return self._can_regress
+    
+    @property
+    def can_handle_aligned_sequences(self) -> bool:
+        """Whether the model can handle aligned sequences (with gaps) at predict time."""
+        return self._can_handle_aligned_sequences
 
     @staticmethod
     def _construct_necessary_metadata(model_directory: str, necessary_metadata: dict) -> None:
@@ -538,5 +548,13 @@ class PositionSpecificMixin:
         if self.positions is not None and not self.pool:
             return [f"{header}_{pos}" for pos in self.positions]
         return [header]
+    
+class CanHandleAlignedSequencesMixin:
+    """
+    Mixin to indicate that a model can handle aligned sequences (with gaps) during prediction.
+    
+    This mixin overrides the can_handle_aligned_sequences attribute to be True.
+    """
+    _can_handle_aligned_sequences: bool = True
     
 

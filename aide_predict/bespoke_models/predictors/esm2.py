@@ -93,7 +93,7 @@ import warnings
 import numpy as np
 from tqdm import tqdm
 
-from aide_predict.bespoke_models.base import PositionSpecificMixin, ProteinModelWrapper, CanRegressMixin
+from aide_predict.bespoke_models.base import PositionSpecificMixin, ProteinModelWrapper, CanRegressMixin, CanHandleAlignedSequencesMixin
 from aide_predict.utils.data_structures import ProteinSequences
 
 try:
@@ -105,24 +105,21 @@ except ImportError:
 import logging
 logger = logging.getLogger(__name__)
 
-class ESM2PredictorWrapper(PositionSpecificMixin, CanRegressMixin, ProteinModelWrapper):
-    """Pretrained ESM as a log likelihood predictor.
+class ESM2PredictorWrapper(CanHandleAlignedSequencesMixin, PositionSpecificMixin, CanRegressMixin, ProteinModelWrapper):
+    """
+    Pretrained ESM as a log likelihood predictor.
 
-    Params:
-    - metadata_folder: str
-        Essentially ignored.
-    - model_checkpoint: str
-        Name of the ESM model to use
-    - marginal_method: str
-        The method to use for marginal likelihoods. One of 'masked_marginal', 'mutant_marginal', 'wildtype_marginal'
-    - positions: list
-        Not applicable unless sequences are fixed length. Species which positions in the sequence to use
-    - pool: bool
-        Whether to pool the likelihoods. Required for variable length sequences.
-    - wt: str
-        The wild type sequence. Required if comparing to wild type.
-    - batch_size: int
-        The batch size for inference. If you are hitting OOM, try reducing this.
+    This class wraps the ESM2 model to use it as a log likelihood predictor for protein sequences.
+    It supports multiple methods for calculating marginal likelihoods and can handle both fixed-length
+    and variable-length sequences.
+
+    Attributes:
+        positions (Optional[List[int]]): Positions in the sequence to use for prediction.
+        pool (bool): Whether to pool the likelihoods across positions.
+        model_checkpoint (str): Name of the ESM model to use.
+        marginal_method (str): Method to use for marginal likelihoods.
+        batch_size (int): Batch size for inference.
+        device (str): Device to use for computation ('cuda' or 'cpu').
     """
 
     def __init__(
@@ -136,6 +133,19 @@ class ESM2PredictorWrapper(PositionSpecificMixin, CanRegressMixin, ProteinModelW
         batch_size: int=2,
         device: str='cuda'
     ):
+        """
+        Initialize the ESM2PredictorWrapper.
+
+        Args:
+            metadata_folder (Optional[str]): Folder to store metadata (not used in this implementation).
+            model_checkpoint (str): Name of the ESM model to use.
+            marginal_method (str): Method to use for marginal likelihoods ('masked_marginal', 'mutant_marginal', or 'wildtype_marginal').
+            positions (Optional[List[int]]): Positions in the sequence to use for prediction.
+            pool (bool): Whether to pool the likelihoods across positions.
+            wt (Optional[Union[str, ProteinSequence]]): Wild type sequence.
+            batch_size (int): Batch size for inference.
+            device (str): Device to use for computation ('cuda' or 'cpu').
+        """
         self.positions = positions
         self.pool = pool
         self.model_checkpoint = model_checkpoint
@@ -150,31 +160,59 @@ class ESM2PredictorWrapper(PositionSpecificMixin, CanRegressMixin, ProteinModelW
         logger.debug(f"ESM model inititalized with {self.__dict__}")
 
     @property
-    def model_(self):
+    def model_(self) -> EsmForMaskedLM:
+        """
+        Lazy-loaded ESM model.
+
+        Returns:
+            EsmForMaskedLM: The loaded ESM model.
+        """
         if self._model is None:
             self._model = EsmForMaskedLM.from_pretrained('facebook/'+self.model_checkpoint).to(self.device)
         return self._model
     
     @property
-    def tokenizer_(self):
+    def tokenizer_(self) -> AutoTokenizer:
+        """
+        Lazy-loaded ESM tokenizer.
+
+        Returns:
+            AutoTokenizer: The loaded ESM tokenizer.
+        """
         if self._tokenizer is None:
             self._tokenizer = AutoTokenizer.from_pretrained('facebook/'+self.model_checkpoint)
-        return self._tokenizer          
+        return self._tokenizer         
 
     def _more_tags(self):
         return {'stateless': True,
                 'preserves_dtype': [],
                 }
     
-    def fit(self, X, y=None):
-        """Fit the model.
-        
-        Ignored. The model is already trained."""
+    def _fit(self, X: ProteinSequences, y: Optional[np.ndarray] = None) -> 'ESM2PredictorWrapper':
+        """
+        Fit the model (no-op for pre-trained models).
+
+        Args:
+            X (ProteinSequences): The input sequences.
+            y (Optional[np.ndarray]): Ignored. Present for API consistency.
+
+        Returns:
+            ESM2PredictorWrapper: The fitted model.
+        """
         self.fitted_ = True
         return self
 
 
-    def _check_fixed_length_sequences(self, X):
+    def _check_fixed_length_sequences(self, X: ProteinSequences) -> bool:
+        """
+        Check if the input sequences are of fixed length.
+
+        Args:
+            X (ProteinSequences): The input sequences.
+
+        Returns:
+            bool: True if sequences are of fixed length, False otherwise.
+        """
         if not X.aligned:
             return False
         if self.wt is not None and len(self.wt) != X.width:

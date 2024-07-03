@@ -64,7 +64,6 @@ import os
 import subprocess
 import tempfile
 
-from sklearn.utils import check_array
 import numpy as np
 import pandas as pd
 
