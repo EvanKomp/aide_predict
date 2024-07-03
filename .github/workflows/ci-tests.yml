@@ -35,12 +35,18 @@ jobs:
         conda install mamba -n base -c conda-forge
         mamba env update --file environment.yaml --name test_env
         conda activate test_env
-        echo $(which python)
+        echo "Current Python: $(which python)"
         mamba install pytest pytest-cov
         pip install pytest pytest-cov
+        echo "Installed packages:"
+        conda list
 
     - name: Run tests with pytest and coverage
+      shell: bash -l {0}
       run: |
+        conda activate test_env
+        echo "Python being used: $(which python)"
+        echo "Pytest version: $(pytest --version)
         pytest -v -m "not slow and not optional" --cov=aide_predict --cov-report=xml --cov-config=.coveragerc
 
 
