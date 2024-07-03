@@ -1,0 +1,18 @@
+[run]
+source = aide_predict
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    if self.debug:
+    if __name__ == .__main__.:
+    raise NotImplementedError
+    pass
+    except ImportError:
+    def _transform
+    def _fit
+    def _partial_fit
+
+omit =
+    aide_predict/bespoke_models/predictors/esm2.py
