@@ -416,6 +416,19 @@ class ProteinSequences(UserList):
             ProteinSequences: A new ProteinSequences object containing the sequences from the dictionary.
         """
         return cls([ProteinSequence(seq, id=id) for id, seq in sequences.items()])
+    
+    @classmethod
+    def from_list(cls, sequences: List[str]) -> 'ProteinSequences':
+        """
+        Create a ProteinSequences object from a list of sequences.
+
+        Args:
+            sequences (List[str]): A list of protein sequences.
+
+        Returns:
+            ProteinSequences: A new ProteinSequences object containing the sequences from the list.
+        """
+        return cls([ProteinSequence(seq) for seq in sequences])
 
     def __repr__(self) -> str:
         """

@@ -204,6 +204,22 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
             raise ValueError("Input sequences must be aligned and of fixed length for this model.")
         if self.wt is not None and len(self.wt) != X.width:
             raise ValueError("Wild type sequence must be the same length as the sequences.")
+        
+    def _check_fixed_length(self, X: ProteinSequences) -> bool:
+        """
+        Check if the input sequences are of fixed length.
+
+        Args:
+            X (ProteinSequences): The input sequences.
+
+        Returns:
+            bool: True if sequences are of fixed length, False otherwise.
+        """
+        if not X.fixed_length:
+            return False
+        if self.wt is not None and len(self.wt) != X.width:
+            return False
+        return True
     
     def _enforce_aligned(self, X: ProteinSequences) -> ProteinSequences:
         """

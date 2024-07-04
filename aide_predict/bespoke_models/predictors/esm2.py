@@ -93,19 +93,29 @@ import warnings
 import numpy as np
 from tqdm import tqdm
 
-from aide_predict.bespoke_models.base import PositionSpecificMixin, ProteinModelWrapper, CanRegressMixin, CanHandleAlignedSequencesMixin
+from aide_predict.bespoke_models.base import PositionSpecificMixin, ProteinModelWrapper, CanRegressMixin, CanHandleAlignedSequencesMixin, RequiresWTDuringInferenceMixin
 from aide_predict.utils.data_structures import ProteinSequences
+from aide_predict.utils.common import MessageBool
 
 try:
     import torch
     from transformers import EsmForMaskedLM, AutoTokenizer
+    AVAILABLE = MessageBool(True, "ESM2 model is available.")
 except ImportError:
-    raise ImportError("You must install transformers to use this model. See `requirements-transformers.txt`.")
+    AVAILABLE = MessageBool(False, "ESM2 model is not available. Please see the transformers requirements")
+
+from typing import List, Optional, Tuple, Union
 
 import logging
 logger = logging.getLogger(__name__)
 
-class ESM2PredictorWrapper(CanHandleAlignedSequencesMixin, PositionSpecificMixin, CanRegressMixin, ProteinModelWrapper):
+class ESM2LikelihoodWrapper(
+    RequiresWTDuringInferenceMixin,
+    CanHandleAlignedSequencesMixin,
+    PositionSpecificMixin,
+    CanRegressMixin,
+    ProteinModelWrapper
+):
     """
     Pretrained ESM as a log likelihood predictor.
 
@@ -121,6 +131,7 @@ class ESM2PredictorWrapper(CanHandleAlignedSequencesMixin, PositionSpecificMixin
         batch_size (int): Batch size for inference.
         device (str): Device to use for computation ('cuda' or 'cpu').
     """
+    _available = AVAILABLE
 
     def __init__(
         self,
@@ -153,35 +164,11 @@ class ESM2PredictorWrapper(CanHandleAlignedSequencesMixin, PositionSpecificMixin
         self.batch_size = batch_size
         self.device = device
 
-        self._model = None
-        self._tokenizer = None
+        self.model_ = None
+        self.tokenizer_ = None
         
         super().__init__(metadata_folder=metadata_folder, wt=wt)
-        logger.debug(f"ESM model inititalized with {self.__dict__}")
-
-    @property
-    def model_(self) -> EsmForMaskedLM:
-        """
-        Lazy-loaded ESM model.
-
-        Returns:
-            EsmForMaskedLM: The loaded ESM model.
-        """
-        if self._model is None:
-            self._model = EsmForMaskedLM.from_pretrained('facebook/'+self.model_checkpoint).to(self.device)
-        return self._model
-    
-    @property
-    def tokenizer_(self) -> AutoTokenizer:
-        """
-        Lazy-loaded ESM tokenizer.
-
-        Returns:
-            AutoTokenizer: The loaded ESM tokenizer.
-        """
-        if self._tokenizer is None:
-            self._tokenizer = AutoTokenizer.from_pretrained('facebook/'+self.model_checkpoint)
-        return self._tokenizer         
+        logger.debug(f"ESM model inititalized with {self.__dict__}")        
 
     def _more_tags(self):
         return {'stateless': True,
@@ -199,320 +186,285 @@ class ESM2PredictorWrapper(CanHandleAlignedSequencesMixin, PositionSpecificMixin
         Returns:
             ESM2PredictorWrapper: The fitted model.
         """
-        self.fitted_ = True
+        _fit_transformers_esm(X)
+        self.model_ = EsmForMaskedLM.from_pretrained('facebook/'+self.model_checkpoint).to(self.device)
+        self.tokenizer_ = AutoTokenizer.from_pretrained('facebook/'+self.model_checkpoint)
         return self
 
-
-    def _check_fixed_length_sequences(self, X: ProteinSequences) -> bool:
+    def _assert_if_not_pooling_possible(self, X: ProteinSequences) -> None:
         """
-        Check if the input sequences are of fixed length.
+        Check if pooling is possible.
+        
+        Args:
+            X (ProteinSequences): The input sequences.
+
+        Raises:
+            ValueError: If pooling is not possible with variable length sequences.
+        """
+        if not self.pool and not self._check_fixed_length(X):
+            raise ValueError("Pooling is required with variable length sequences.")
+        
+    def _assert_if_positions_possible(self, X: ProteinSequences) -> None:
+        """
+        Check if specifying positions is possible.
 
         Args:
             X (ProteinSequences): The input sequences.
 
-        Returns:
-            bool: True if sequences are of fixed length, False otherwise.
+        Raises:
+            ValueError: If positions cannot be specified with unaligned variable length sequences.
         """
-        if not X.aligned:
-            return False
-        if self.wt is not None and len(self.wt) != X.width:
-            return False
-        return True
-
-    def _assert_if_not_pooling_possible(self, X):
-        """Check if not pooling is possible.
-        
-        If pooling is not possible, raise an error.
-        """
-        if not self.pool and not self._check_fixed_length_sequences(X):
-            raise ValueError("Pooling is required with variable length sequences.")
-        
-    def _assert_if_positions_possible(self, X):
-        """Check if positions are to specifify"""
-        if self.positions is not None and not self._check_fixed_length_sequences(X):
-            raise ValueError("Positions can only be specified with fixed length sequences.")
+        if self.positions is not None and not self._check_fixed_length(X):
+            if X.aligned:
+                logger.warning("Positions were passed for aligned variable length sequences. Positions are being interpreted as aligned positions.")
+            else:
+                raise ValueError("Cannot specify positions with unaligned variable length sequences.")
     
-    def _assert_if_marginal_available(self, X):
-        """Check if the marginal method is available"""
-        if self.marginal_method == 'wildtype_marginal' and not self._check_fixed_length_sequences(X):
+    def _assert_if_marginal_available(self, X: ProteinSequences) -> None:
+        """
+        Check if the marginal method is available.
+
+        Args:
+            X (ProteinSequences): The input sequences.
+
+        Raises:
+            ValueError: If the chosen marginal method is not available for the given input.
+        """
+        if self.marginal_method == 'wildtype_marginal' and not self._check_fixed_length(X):
             raise ValueError("Wildtype marginal is not available with variable length sequences.")
         if self.marginal_method == 'wildtype_marginal' and self.wt is None:
             raise ValueError("Wildtype marginal requires a wild type sequence.")
         if self.marginal_method == 'masked_marginal' and self.wt is None:
             raise ValueError("Masked marginal requires a wild type sequence.")
-        if self.marginal_method == 'masked_marginal' and not self._check_fixed_length_sequences(X):
+        if self.marginal_method == 'masked_marginal' and not self._check_fixed_length(X):
             raise ValueError("Masked marginal is not available with variable length sequences.")
 
-    def _tokenize(self, sequences, on_device=True):
-        """Tokenize the sequences.
+    def _tokenize(self, sequences: List[str], on_device: bool = True) -> Union[torch.Tensor, np.ndarray]:
+        """
+        Tokenize the sequences.
         
-        Params:
-        - sequences: list of amino acid sequences. These should be ready for the tokenizer eg. including masks.
+        Args:
+            sequences (List[str]): List of amino acid sequences. These should be ready for the tokenizer, e.g., including masks.
+            on_device (bool): Whether to put the tokenized sequences on the specified device.
+
+        Returns:
+            Union[torch.Tensor, np.ndarray]: Tokenized sequences.
         """
         if on_device:
             return self.tokenizer_(sequences, add_special_tokens=True, return_tensors='pt', padding=True).to(self.device)
         else:
             return self.tokenizer_(sequences, add_special_tokens=False, return_tensors='np', padding=True)
 
-    def _call_esm(self, sequences):
-        """Call the ESM model on sequences.
-        
-        Params:
-        - sequences: list of amino acid sequences. These should be ready for the tokenizer eg. indluding masks.
-          These should be ready for the tokenizer
+    def _call_esm(self, prepared_sequences: List[str]) -> np.ndarray:
         """
-        logger.info(f"Calling ESM on {len(sequences)} sequences, in {len(sequences)/self.batch_size} batches.")
+        Call the ESM model on prepared sequences.
+        
+        Args:
+            prepared_sequences (List[str]): List of prepared amino acid sequences.
+
+        Returns:
+            np.ndarray: Log probabilities for each sequence.
+        """
+        logger.info(f"Calling ESM on {len(prepared_sequences)} sequences.")
         with torch.no_grad():
-            with tqdm(total=len(sequences), desc="ESM forward passes...") as pbar:
-                for i in range(0, len(sequences), self.batch_size):
-                    tokenized = self._tokenize(sequences[i:i+self.batch_size], on_device=True)
-                    # these tokens have ESM start tokens and end tokens
-                    # get probabilities over amino acids
-                    logits = self.model_(tokenized.input_ids, attention_mask=tokenized.attention_mask).logits
-                    # get log probabilities over amino acids
-                    log_probs = torch.nn.functional.log_softmax(logits, dim=-1)
-                    pbar.update(len(tokenized))
+            tokenized = self._tokenize(prepared_sequences, on_device=True)
+            logits = self.model_(tokenized.input_ids, attention_mask=tokenized.attention_mask).logits
+            log_probs = torch.nn.functional.log_softmax(logits, dim=-1)
 
-                    # return list of log probabilities, back to original sequence lengths
-                    # use attention mask to get only the relevant positions
-                    # if not all sequence lengths were the same, there will be masks
-                    for j in range(len(tokenized.input_ids)):
-                        log_probs_j = log_probs[j][tokenized.attention_mask[j].bool()].cpu().numpy()
-                        # this has the extra index of the start and end tokens
-                        # remove them
-                        yield log_probs_j[1:-1]
+            results = []
+            for j in range(len(tokenized.input_ids)):
+                log_probs_j = log_probs[j][tokenized.attention_mask[j].bool()].cpu().numpy()
+                results.append(log_probs_j[1:-1])  # Remove start and end tokens
 
-    def _marginal_likelihood(self, X):
-        """Get marginal likelihoods for sequences.
+        return results
 
-        This method is for full sequence marginals. For masked marginals, see `_masked_marginal_likelihood`.
-        Here, returned log likelihoods are for each position of the passed sequence.
-        
-        Params:
-        - X: 2d np.ndarray of sequence amino acid strings
-
-        Returns:
-        - list of np.ndarray of log likelihoods for each sequence
-           each array is of shape (len sequence, vocab size)
+    def _prepare_marginal(self, batch: ProteinSequences) -> List[str]:
         """
-        # get ready for tokenizer
-        new_sequences = [' '.join(x) for x in X]
-        # call the model
-        yield from self._call_esm(new_sequences)
-
+        Prepare sequences for wildtype marginal method.
+        
+        Args:
+            batch (ProteinSequences): A batch of protein sequences.
+        
+        Returns:
+            List[str]: Prepared sequences for ESM model input.
+        """
+        return [' '.join(str(seq)) for seq in batch]
     
-    def _masked_marginal_likelihood(self, X, only_positions=None):
-        """Get masked marginal likelihoods for sequences.
+    
+    def _prepare_masked_marginal(self, batch: ProteinSequences) -> Tuple[List[str], List[List[int]]]:
+        """
+        Prepare sequences for masked marginal method.
 
-        This method is for masked marginals. For full sequence marginals, see `_marginal_likelihood`.
-        Here, each position is masked individually. The log likelihood vector for each of those masks
-        are concatenated. This requires a call for each position in each sequences.
+        Note that sequences passed here are used only to determine mutated postitions.
+        It is the wild type that is masked and passed to the model.
         
-        Params:
-        - X: 2d np.ndarray of sequence amino acid strings
-        - only_positions: list of int
-            The positions to mask. If None, all positions are masked.
+        Args:
+            batch (ProteinSequences): A batch of protein sequences.
+        
+        Returns:
+            Tuple[List[str], List[List[int]]]: Prepared sequences for ESM model input and mutated positions.
+        """
+        prepared_sequences_batch = []
+
+        # loop through all sequences and capture all changing positions
+        if self.positions is not None:
+            positions_to_mask = self.positions
+        else:
+            positions_to_mask = []
+            for seq in batch:
+                positions_to_mask.extend(seq.mutated_positions(self.wt))
+                positions_to_mask = list(set(positions_to_mask))
+
+        batch_positions = []
+        for pos in positions_to_mask:
+            masked_seq = list(str(self.wt))
+            masked_seq[pos] = self.tokenizer_.mask_token
+            prepared_sequences_batch.append(' '.join(masked_seq))
+            batch_positions.append(pos)
+
+            if len(prepared_sequences_batch) == self.batch_size:
+                yield prepared_sequences_batch, batch_positions
+                prepared_sequences_batch = []
+                batch_positions = []
+        if len(prepared_sequences_batch) > 0:
+            yield prepared_sequences_batch, batch_positions
+
+
+    def _transform(self, X: ProteinSequences) -> np.ndarray:
+        """
+        Get ESM scores for sequences.
+        
+        Args:
+            X (ProteinSequences): Input sequences.
 
         Returns:
-        - list of np.ndarray of log likelihoods for each sequence
-           each array is of shape (len sequence, vocab size)
-           if only_positions is not None, the shape is (len only_positions, vocab size)
-        """
-        # first, raise if not fixed length and only_positions is not None
-        if only_positions is not None and not self._check_fixed_length_sequences(ProteinSequences(X)):
-            raise ValueError("Cannot specify positions to masked marginals with variable length sequences.")
-        
-        # since we have to run multiple passes for sequence, let's construct superbatches, one for
-        # each input sequence
-        for x in X:
-            # prepare for tokenizer
-            x = list(x)
-            # determine positions to mask
-            if only_positions is None:
-                positions = range(len(x))
-            else:
-                positions = only_positions
-            # construct the super batch
-            super_batch = []
-            for pos in positions:
-                # mask the position
-                masked = x.copy()
-                masked[pos] = self.tokenizer_.mask_token
-                super_batch.append(' '.join(masked))
-            # call the model
-            log_probs = list(self._call_esm(super_batch))
-            log_probs = np.vstack([np.expand_dims(lp, axis=0) for lp in log_probs])
-            # this is of shape (len positions, sequence length, vocab size)
-            # we want to extract the probs from only the masked positions
-            pivoted_log_probs = []
-            for i, pos in enumerate(positions):
-                pivoted_log_probs.append(log_probs[i, pos]) # these should be shape (vocab size,)
-            # reshape so that it is an array of size (len positions, vocab size)
-            yield np.vstack(pivoted_log_probs)
-        
+            np.ndarray: Transformed sequences.
 
-    def _transform(self, X):
-        """Get ESM scores for sequences.
-        
-        Params:
-        - X: 2d np.ndarray of sequence amino acid strings
+        Raises:
+            ValueError: If the input does not meet the requirements for the chosen marginal method.
         """
         self._assert_if_not_pooling_possible(X)
         self._assert_if_positions_possible(X)
         self._assert_if_marginal_available(X)
 
-        fixed_length = self._check_fixed_length_sequences(X)
+        fixed_length = self._check_fixed_length(X)
+        results = []
 
-        # temporary warning for method testing
-        if not self.marginal_method == 'masked_marginal' and not fixed_length:
-            warnings.warn("The ESMWrapper has been tested using masked marginal likelihoods on fixed length sequences and it reproduced ProteinGym benchmark on ENVZ_ECOLI_Ghose_2023, however, it has not been tested on other methods or variable length sequences. Use at your own risk.")
 
-        # start with easy one - WT marginal
         if self.marginal_method == 'wildtype_marginal':
-            # we are gauranteed fixed length in this indent
-            logger.info("Getting wild type marginal likelihoods, this requires 1 forward pass.")
-            wild_type_log_probs = self._marginal_likelihood([self.wt])[0]
-            # compare variants to wild type
-            # first tokenize the sequences
-            variants = [' '.join(x) for x in X]
-            input_ids = self._tokenize(variants, on_device=False).input_ids
-            # shape is (len X, sequence length)
-            # index the wt loh probs with the input ids
-            # this will give us the log likelihoods of the true AA at each position given the WT
-            # output should be shape (len X, sequence length)
-            rows = np.arange(wild_type_log_probs.shape[0])
-            rows_expanded = np.expand_dims(rows, axis=0)
-            variants_log_prob_vector = wild_type_log_probs[rows_expanded, input_ids]
-            assert variants_log_prob_vector.shape == (len(X), len(X[0]))
-
-            # subtract the wild type value
+            logger.info("Getting wild type marginal likelihoods. This requires 1 forward pass.")
+            prepared_wt = self._prepare_marginal([self.wt])
+            wt_log_probs = self._call_esm(prepared_wt)[0]
             wt_tokens = self._tokenize([' '.join(str(self.wt))], on_device=False).input_ids[0]
-            wt_log_probs = wild_type_log_probs[wt_tokens]
-            # subtract the wild type value
-            variant_log_prob_vector -= wt_log_probs
-            
-            # if positions were passed, only return those positions
-            if self.positions is not None:
-                variants_log_prob_vector = variants_log_prob_vector[:, self.positions]
-            
-            if self.pool:
-                return np.mean(variants_log_prob_vector, axis=1).reshape(-1, 1)
-            else:
-                return variants_log_prob_vector
-            
-        # mutant marginal
-        elif self.marginal_method == 'mutant_marginal':
-            # we are not guaranteed fixed length in this indent...
-            # first tokenize the sequences and get log prob vectors for each
-            logger.info(f"Getting mutant marginal likelihoods, this requires {len(X)} forward passes.")
-            variants = [' '.join(x) for x in X]
-            variant_log_probs = list(self._marginal_likelihood(variants))
+            rows = np.arange(wt_log_probs.shape[0])
+            rows_expanded = np.expand_dims(rows, axis=0)
+            wt_log_probs_vector = wt_log_probs[rows_expanded, wt_tokens]
 
-            # tokenize WT if present, we will need it if comparing to WT
+            # this is of shape (len wt, vocab size
+            # compare each sequence to this
+            for batch in X.iter_batches(self.batch_size):
+                batch_prepared = self._prepare_marginal(batch)
+                batch_input_ids = self._tokenize(batch_prepared, on_device=False).input_ids
+
+                batch_log_prob_vector = wt_log_probs[rows_expanded, batch_input_ids]
+                # of shape 
+                batch_log_prob_vector -= wt_log_probs_vector
+
+                # this should be of shape (len batch, sequence length)
+                if self.positions is not None:
+                    batch_log_prob_vector = batch_log_prob_vector[:, self.positions]
+                
+                if self.pool:
+                    # we should only pool over changed positions, otherwise
+                    # variants with more mutations have inherantly higher scores
+                    # by virtue of having fewer zeros
+                    masks = [x.mutated_positions(self.wt) for x in batch]
+                    batch_log_prob_vector = [log_probs[mask] for log_probs, mask in zip(batch_log_prob_vector, masks)]
+                    results.extend(list(np.mean(batch_log_prob_vector, axis=1)))
+                else:
+                    results.extend(list(batch_log_prob_vector))
+        
+        elif self.marginal_method == 'masked_marginal':
+            logger.info("Getting masked marginal likelihoods for mutate positions. This requires a forward pass for each mutated position.")
+            masked_wt_log_probs = np.zeros((len(self.wt), self.tokenizer_.vocab_size))
+            wt_tokens = self._tokenize([' '.join(str(self.wt))], on_device=False).input_ids[0]
+            for batch_wt_masked, masked_positions in self._prepare_masked_marginal(X):
+                batch_log_probs = self._call_esm(batch_wt_masked)
+                # of shape (len batch, sequence length, vocab size)
+                for i, log_probs in enumerate(batch_log_probs):
+                    masked_wt_log_probs[masked_positions[i]] = log_probs[masked_positions[i]]
+            rows = np.arange(masked_wt_log_probs.shape[0])
+            rows_expanded = np.expand_dims(rows, axis=0)
+            wt_log_probs_vector = masked_wt_log_probs[rows_expanded, wt_tokens]
+            
+            # index the masked log probs with the input ids
+            # of variant
+            for batch in X.iter_batches(self.batch_size):
+                batch_prepared = self._prepare_marginal(batch)
+                batch_input_ids = self._tokenize(batch_prepared, on_device=False).input_ids
+
+                batch_log_prob_vector = masked_wt_log_probs[rows_expanded, batch_input_ids]
+                batch_log_prob_vector -= wt_log_probs_vector
+
+                if self.positions is not None:
+                    batch_log_prob_vector = batch_log_prob_vector[:, self.positions]
+
+                if self.pool:
+                    # we should only pool over changed positions, otherwise 
+                    # variants with more mutations have inherantly higher scores
+                    # by virtue of having fewer zeros
+                    masks = [x.mutated_positions(self.wt) for x in batch]
+                    batch_log_prob_vector = [log_probs[mask] for log_probs, mask in zip(batch_log_prob_vector, masks)]
+
+                    results.extend(list(np.mean(batch_log_prob_vector, axis=1)))
+                else:
+                    results.extend(list(batch_log_prob_vector))
+
+        elif self.marginal_method == 'mutant_marginal':
+            logger.info("Getting mutant marginal likelihoods. This a forward pass for each sequence.")
             if self.wt is not None:
                 wt_ids = self._tokenize([' '.join(str(self.wt))], on_device=False).input_ids[0]
 
-            # shape is (len X, sequence length, vocab size), note that 
-            # sequence length may vary so it is actually a list of array
-            # get the likelihood of the observed AA at each position
-            variants_log_prob_vector = []
-            for variant_log_prob in variant_log_probs:
-                # tokenize the sequence
-                variant_ids = self._tokenize(variants, add_special_tokens=False, return_tensors='np').input_ids
-                assert len(variant_log_prob) == len(variant_ids)
-                # get the log likelihood of the observed AA at each position
-                rows = np.arange(len(variant_log_prob))
-                rows_expanded = np.expand_dims(rows, axis=0)
-                variant_log_prob_vector = variant_log_prob[rows_expanded, variant_ids]
+            for batch in X.iter_batches(self.batch_size):
+                batch_prepared = self._prepare_marginal(batch)
+                batch_log_probs = self._call_esm(batch_prepared)
+                # of shape (len batch, sequence length, vocab size)
+                # these maye be different sequence lengths
+                for i, log_probs in enumerate(batch_log_probs):
+                    # get the ids so we can index as a vector
+                    variant_input_ids = self._tokenize([batch_prepared[i]], on_device=False).input_ids[0]
+                    rows = np.arange(log_probs.shape[0])
+                    rows_expanded = np.expand_dims(rows, axis=0)
+                    variant_log_prob_vector = log_probs[rows_expanded, variant_input_ids]
+                    if self.wt is not None and fixed_length:
+                        wt_log_probs_vector = log_probs[rows_expanded, wt_ids]
+                        variant_log_prob_vector -= wt_log_probs
+                    
+                    if self.positions is not None:
+                        variant_log_prob_vector = variant_log_prob_vector[self.positions]
 
-                # if we have a wild type and we are fixed lenth, we need to determine
-                # probability of wt AA on mutant vector
-                if self.wt is not None and fixed_length:
-                    # get the log likelihood of the observed AA at each position
-                    wt_log_probs = variant_log_prob[rows_expanded, wt_ids]
-                    # subtract the wild type value
-                    variant_log_prob_vector -= wt_log_probs 
-                
-                assert variant_log_prob_vector.shape == (1, len(X[0]))
+                    if self.pool:
+                        results.append(np.mean(variant_log_prob_vector))
 
-                # shape should be (1, sequence length)
-                if self.positions is not None:
-                    # we should be good here, if it is not None
-                    # we have already checked fixed length sequences
-                    variant_log_prob_vector = variant_log_prob_vector[:, self.positions]
-                variants_log_prob_vector.append(variant_log_prob_vector)
+                    else:
+                        results.append(variant_log_prob_vector)
 
-            # this is a list of log prob values of the observed AA at each position
-            # or a subset of positions
-            # they arrays in the list need not be the same length
-            # if sequences WERE the same length, we have already normalized
-            # the log prob vector by WT. If they were not, we coulf not, so must now after pooling
+            # if we gave wt but not fixed length, we need to normalize by wt
             if self.wt is not None and not fixed_length:
-                wt_on_wt_log_probs = self._marginal_likelihood([self.wt])[0]
+                assert self.pool, "Something went wrong, we should only be here if we are pooling"
+                wt_on_wt_log_probs = self._call_esm([' '.join(str(self.wt))])[0]
                 rows = np.arange(wt_on_wt_log_probs.shape[0])
                 rows_expanded = np.expand_dims(rows, axis=0)
                 wt_on_wt_log_probs_vector = wt_on_wt_log_probs[rows_expanded, wt_ids]
                 wt_base_log_prob_pooled = np.mean(wt_on_wt_log_probs_vector)
-                assert wt_base_log_prob_pooled.shape == (1,)
-            else:
-                wt_base_log_prob_pooled = 0
+                results = [x - wt_base_log_prob_pooled for x in results]
+        else:
+            raise ValueError(f"Marginal method {self.marginal_method} not recognized.")
 
-            # time to pool!
-            if self.pool:
-                # if fixed length, we have already normalized by WT
-                variant_log_probs = np.array([np.mean(x, axis=1) for x in variants_log_prob_vector]).reshape(-1, 1)
-                variant_log_probs -= wt_base_log_prob_pooled
-                return variant_log_probs
-            else:
-                # we should be guaranteed fixed length here
-                # if pool is False, we already checked that we are fixed length
-                return np.vstack(variants_log_prob_vector)
-            
+        return np.array(results)
 
-        # masked marginal
-        elif self.marginal_method == 'masked_marginal':
-            # like WT marginal, we are guaranteed fixed length and wt is present
-            # first get the positions that need to be masked
-            if self.positions is not None:
-                masked_positions = self.positions
-            else:
-                # determine where there are mutations
-                masked_positions = X.mutated_positions
 
-            # get the masked marginal likelihoods
-            logger.info(f"Getting masked marginal likelihoods for mutate positions, this requires {len(masked_positions)} forward passes.")
-            masked_log_probs = list(self._masked_marginal_likelihood([self.wt], only_positions=masked_positions))[0]
-            # this output is the size of the positions passed as opposed to the full length
-            # rectify this so that they can be indexed by inserting zero rows
-            masked_log_probs_full = np.zeros((len(self.wt), masked_log_probs.shape[1]))
-            masked_log_probs_full[masked_positions] = masked_log_probs
 
-            # index the masked log probs with the input ids
-            # of wt
-            wt_ids = self._tokenize([' '.join(str(self.wt))], on_device=False).input_ids[0]
-            rows = np.arange(masked_log_probs_full.shape[0])
-            rows_expanded = np.expand_dims(rows, axis=0)
-            wt_log_probs_vector = masked_log_probs_full[rows_expanded, wt_ids]
-
-            # repeat for each variant
-            variant_ids = self._tokenize([' '.join(x) for x in X], on_device=False).input_ids
-            # shape is (len X, sequence length)
-            # index the masked log probs with the input ids
-            # this will give us the log likelihoods of the true AA at each position given the WT masked
-            # output should be shape (len X, sequence length)
-            rows = np.arange(masked_log_probs_full.shape[0])
-            rows_expanded = np.expand_dims(rows, axis=0)
-            variants_log_prob_vector = masked_log_probs_full[rows_expanded, variant_ids]
-            assert variants_log_prob_vector.shape == (len(X), len(X[0]))
-
-            # subtract the wild type value
-            variants_log_prob_vector -= wt_log_probs_vector
-
-            # if positions were passed, only return those positions
-            if self.positions is not None:
-                variants_log_prob_vector = variants_log_prob_vector[:, self.positions]
-
-            if self.pool:
-                return np.mean(variants_log_prob_vector, axis=1).reshape(-1, 1)
-            else:
-                return variants_log_prob_vector
+def _fit_transformers_esm(X: ProteinSequences):
+    """"""
+    warnings.warn("Finetuning ESM models is not yet supported. Using Pretrained model weights.")
