@@ -470,6 +470,15 @@ class ProteinSequences(UserList):
         for i in range(0, len(self), batch_size):
             yield ProteinSequences(self[i:i+batch_size])
 
+    def get_id_mapping(self) -> Dict[str, int]:
+        """
+        Create a mapping of sequence IDs to indices.
+
+        Returns:
+            Dict[str, int]: A dictionary where keys are sequence IDs and values are indices.
+        """
+        return {seq.id if seq.id else hash(seq): i for i, seq in enumerate(self)}
+
 
     def align_all(self, output_fasta: Optional[str] = None) -> Union['ProteinSequences', 'ProteinSequencesOnFile']:
         """
@@ -493,14 +502,15 @@ class ProteinSequences(UserList):
         return mafft_align(self, output_fasta=output_fasta)
     
     def align_to(self, existing_alignment: Union['ProteinSequences', 'ProteinSequencesOnFile'], 
-                 realign: bool = False, 
+                 realign: bool = False, return_only_new: bool = False,
                  output_fasta: Optional[str] = None) -> Union['ProteinSequences', 'ProteinSequencesOnFile']:
         """
         Align this ProteinSequences object to an existing alignment using MAFFT.
 
         Args:
             existing_alignment (Union[ProteinSequences, ProteinSequencesOnFile]): The existing alignment to align to.
-            realign (bool): If True, realign all sequences from scratch. If False, add new sequences to existing alignment.
+            realign (bool): If True, realign all sequences from scratch. If False, add new sequences to existing alignment.\
+            return_only_new (bool): If True, return only the newly aligned sequences. If False, return all sequences.
             output_fasta (Optional[str]): Path to save the alignment. If None, a temporary file is used.
 
         Returns:
@@ -518,7 +528,15 @@ class ProteinSequences(UserList):
         if not existing_alignment.aligned:
             raise ValueError("Existing alignment must be aligned.")
 
-        return mafft_align(self, existing_alignment=existing_alignment, realign=realign, output_fasta=output_fasta)
+        all_aligned = mafft_align(self, existing_alignment=existing_alignment, realign=realign, output_fasta=output_fasta)
+
+        if return_only_new:
+            id_mapping = all_aligned.get_id_mapping()
+            new_indices = [id_mapping[seq.id if seq.id else str(hash(seq))] for seq in self]
+            return ProteinSequences([all_aligned[i] for i in new_indices])
+        
+        return all_aligned
+
     
     def with_no_gaps(self) -> 'ProteinSequences':
         """Return a new ProteinSequences with all gaps removed."""

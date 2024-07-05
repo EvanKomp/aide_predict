@@ -510,6 +510,10 @@ class PositionSpecificMixin:
     3. Wraps the predict and transform methods to check that if positions were passed and not pooling, the output is the same length as the positions.
     4. Flattens the output if flatten is True.
 
+    Note that you are responsible for selecting positions and pooling. This mixing only provides checks that
+    the output is consistent with the specified positions. You DO NOT need to implement flattening, as this mixin
+    will handle it for you.
+
     Attributes:
         positions (Optional[List[int]]): The positions to output scores for.
         pool (bool): Whether to pool the scores across positions.
