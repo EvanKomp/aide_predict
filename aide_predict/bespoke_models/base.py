@@ -506,32 +506,33 @@ class PositionSpecificMixin:
     
     This mixin:
     1. Overrides the per_position_capable attribute to be True.
-    2. Checks that positions and pool is an attribute.
+    2. Checks that positions, pool, and flatten are attributes.
     3. Wraps the predict and transform methods to check that if positions were passed and not pooling, the output is the same length as the positions.
+    4. Flattens the output if flatten is True.
 
     Attributes:
         positions (Optional[List[int]]): The positions to output scores for.
         pool (bool): Whether to pool the scores across positions.
+        flatten (bool): Whether to flatten dimensions beyond the second dimension.
     """
     _per_position_capable: bool = True
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, positions: bool=None, pool: bool=True, flatten: bool=True, *args, **kwargs):
         """
         Initialize the PositionSpecificMixin.
 
         Raises:
-            ValueError: If the model does not have a positions or pool attribute.
+            ValueError: If the model does not have a positions, pool, or flatten attribute.
         """
+        self.positions = positions
+        self.pool = pool
+        self.flatten = flatten
         super().__init__(*args, **kwargs)
-
-        if not hasattr(self, 'positions'):
-            raise ValueError("This model was specified as PositionSpecific, but does not have a positions attribute. Make sure `positions` is a parameter in the __init__ method.")
-        if not hasattr(self, 'pool'):
-            raise ValueError("This model was specified as PositionSpecific, but does not have a pool attribute. Make sure `pool` is a parameter in the __init__ method.")
 
     def transform(self, X: Union[ProteinSequences, List[str]]) -> np.ndarray:
         """
         Transform the sequences, ensuring correct output dimensions for position-specific models.
+        If flatten is True, flatten dimensions beyond the second dimension.
 
         Args:
             X (Union[ProteinSequences, List[str]]): Input sequences.
@@ -543,15 +544,20 @@ class PositionSpecificMixin:
             ValueError: If the output dimensions do not match the specified positions.
         """
         result = super().transform(X)
+        
         if self.positions is not None and not self.pool:
             dims = len(self.positions)
             if result.shape[1] != dims:
                 raise ValueError(f"The output second dimension must have the same length as number of positions. Expected {dims}, got {result.shape[1]}.")
+        
+        if self.flatten and result.ndim > 2:
+            result = result.reshape(result.shape[0], -1)
+        
         return result
     
     def get_feature_names_out(self, input_features: Optional[List[str]] = None) -> List[str]:
         """
-        Get output feature names for transformation, considering position-specific output.
+        Get output feature names for transformation, considering position-specific output and flattening.
 
         Args:
             input_features (Optional[List[str]]): Input feature names.
@@ -561,8 +567,15 @@ class PositionSpecificMixin:
         """
         check_is_fitted(self)
         header = f"{self.__class__.__name__}"
+        
         if self.positions is not None and not self.pool:
-            return [f"{header}_{pos}" for pos in self.positions]
+            base_names = [f"{header}_{pos}" for pos in self.positions]
+            if self.flatten:
+                # Since we don't know the exact shape of the output at this point,
+                # we'll use a placeholder for additional dimensions
+                return [f"{name}_dim{i}" for name in base_names for i in range(getattr(self, 'output_dim', 1))]
+            return base_names
+        
         return [header]
     
 class CanHandleAlignedSequencesMixin:

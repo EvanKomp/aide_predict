@@ -140,6 +140,7 @@ class ESM2LikelihoodWrapper(
         marginal_method: str='mutant_marginal',
         positions: list=None,
         pool: bool=True,
+        flatten: bool=True,
         wt: str=None,
         batch_size: int=2,
         device: str='cuda'
@@ -157,8 +158,6 @@ class ESM2LikelihoodWrapper(
             batch_size (int): Batch size for inference.
             device (str): Device to use for computation ('cuda' or 'cpu').
         """
-        self.positions = positions
-        self.pool = pool
         self.model_checkpoint = model_checkpoint
         self.marginal_method = marginal_method
         self.batch_size = batch_size
@@ -167,7 +166,7 @@ class ESM2LikelihoodWrapper(
         self.model_ = None
         self.tokenizer_ = None
         
-        super().__init__(metadata_folder=metadata_folder, wt=wt)
+        super().__init__(metadata_folder=metadata_folder, wt=wt, positions=positions, pool=pool, flatten=flatten)
         logger.debug(f"ESM model inititalized with {self.__dict__}")        
 
     def _more_tags(self):
