@@ -367,7 +367,8 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         Returns:
             Dict[str, Any]: Parameter names mapped to their values.
         """
-        return {"metadata_folder": self.metadata_folder, "wt": self.wt}
+        return {s: getattr(self, s) for s in self.__dict__.keys() if not s.startswith("_") and not callable(getattr(self, s)) and not s.endswith('_')}
+
 
     def set_params(self, **params: Any) -> 'ProteinModelWrapper':
         """
