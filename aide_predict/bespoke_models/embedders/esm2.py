@@ -12,14 +12,14 @@ import warnings
 from typing import List, Union, Optional
 
 import numpy as np
-import torch
-from transformers import AutoTokenizer, EsmModel
 
 from aide_predict.bespoke_models.base import ProteinModelWrapper, PositionSpecificMixin, CanHandleAlignedSequencesMixin
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
 
 try:
     import transformers
+    from transformers import AutoTokenizer, EsmModel
+    import torch
     AVAILABLE = True
 except ImportError:
     AVAILABLE = False
@@ -51,7 +51,7 @@ class ESM2Embedding(PositionSpecificMixin, CanHandleAlignedSequencesMixin, Prote
                  flatten: bool = False,
                  pool: bool = False,
                  batch_size: int = 32,
-                 device: str = 'cuda' if torch.cuda.is_available() else 'cpu',
+                 device: str = 'cpu',
                  wt: Optional[Union[str, ProteinSequence]] = None):
         """
         Initialize the ESM2Embedding.

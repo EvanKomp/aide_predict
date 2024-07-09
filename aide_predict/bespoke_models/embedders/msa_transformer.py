@@ -7,10 +7,9 @@
 '''
 import warnings
 from typing import List, Union, Optional
-
 import numpy as np
-import torch
-from esm import pretrained
+
+
 
 from aide_predict.bespoke_models.base import ProteinModelWrapper, PositionSpecificMixin, RequiresMSAMixin, RequiresFixedLengthMixin
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
@@ -19,6 +18,8 @@ from aide_predict.utils.common import MessageBool
 try:
     import esm
     from esm.pretrained import esm_msa1b_t12_100M_UR50S
+    from esm import pretrained
+    import torch
     AVAILABLE = MessageBool(True, "MSA Transformer is available.")
 except ImportError:
     AVAILABLE = MessageBool(False, "MSA Transformer requires fair-esm, which is not installed.")
@@ -48,7 +49,7 @@ class MSATransformerEmbedding(PositionSpecificMixin, RequiresMSAMixin, RequiresF
                  flatten: bool = False,
                  pool: bool = False,
                  batch_size: int = 32,
-                 device: str = 'cuda' if torch.cuda.is_available() else 'cpu',
+                 device: str = 'cpu',
                  wt: Optional[Union[str, ProteinSequence]] = None):
         """
         Initialize the MSATransformerEmbedding.
