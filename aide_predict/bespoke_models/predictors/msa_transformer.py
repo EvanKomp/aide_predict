@@ -9,7 +9,6 @@ import warnings
 from typing import List, Union, Optional
 
 import numpy as np
-import torch
 import tqdm
 from esm import pretrained
 
@@ -19,6 +18,7 @@ from aide_predict.utils.common import MessageBool
 
 try:
     import esm
+    import torch
     from esm.pretrained import esm_msa1b_t12_100M_UR50S
     AVAILABLE = MessageBool(True, "MSA Transformer is available.")
 except ImportError:
@@ -43,12 +43,12 @@ class MSATransformerLikelihoodWrapper(PositionSpecificMixin, RequiresMSAMixin, R
     _available = AVAILABLE
 
     def __init__(self, metadata_folder: str, 
-                 marginal_method: str = 'mutant_marginal',
+                 marginal_method: str = 'wildtype_marginal',
                  positions: Optional[List[int]] = None, 
                  flatten: bool = False,
                  pool: bool = True,
                  batch_size: int = 32,
-                 device: str = 'cuda' if torch.cuda.is_available() else 'cpu',
+                 device: str = 'cpu',
                  wt: Optional[Union[str, ProteinSequence]] = None):
         """
         Initialize the MSATransformerLikelihoodWrapper.
