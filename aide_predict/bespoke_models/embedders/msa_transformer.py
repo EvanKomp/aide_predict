@@ -128,6 +128,7 @@ class MSATransformerEmbedding(PositionSpecificMixin, RequiresMSAMixin, RequiresF
 
         for sequence in X:
             sequence_embeddings = []
+            batch_sizes = []
             for msa_sequences in self.original_msa_.iter_batches(self.batch_size - 1):
                 sequences_batch = self._prepare_msa_batch(msa_sequences, sequence)
 
@@ -146,9 +147,11 @@ class MSATransformerEmbedding(PositionSpecificMixin, RequiresMSAMixin, RequiresF
                 # remove the start token
                 query_embedding = embeddings[0, -1, 1:, :].cpu().numpy()
                 sequence_embeddings.append(query_embedding)
+                batch_sizes.append(query_embedding.shape[0]-1)
 
             # Average embeddings across all batches
-            avg_embedding = np.mean(sequence_embeddings, axis=0)
+            # weigh by batch sizes
+            avg_embedding = np.average(sequence_embeddings, axis=0, weights=batch_sizes)
 
             if self.positions is not None:
                 avg_embedding = avg_embedding[self.positions]

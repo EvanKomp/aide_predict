@@ -10,7 +10,7 @@ import os
 from abc import abstractmethod
 
 from sklearn.base import BaseEstimator, TransformerMixin, RegressorMixin
-from sklearn.utils.validation import check_is_fitted
+from sklearn.utils.validation import check_is_fitted, NotFittedError
 import numpy as np
 
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
@@ -258,6 +258,13 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         Returns:
             ProteinModelWrapper: The fitted model.
         """
+        try:
+            check_is_fitted(self)
+            logger.warning("Model is already fitted. Skipping")
+            return self
+        except NotFittedError:
+            pass
+
         logger.info(f"Fitting {self.__class__.__name__}")
         X = self._validate_input(X)
         

@@ -266,6 +266,28 @@ class ProteinSequence(str):
 
         aligned_seq, aligned_other = sw_global_pairwise(base_self, base_other)
         return aligned_seq, aligned_other
+    
+    def saturation_mutagenesis(self, positions: List[int]=None) -> List['ProteinSequence']:
+        """
+        Perform saturation mutagenesis at the specified positions.
+
+        Args:
+            positions (List[int]): The positions to mutate.
+
+        Returns:
+            ProteinSequences: A list of mutated sequences.
+        """
+        sequences = []
+        if positions is None:
+            positions = range(len(self))
+        for i in positions:
+            for aa in AA_SINGLE:
+                if aa != self[i]:
+                    mutated = self.mutate(i, aa)
+                    mutated.id = f"{self[i]}{i+1}{aa}"
+                    sequences.append(mutated)
+        return ProteinSequences(sequences)
+
 
 ############################################
 # A class to store multiple ProteinSequence objects

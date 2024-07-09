@@ -162,9 +162,6 @@ class ESM2LikelihoodWrapper(
         self.marginal_method = marginal_method
         self.batch_size = batch_size
         self.device = device
-
-        self.model_ = None
-        self.tokenizer_ = None
         
         super().__init__(metadata_folder=metadata_folder, wt=wt, positions=positions, pool=pool, flatten=flatten)
         logger.debug(f"ESM model inititalized with {self.__dict__}")        
@@ -372,8 +369,11 @@ class ESM2LikelihoodWrapper(
                 # this should be of shape (len batch, sequence length)
                 if self.positions is not None:
                     batch_log_prob_vector = batch_log_prob_vector[:, self.positions]
+                    if self.pool:
+                        results.extend(list(np.mean(batch_log_prob_vector, axis=1)))
                 
-                if self.pool:
+                elif self.pool:
+                    # here the user did not pass positions
                     # we should only pool over changed positions, otherwise
                     # variants with more mutations have inherantly higher scores
                     # by virtue of having fewer zeros
@@ -407,8 +407,10 @@ class ESM2LikelihoodWrapper(
 
                 if self.positions is not None:
                     batch_log_prob_vector = batch_log_prob_vector[:, self.positions]
+                    if self.pool:
+                        results.extend(list(np.mean(batch_log_prob_vector, axis=1)))
 
-                if self.pool:
+                elif self.pool:
                     # we should only pool over changed positions, otherwise 
                     # variants with more mutations have inherantly higher scores
                     # by virtue of having fewer zeros
