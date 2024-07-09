@@ -542,14 +542,14 @@ class ProteinSequences(UserList):
         """Return a new ProteinSequences with all gaps removed."""
         return ProteinSequences([seq.with_no_gaps() for seq in self])
 
-    def get_alignment_mapping(self) -> Dict[int, List[Optional[int]]]:
+    def get_alignment_mapping(self) -> Dict[str, List[Optional[int]]]:
         """
         Create a mapping of original sequence positions to aligned positions for each sequence.
 
         Returns:
-            Dict[int, List[Optional[int]]]: A dictionary where keys are sequence indices and values are
+            Dict[str, List[Optional[int]]]: A dictionary where keys are sequence IDs or hashes and values are
             lists of integers. Each integer represents the position in the aligned sequence
-            corresponding to the original sequence position. Eg. [0,1,2,5,6,7] incidates that the 
+            corresponding to the original sequence position. E.g., [0,1,2,5,6,7] indicates that
             there is a gap between amino acid 2 and 3, and 3 is in position 5 in the aligned sequence.
 
         Raises:
@@ -559,7 +559,8 @@ class ProteinSequences(UserList):
             raise ValueError("Sequences must be aligned to create an alignment mapping.")
 
         mapping = {}
-        for i, seq in enumerate(self):
+        for seq in self:
+            seq_id = seq.id if seq.id else str(hash(seq))
             seq_mapping = []
             original_pos = 0
             for aligned_pos, char in enumerate(seq.iter_protein_characters()):
@@ -568,41 +569,43 @@ class ProteinSequences(UserList):
                     original_pos += 1
                 else:
                     pass
-            mapping[i] = seq_mapping
+            mapping[seq_id] = seq_mapping
 
         return mapping
 
-    def apply_alignment_mapping(self, mapping: Dict[int, List[Optional[int]]]) -> 'ProteinSequences':
+    def apply_alignment_mapping(self, mapping: Dict[str, List[Optional[int]]]) -> 'ProteinSequences':
         """
         Apply an alignment mapping to the current sequences.
 
         Args:
-            mapping (Dict[int, List[Optional[int]]]): The alignment mapping to apply.
+            mapping (Dict[str, List[Optional[int]]]): The alignment mapping to apply.
 
         Returns:
             ProteinSequences: A new ProteinSequences object with aligned sequences.
 
         Raises:
-            ValueError: If a sequence index is not found in the mapping or if the mapping is invalid.
+            ValueError: If a sequence ID or hash is not found in the mapping or if the mapping is invalid.
         """
         if self.has_gaps:
             raise ValueError("Sequences already contain gaps. Cannot apply alignment mapping to gapped sequences.")
 
         aligned_sequences = []
-        for i, seq in enumerate(self):
-            if i not in mapping:
-                raise ValueError(f"Sequence index {i} not found in the alignment mapping.")
+        for seq in self:
+            seq_id = seq.id if seq.id else str(hash(seq))
+            if seq_id not in mapping:
+                raise ValueError(f"Sequence ID or hash '{seq_id}' not found in the alignment mapping.")
 
-            seq_mapping = mapping[i]
+            seq_mapping = mapping[seq_id]
             aligned_seq = ['-'] * (max(filter(None, seq_mapping)) + 1)
             for original_pos, aligned_pos in enumerate(seq_mapping):
                 if original_pos >= len(seq):
-                    raise ValueError(f"Invalid mapping for sequence at index {i}: original position {original_pos} out of range.")
+                    raise ValueError(f"Invalid mapping for sequence '{seq_id}': original position {original_pos} out of range.")
                 aligned_seq[aligned_pos] = seq[original_pos]
 
             aligned_sequences.append(ProteinSequence(''.join(aligned_seq), id=seq.id, structure=seq.structure))
 
         return ProteinSequences(aligned_sequences)
+
     
 ############################################
 # A class with the same API as ProteinSequences but on file instead of in memory
