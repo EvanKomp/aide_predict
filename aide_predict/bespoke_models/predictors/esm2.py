@@ -235,7 +235,7 @@ class ESM2LikelihoodWrapper(
         if self.marginal_method == 'masked_marginal' and not self._check_fixed_length(X):
             raise ValueError("Masked marginal is not available with variable length sequences.")
 
-    def _tokenize(self, sequences: List[str], on_device: bool = True) -> Union[torch.Tensor, np.ndarray]:
+    def _tokenize(self, sequences: List[str], on_device: bool = True) -> Union['torch.Tensor', np.ndarray]:
         """
         Tokenize the sequences.
         
@@ -244,7 +244,7 @@ class ESM2LikelihoodWrapper(
             on_device (bool): Whether to put the tokenized sequences on the specified device.
 
         Returns:
-            Union[torch.Tensor, np.ndarray]: Tokenized sequences.
+            Union['torch.Tensor', np.ndarray]: Tokenized sequences.
         """
         if on_device:
             return self.tokenizer_(sequences, add_special_tokens=True, return_tensors='pt', padding=True).to(self.device)
