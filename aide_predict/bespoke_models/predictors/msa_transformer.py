@@ -10,7 +10,7 @@ from typing import List, Union, Optional
 
 import numpy as np
 import tqdm
-from esm import pretrained
+
 
 from aide_predict.bespoke_models.base import ProteinModelWrapper, PositionSpecificMixin, RequiresMSAMixin, RequiresFixedLengthMixin, CanRegressMixin, RequiresWTDuringInferenceMixin
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
@@ -19,7 +19,7 @@ from aide_predict.utils.common import MessageBool
 try:
     import esm
     import torch
-    from esm.pretrained import esm_msa1b_t12_100M_UR50S
+    from esm import pretrained
     AVAILABLE = MessageBool(True, "MSA Transformer is available.")
 except ImportError:
     AVAILABLE = MessageBool(False, "MSA Transformer requires fair-esm, which is not installed.")
