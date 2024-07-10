@@ -17,7 +17,7 @@ from aide_predict.utils.alignment_calls import sw_global_pairwise, mafft_align
 
 from typing import List, Optional, Union, Iterator, Dict, Iterable, Any
 
-from .constants import AA_SINGLE, GAP_CHARACTERS, NON_CONONICAL_AA_SINGLE
+from ..constants import AA_SINGLE, GAP_CHARACTERS, NON_CONONICAL_AA_SINGLE
 
 
 ############################################
