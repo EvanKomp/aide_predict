@@ -18,6 +18,7 @@ from aide_predict.utils.alignment_calls import sw_global_pairwise, mafft_align
 from typing import List, Optional, Union, Iterator, Dict, Iterable, Any
 
 from ..constants import AA_SINGLE, GAP_CHARACTERS, NON_CONONICAL_AA_SINGLE
+from .structures import ProteinStructure
 
 
 ############################################
@@ -82,14 +83,14 @@ class ProteinSequence(str):
     This class inherits from UserString and provides additional methods and properties
     for analyzing and manipulating protein sequences.
     """
-    def __new__(cls, seq: str, id: Optional[str] = None, structure: Optional[str] = None):
+    def __new__(cls, seq: str, id: Optional[str] = None, structure: Optional[Union[str, "ProteinStructure"]] = None):
         """
         Create a new ProteinSequence object.
 
         Args:
             seq (str): The amino acid sequence.
             id (Optional[str]): An identifier for the sequence.
-            structure (Optional[str]): The structure of the protein sequence.
+            structure (Optional[Union[str, "ProteinStructure"]): The structure of the protein sequence.
 
         Returns:
             ProteinSequence: The new ProteinSequence object.
@@ -97,7 +98,7 @@ class ProteinSequence(str):
         obj = str.__new__(cls, seq)
         obj._characters: List[ProteinCharacter] = [ProteinCharacter(c) for c in seq]
         obj._id: Optional[str] = None
-        obj._structure: Optional[str] = None
+        obj._structure: Optional[Union[str, "ProteinStructure"]] = None
 
         if id is not None:
             obj.id = id
@@ -245,10 +246,11 @@ class ProteinSequence(str):
     @structure.setter
     def structure(self, new_structure: str) -> None:
         """Set the structure of the sequence."""
-        if os.path.exists(new_structure):
-            pass
-        else:
-            raise ValueError(f"Structure file {new_structure} does not exist.")
+        if isinstance(new_structure, str):
+            new_structure = ProteinStructure(new_structure)
+        elif not isinstance(new_structure, ProteinStructure):
+            raise ValueError("Structure must be a ProteinStructure object or a valid PDB file path.")
+        
         self._structure = new_structure
     
     def align(self, other: 'ProteinSequence') -> 'ProteinSequence':

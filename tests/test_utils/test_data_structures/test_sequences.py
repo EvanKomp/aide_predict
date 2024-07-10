@@ -80,11 +80,11 @@ class TestProteinSequence:
     def test_initialization(self, sample_sequence, temp_pdb_file):
         assert str(sample_sequence) == "ACDEFGHIKLMNPQRSTVWY"
         assert sample_sequence.id == "sample"
-        assert sample_sequence.structure == str(temp_pdb_file)
+        assert sample_sequence.structure.pdb_file == str(temp_pdb_file)
     
     def test_structure_setter_invalid_file(self):
         seq = ProteinSequence("ACDE")
-        with pytest.raises(ValueError):
+        with pytest.raises(FileNotFoundError):
             seq.structure = "non_existent_file.pdb"
 
     def test_properties(self, sample_sequence):
