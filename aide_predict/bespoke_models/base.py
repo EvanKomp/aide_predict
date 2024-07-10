@@ -128,8 +128,10 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         if not isinstance(wt, ProteinSequence) and wt is not None:
             wt = ProteinSequence(wt)
         
-        if wt is not None and wt.has_gaps:
-            raise ValueError("Wild type sequence cannot have gaps.")
+        if wt is not None:
+            wt = ProteinSequence(wt)
+            if wt.has_gaps:
+                raise ValueError("Wild type sequence cannot have gaps.")
         
         self.wt = wt
 
@@ -140,28 +142,6 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         Ensures that everything this model class needs is in the metadata folder.
         """
         logger.warning("This model class did not implement check_metadata. If the model requires anything other than raw sequences to be fit, this is unexpected.")
-
-    @property   
-    def wt(self) -> Optional[ProteinSequence]:
-        """Get the wild type sequence."""
-        return self._wt
-    
-    @wt.setter
-    def wt(self, wt: Optional[Union[str, ProteinSequence]]) -> None:
-        """
-        Set the wild type sequence.
-
-        Args:
-            wt (Optional[Union[str, ProteinSequence]]): The wild type sequence.
-
-        Raises:
-            ValueError: If the wild type sequence contains gaps.
-        """
-        if wt is not None:
-            wt = ProteinSequence(wt)
-            if wt.has_gaps:
-                raise ValueError("Wild type sequence cannot have gaps.")
-        self._wt = wt
 
     def _validate_input(self, X: Union[ProteinSequences, List[str]]) -> ProteinSequences:
         """
@@ -556,6 +536,8 @@ class PositionSpecificMixin:
             ValueError: If the output dimensions do not match the specified positions.
         """
         result = super().transform(X)
+        print(result.shape)
+        print(self.positions)
         
         if self.positions is not None and not self.pool:
             dims = len(self.positions)

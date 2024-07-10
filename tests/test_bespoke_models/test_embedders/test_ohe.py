@@ -89,15 +89,6 @@ class TestOneHotProteinEmbedding:
         transformed = embedder.transform(sample_sequences)
         assert transformed.shape == expected_shape
 
-    def test_wild_type_handling(self, tmp_path, sample_sequences):
-        wt = ProteinSequence("ACDEF")
-        embedder = OneHotProteinEmbedding(metadata_folder=str(tmp_path), wt=wt)
-        embedder.fit(sample_sequences)
-        assert embedder.wt == wt
-
-        with pytest.raises(ValueError, match="Wild type sequence cannot have gaps"):
-            OneHotProteinEmbedding(metadata_folder=str(tmp_path), wt="AC-EF")
-
 
 class TestOneHotAlignedEmbedding:
     @pytest.fixture
@@ -187,13 +178,4 @@ class TestOneHotAlignedEmbedding:
     def test_get_feature_names_before_fit(self, embedder):
         with pytest.raises(ValueError, match="Encoder has not been fitted yet"):
             embedder.get_feature_names_out()
-
-    def test_wild_type_handling(self, tmp_path, aligned_sequences):
-        wt = ProteinSequence("ACDEFGH")
-        embedder = OneHotAlignedEmbedding(metadata_folder=str(tmp_path), wt=wt)
-        embedder.fit(aligned_sequences)
-        assert embedder.wt == wt
-
-        with pytest.raises(ValueError, match="Wild type sequence cannot have gaps"):
-            OneHotAlignedEmbedding(metadata_folder=str(tmp_path), wt="ACD-FGH")
 

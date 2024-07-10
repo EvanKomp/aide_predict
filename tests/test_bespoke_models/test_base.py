@@ -33,13 +33,6 @@ class TestProteinModelWrapper:
         assert os.path.exists(self.temp_dir)
         assert self.model.wt is None
 
-    def test_wt_setter(self):
-        self.model.wt = "ACDEFGHIKLMNPQRSTVWY"
-        assert isinstance(self.model.wt, ProteinSequence)
-        
-        with pytest.raises(ValueError):
-            self.model.wt = "ACDE-FGHIKLMNPQRSTVWY"
-
     def test_validate_input(self):
         input_list = ["ACDE", "FGHI"]
         result = self.model._validate_input(input_list)
@@ -126,23 +119,22 @@ class TestProteinModelWrapper:
     def test_position_specific_mixin(self):
         class TestModel(PositionSpecificMixin, ProteinModelWrapper):
             def __init__(self, *args, **kwargs):
-                self.positions = [1, 2, 3]
-                self.pool = False
-                super().__init__(*args, **kwargs)
+                super().__init__(pool=False, positions=[1,2], *args, **kwargs)
         tempdir = tempfile.mkdtemp()
         model = TestModel(metadata_folder=tempdir)
         assert model.per_position_capable
 
         with patch.object(ProteinModelWrapper, 'transform') as mock_transform:
-            mock_transform.return_value = np.array([[1, 2, 3]])
+            mock_transform.return_value = np.array([[1, 2]])
             result = model.transform(["ACDE"])
-            np.testing.assert_array_equal(result, np.array([[1, 2, 3]]))
+            np.testing.assert_array_equal(result, np.array([[1, 2]]))
 
         with patch.object(ProteinModelWrapper, 'transform') as mock_transform:
-            mock_transform.return_value = np.array([[1, 2]])
+            mock_transform.return_value = np.array([[1, 2, 3]])
             with pytest.raises(ValueError):
                 model.transform(["ACDE"])
 
         model.fitted_ = True  # Mock fitted state
         feature_names = model.get_feature_names_out()
-        assert feature_names == ['TestModel_1', 'TestModel_2', 'TestModel_3']
+        # we passed flatten = True, so even though there is only one output above it still has dim
+        assert feature_names == ['TestModel_1_dim0', 'TestModel_2_dim0']
