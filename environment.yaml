@@ -5,16 +5,17 @@ channels:
   - bioconda
 dependencies:
   - python=3.9
-  - numpy<1.20
-  - pandas
   - hmmer
-  - scikit-learn
   - mafft
   - pip
   - pip:
     - dvc
+    - numpy<1.20.0
+    - scikit-learn
+    - pandas
+    - numba<
     - tqdm
     - evcouplings @ git+https://github.com/debbiemarkslab/EVcouplings@af27842
-    - ruamel.yaml<0.18.0
+    - ruamel-yaml<0.18.0
 
 

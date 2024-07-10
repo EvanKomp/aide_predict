@@ -762,7 +762,14 @@ class ProteinSequencesOnFile(ProteinSequences):
         info = self._index[id]
         with open(self.file_path, 'r') as f:
             f.seek(info['start'])
-            sequence = ''.join(f.read(info['length']).split())
+            sequence = []
+            remaining_length = info['length']
+            while remaining_length > 0:
+                line = f.readline().strip()
+                sequence.append(line)
+                remaining_length -= len(line)
+
+        sequence = ''.join(sequence)
         return ProteinSequence(sequence, id=id)
 
     def __iter__(self) -> Iterable[ProteinSequence]:

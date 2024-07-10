@@ -316,6 +316,15 @@ class TestProteinSequencesOnFile:
             yield temp_file.name
         os.unlink(temp_file.name)
 
+    @pytest.fixture
+    def multi_line_fasta_file(self):
+        content = ">seq1\nACDE\nFGHI\nJKLM\n>seq2\nACDF\n>seq3\nACD-\n"
+        with NamedTemporaryFile(mode='w+', delete=False) as temp_file:
+            temp_file.write(content)
+            temp_file.flush()
+            yield temp_file.name
+        os.unlink(temp_file.name)
+
     def test_initialization(self, sample_fasta_file):
         sequences = ProteinSequencesOnFile(sample_fasta_file)
         assert len(sequences) == 3
@@ -370,6 +379,43 @@ class TestProteinSequencesOnFile:
         assert isinstance(batches[0], ProteinSequences)
         assert len(batches[0]) == 2
         assert len(batches[1]) == 1
+
+    def test_multi_line_sequence(self, multi_line_fasta_file):
+        sequences = ProteinSequencesOnFile(multi_line_fasta_file)
+        assert len(sequences) == 3
+        assert not sequences.aligned
+        assert not sequences.fixed_length
+        assert sequences.has_gaps
+
+        # Check if the multi-line sequence is read correctly
+        assert str(sequences[0]) == "ACDEFGHIJKLM"
+        assert str(sequences["seq1"]) == "ACDEFGHIJKLM"
+        assert len(sequences[0]) == 12
+
+        # Check other sequences
+        assert str(sequences[1]) == "ACDF"
+        assert str(sequences[2]) == "ACD-"
+
+        # Test iteration
+        seqs = list(sequences)
+        assert len(seqs) == 3
+        assert str(seqs[0]) == "ACDEFGHIJKLM"
+        assert str(seqs[1]) == "ACDF"
+        assert str(seqs[2]) == "ACD-"
+
+        # Test to_memory
+        in_memory = sequences.to_memory()
+        assert isinstance(in_memory, ProteinSequences)
+        assert len(in_memory) == 3
+        assert str(in_memory[0]) == "ACDEFGHIJKLM"
+
+        # Test to_dict
+        d = sequences.to_dict()
+        assert isinstance(d, dict)
+        assert len(d) == 3
+        assert d["seq1"] == "ACDEFGHIJKLM"
+        assert d["seq2"] == "ACDF"
+        assert d["seq3"] == "ACD-"
 
 # Integration tests
 def test_integration():
