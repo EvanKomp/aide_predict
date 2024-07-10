@@ -137,6 +137,10 @@ if __name__ == '__main__':
         logger.info(f"jackhmmer complete. evcouplings output config: {outcfg}")
         # outconfig is also saved to file.
 
+        # move the resulting a2m file to the output directory
+        shutil.move(outcfg['alignment_file'], os.path.join(outdir, 'alignment.a2m'))
+
+
     elif PARAMS.msa_creation.msa_mode == 'starting_sequences':
         # here we simply need to align the sequences
         # or use existing alignment
