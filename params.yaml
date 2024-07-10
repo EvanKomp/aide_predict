@@ -69,7 +69,7 @@ msa_creation:
     domain_threshold: 100
     sequence_threshold: 100
     use_bitscores: true
-    sequence_identity_filter: 0.8
+    sequence_identity_filter: 80
     cpus: 16
     mx: 'BLOSUM62'
 
