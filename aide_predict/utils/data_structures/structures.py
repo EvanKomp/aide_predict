@@ -9,6 +9,11 @@ import os
 from typing import Optional, Dict, List
 import warnings
 import glob
+import re
+import json
+from ..constants import AA_MAP
+
+THREE_TO_ONE_AA = {v: k for k, v in AA_MAP.items()}
 
 import numpy as np
 from Bio.PDB import PDBParser, Structure, Chain
@@ -49,7 +54,10 @@ class ProteinStructure:
             parser = PDBParser()
             structure = parser.get_structure("protein", self.pdb_file)
             chain = structure[0][self.chain]
-            self._sequence = "".join(residue.resname for residue in chain if residue.id[0] == " ")
+            self._sequence = "".join(
+                THREE_TO_ONE_AA[residue.resname]
+                for residue in chain
+                if residue.id[0] == " ")
         return self._sequence
 
     def get_plddt(self) -> Optional[np.ndarray]:
@@ -60,7 +68,9 @@ class ProteinStructure:
             Optional[np.ndarray]: Array of pLDDT scores or None if not available.
         """
         if self.plddt_file and self._plddt is None:
-            self._plddt = np.loadtxt(self.plddt_file)
+            with open(self.plddt_file) as f:
+                data = json.load(f)['plddt']
+            self._plddt = np.array(data)
         return self._plddt
 
     def get_dssp(self) -> Dict[str, str]:
@@ -152,10 +162,11 @@ class ProteinStructure:
                 raise FileNotFoundError(f"No suitable PDB file found in {folder_path}")
 
         # Search for corresponding pLDDT file
-        plddt_file = pdb_file.replace('.pdb', '_plddt.txt')
+        plddt_file = pdb_file.replace('.pdb', '.json')
+        plddt_file = plddt_file.replace('_unrelaxed_', '_scores_')
+        plddt_file = plddt_file.replace('_relaxed_', '_scores_')
         if not os.path.exists(plddt_file):
-            warnings.warn(f"No pLDDT file found for {pdb_file}. pLDDT information will not be available.")
-            plddt_file = None
+            raise FileNotFoundError(f"pLDDT file not found: {plddt_file}")
 
         return cls(pdb_file, chain, plddt_file)
 
