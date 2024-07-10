@@ -231,14 +231,21 @@ class TestProteinSequences:
         mapping = sample_sequences.get_alignment_mapping()
         assert isinstance(mapping, dict)
         assert len(mapping) == 4
-        assert mapping[3] == [0, 2, 3] # this should not inclide the gat at position 1
+        
+        # Assuming sample_sequences have IDs, otherwise we'll use hash
+        seq4_id = "seq4"
+        assert mapping[seq4_id] == [0, 2, 3]  # this should not include the gap at position 1
 
     def test_apply_alignment_mapping(self, sample_sequences):
         sample_sequences = sample_sequences.with_no_gaps()
+        
+        # Get the IDs or hashes of the sequences
+        seq_ids = [seq.id if seq.id else str(hash(seq)) for seq in sample_sequences]
+        
         mapping = {
-            0: [0,1, 2, 5],
-            1: [0,1, 2, 5],
-            2: [0,1, 5]
+            seq_ids[0]: [0, 1, 2, 5],
+            seq_ids[1]: [0, 1, 2, 5],
+            seq_ids[2]: [0, 1, 5]
         }
         aligned = sample_sequences.apply_alignment_mapping(mapping)
         assert isinstance(aligned, ProteinSequences)
@@ -246,6 +253,44 @@ class TestProteinSequences:
         assert str(aligned[0]) == "ACD--E"
         assert str(aligned[1]) == "ACD--F"
         assert str(aligned[2]) == "AC---D"
+
+    def test_get_alignment_mapping_with_mixed_ids(self):
+        sequences = ProteinSequences([
+            ProteinSequence("ACD-E", id="seq1"),
+            ProteinSequence("ACD-F", id="seq2"),
+            ProteinSequence("AC--D")  # No ID provided
+        ])
+        mapping = sequences.get_alignment_mapping()
+        assert len(mapping) == 3
+        assert mapping["seq1"] == [0, 1, 2, 4]
+        assert mapping["seq2"] == [0, 1, 2, 4]
+        assert str(hash(sequences[2])) in mapping
+        assert mapping[str(hash(sequences[2]))] == [0, 1, 4]
+
+    def test_apply_alignment_mapping_with_mixed_ids(self):
+        sequences = ProteinSequences([
+            ProteinSequence("ACDE", id="seq1"),
+            ProteinSequence("ACDF", id="seq2"),
+            ProteinSequence("ACD")  # No ID provided
+        ])
+        seq3_hash = str(hash(sequences[2]))
+        mapping = {
+            "seq1": [0, 1, 2, 5],
+            "seq2": [0, 1, 2, 5],
+            seq3_hash: [0, 1, 5]
+        }
+        aligned = sequences.apply_alignment_mapping(mapping)
+        assert len(aligned) == 3
+        assert str(aligned[0]) == "ACD--E"
+        assert str(aligned[1]) == "ACD--F"
+        assert str(aligned[2]) == "AC---D"
+        assert aligned[2].id is None  # Ensure the ID (or lack thereof) is preserved
+
+    def test_apply_alignment_mapping_error(self, sample_sequences):
+        sample_sequences = sample_sequences.with_no_gaps()
+        invalid_mapping = {"nonexistent_id": [0, 1, 2]}
+        with pytest.raises(ValueError):
+            sample_sequences.apply_alignment_mapping(invalid_mapping)
 
     def test_as_array(self, sample_sequences):
         arr = sample_sequences.as_array()

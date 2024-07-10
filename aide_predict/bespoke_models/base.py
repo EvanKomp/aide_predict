@@ -8,10 +8,9 @@ Base classes for models to be wrapped into the API as sklearn estimators
 '''
 import os
 from abc import abstractmethod
-import warnings
 
 from sklearn.base import BaseEstimator, TransformerMixin, RegressorMixin
-from sklearn.utils.validation import check_is_fitted
+from sklearn.utils.validation import check_is_fitted, NotFittedError
 import numpy as np
 
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
@@ -50,6 +49,7 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         per_position_capable (bool): Whether the model can output per position scores.
         requires_fixed_length (bool): Whether the model requires a fixed length input.
         can_regress (bool): Whether the model outputs from transform can also be considered estimates of activity label.
+        can_handle_aligned_sequences (bool): Whether the model can handle unaligned sequences at predict time.
         _available (bool): Flag to indicate whether the model is available for use.
 
     To subclass ProteinModelWrapper:
@@ -105,6 +105,7 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
     _per_position_capable: bool = False
     _requires_fixed_length: bool = False
     _can_regress: bool = False
+    _can_handle_aligned_sequences: bool = False
     _available: bool = MessageBool(True, "This model is available for use.")
 
     def __init__(self, metadata_folder: str, wt: Optional[Union[str, ProteinSequence]] = None):
@@ -127,8 +128,10 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         if not isinstance(wt, ProteinSequence) and wt is not None:
             wt = ProteinSequence(wt)
         
-        if wt is not None and wt.has_gaps:
-            raise ValueError("Wild type sequence cannot have gaps.")
+        if wt is not None:
+            wt = ProteinSequence(wt)
+            if wt.has_gaps:
+                raise ValueError("Wild type sequence cannot have gaps.")
         
         self.wt = wt
 
@@ -139,28 +142,6 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         Ensures that everything this model class needs is in the metadata folder.
         """
         logger.warning("This model class did not implement check_metadata. If the model requires anything other than raw sequences to be fit, this is unexpected.")
-
-    @property   
-    def wt(self) -> Optional[ProteinSequence]:
-        """Get the wild type sequence."""
-        return self._wt
-    
-    @wt.setter
-    def wt(self, wt: Optional[Union[str, ProteinSequence]]) -> None:
-        """
-        Set the wild type sequence.
-
-        Args:
-            wt (Optional[Union[str, ProteinSequence]]): The wild type sequence.
-
-        Raises:
-            ValueError: If the wild type sequence contains gaps.
-        """
-        if wt is not None:
-            wt = ProteinSequence(wt)
-            if wt.has_gaps:
-                raise ValueError("Wild type sequence cannot have gaps.")
-        self._wt = wt
 
     def _validate_input(self, X: Union[ProteinSequences, List[str]]) -> ProteinSequences:
         """
@@ -186,7 +167,7 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         Raises:
             ValueError: If input sequences are not aligned and alignment is required.
         """
-        if self.requires_msa_for_fit and not X.aligned:
+        if not X.aligned:
             raise ValueError("Input sequences must be aligned for this model.")
 
     def _assert_fixed_length(self, X: ProteinSequences) -> None:
@@ -199,11 +180,26 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         Raises:
             ValueError: If input sequences are not of fixed length and fixed length is required.
         """
-        if self.requires_fixed_length:
-            if not X.fixed_length:
-                raise ValueError("Input sequences must be aligned and of fixed length for this model.")
-            if self.wt is not None and len(self.wt) != X.width:
-                raise ValueError("Wild type sequence must be the same length as the sequences.")
+        if not X.fixed_length:
+            raise ValueError("Input sequences must be aligned and of fixed length for this model.")
+        if self.wt is not None and len(self.wt) != X.width:
+            raise ValueError("Wild type sequence must be the same length as the sequences.")
+        
+    def _check_fixed_length(self, X: ProteinSequences) -> bool:
+        """
+        Check if the input sequences are of fixed length.
+
+        Args:
+            X (ProteinSequences): The input sequences.
+
+        Returns:
+            bool: True if sequences are of fixed length, False otherwise.
+        """
+        if not X.fixed_length:
+            return False
+        if self.wt is not None and len(self.wt) != X.width:
+            return False
+        return True
     
     def _enforce_aligned(self, X: ProteinSequences) -> ProteinSequences:
         """
@@ -242,14 +238,18 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         Returns:
             ProteinModelWrapper: The fitted model.
         """
+        try:
+            check_is_fitted(self)
+            logger.warning("Model is already fitted. Skipping")
+            return self
+        except NotFittedError:
+            pass
+
         logger.info(f"Fitting {self.__class__.__name__}")
         X = self._validate_input(X)
         
-        try:
-            self._assert_aligned(X)
-        except ValueError:
+        if self.requires_msa_for_fit:
             X = self._enforce_aligned(X)
-            self._assert_aligned(X)
         
         self._fit(X, y)
         
@@ -270,8 +270,10 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         """
         logger.info(f"Partial fitting {self.__class__.__name__}")
         X = self._validate_input(X)
-        self._assert_aligned(X)
-        self._assert_fixed_length(X)
+        
+        if self.requires_msa_for_fit:
+            X = self._enforce_aligned(X)
+
         self._partial_fit(X, y)
         return self
 
@@ -312,7 +314,12 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         check_is_fitted(self)
         X = self._validate_input(X)
 
-        self._assert_fixed_length(X)
+        if self.requires_fixed_length:
+            self._assert_fixed_length(X)
+
+        if not self.can_handle_aligned_sequences and X.has_gaps:
+            logger.info("Input sequences have gaps and the model cannot handle them. Removing gaps.")
+            X = X.with_no_gaps()
         
         outputs = self._transform(X)
         if not self.requires_wt_during_inference and self.wt is not None:
@@ -347,7 +354,8 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         Returns:
             Dict[str, Any]: Parameter names mapped to their values.
         """
-        return {"metadata_folder": self.metadata_folder, "wt": self.wt}
+        return {s: getattr(self, s) for s in self.__dict__.keys() if not s.startswith("_") and not callable(getattr(self, s)) and not s.endswith('_')}
+
 
     def set_params(self, **params: Any) -> 'ProteinModelWrapper':
         """
@@ -401,6 +409,11 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
     def can_regress(self) -> bool:
         """Whether the model can perform regression."""
         return self._can_regress
+    
+    @property
+    def can_handle_aligned_sequences(self) -> bool:
+        """Whether the model can handle aligned sequences (with gaps) at predict time."""
+        return self._can_handle_aligned_sequences
 
     @staticmethod
     def _construct_necessary_metadata(model_directory: str, necessary_metadata: dict) -> None:
@@ -481,32 +494,37 @@ class PositionSpecificMixin:
     
     This mixin:
     1. Overrides the per_position_capable attribute to be True.
-    2. Checks that positions and pool is an attribute.
+    2. Checks that positions, pool, and flatten are attributes.
     3. Wraps the predict and transform methods to check that if positions were passed and not pooling, the output is the same length as the positions.
+    4. Flattens the output if flatten is True.
+
+    Note that you are responsible for selecting positions and pooling. This mixing only provides checks that
+    the output is consistent with the specified positions. You DO NOT need to implement flattening, as this mixin
+    will handle it for you.
 
     Attributes:
         positions (Optional[List[int]]): The positions to output scores for.
         pool (bool): Whether to pool the scores across positions.
+        flatten (bool): Whether to flatten dimensions beyond the second dimension.
     """
     _per_position_capable: bool = True
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, positions: bool=None, pool: bool=True, flatten: bool=True, *args, **kwargs):
         """
         Initialize the PositionSpecificMixin.
 
         Raises:
-            ValueError: If the model does not have a positions or pool attribute.
+            ValueError: If the model does not have a positions, pool, or flatten attribute.
         """
+        self.positions = positions
+        self.pool = pool
+        self.flatten = flatten
         super().__init__(*args, **kwargs)
-
-        if not hasattr(self, 'positions'):
-            raise ValueError("This model was specified as PositionSpecific, but does not have a positions attribute. Make sure `positions` is a parameter in the __init__ method.")
-        if not hasattr(self, 'pool'):
-            raise ValueError("This model was specified as PositionSpecific, but does not have a pool attribute. Make sure `pool` is a parameter in the __init__ method.")
 
     def transform(self, X: Union[ProteinSequences, List[str]]) -> np.ndarray:
         """
         Transform the sequences, ensuring correct output dimensions for position-specific models.
+        If flatten is True, flatten dimensions beyond the second dimension.
 
         Args:
             X (Union[ProteinSequences, List[str]]): Input sequences.
@@ -518,15 +536,22 @@ class PositionSpecificMixin:
             ValueError: If the output dimensions do not match the specified positions.
         """
         result = super().transform(X)
+        print(result.shape)
+        print(self.positions)
+        
         if self.positions is not None and not self.pool:
             dims = len(self.positions)
             if result.shape[1] != dims:
                 raise ValueError(f"The output second dimension must have the same length as number of positions. Expected {dims}, got {result.shape[1]}.")
+        
+        if self.flatten and result.ndim > 2:
+            result = result.reshape(result.shape[0], -1)
+        
         return result
     
     def get_feature_names_out(self, input_features: Optional[List[str]] = None) -> List[str]:
         """
-        Get output feature names for transformation, considering position-specific output.
+        Get output feature names for transformation, considering position-specific output and flattening.
 
         Args:
             input_features (Optional[List[str]]): Input feature names.
@@ -536,8 +561,23 @@ class PositionSpecificMixin:
         """
         check_is_fitted(self)
         header = f"{self.__class__.__name__}"
+        
         if self.positions is not None and not self.pool:
-            return [f"{header}_{pos}" for pos in self.positions]
+            base_names = [f"{header}_{pos}" for pos in self.positions]
+            if self.flatten:
+                # Since we don't know the exact shape of the output at this point,
+                # we'll use a placeholder for additional dimensions
+                return [f"{name}_dim{i}" for name in base_names for i in range(getattr(self, 'output_dim', 1))]
+            return base_names
+        
         return [header]
+    
+class CanHandleAlignedSequencesMixin:
+    """
+    Mixin to indicate that a model can handle aligned sequences (with gaps) during prediction.
+    
+    This mixin overrides the can_handle_aligned_sequences attribute to be True.
+    """
+    _can_handle_aligned_sequences: bool = True
     
 

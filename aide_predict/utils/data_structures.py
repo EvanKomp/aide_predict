@@ -266,6 +266,28 @@ class ProteinSequence(str):
 
         aligned_seq, aligned_other = sw_global_pairwise(base_self, base_other)
         return aligned_seq, aligned_other
+    
+    def saturation_mutagenesis(self, positions: List[int]=None) -> List['ProteinSequence']:
+        """
+        Perform saturation mutagenesis at the specified positions.
+
+        Args:
+            positions (List[int]): The positions to mutate.
+
+        Returns:
+            ProteinSequences: A list of mutated sequences.
+        """
+        sequences = []
+        if positions is None:
+            positions = range(len(self))
+        for i in positions:
+            for aa in AA_SINGLE:
+                if aa != self[i]:
+                    mutated = self.mutate(i, aa)
+                    mutated.id = f"{self[i]}{i+1}{aa}"
+                    sequences.append(mutated)
+        return ProteinSequences(sequences)
+
 
 ############################################
 # A class to store multiple ProteinSequence objects
@@ -416,6 +438,19 @@ class ProteinSequences(UserList):
             ProteinSequences: A new ProteinSequences object containing the sequences from the dictionary.
         """
         return cls([ProteinSequence(seq, id=id) for id, seq in sequences.items()])
+    
+    @classmethod
+    def from_list(cls, sequences: List[str]) -> 'ProteinSequences':
+        """
+        Create a ProteinSequences object from a list of sequences.
+
+        Args:
+            sequences (List[str]): A list of protein sequences.
+
+        Returns:
+            ProteinSequences: A new ProteinSequences object containing the sequences from the list.
+        """
+        return cls([ProteinSequence(seq) for seq in sequences])
 
     def __repr__(self) -> str:
         """
@@ -457,6 +492,15 @@ class ProteinSequences(UserList):
         for i in range(0, len(self), batch_size):
             yield ProteinSequences(self[i:i+batch_size])
 
+    def get_id_mapping(self) -> Dict[str, int]:
+        """
+        Create a mapping of sequence IDs to indices.
+
+        Returns:
+            Dict[str, int]: A dictionary where keys are sequence IDs and values are indices.
+        """
+        return {seq.id if seq.id else hash(seq): i for i, seq in enumerate(self)}
+
 
     def align_all(self, output_fasta: Optional[str] = None) -> Union['ProteinSequences', 'ProteinSequencesOnFile']:
         """
@@ -480,14 +524,15 @@ class ProteinSequences(UserList):
         return mafft_align(self, output_fasta=output_fasta)
     
     def align_to(self, existing_alignment: Union['ProteinSequences', 'ProteinSequencesOnFile'], 
-                 realign: bool = False, 
+                 realign: bool = False, return_only_new: bool = False,
                  output_fasta: Optional[str] = None) -> Union['ProteinSequences', 'ProteinSequencesOnFile']:
         """
         Align this ProteinSequences object to an existing alignment using MAFFT.
 
         Args:
             existing_alignment (Union[ProteinSequences, ProteinSequencesOnFile]): The existing alignment to align to.
-            realign (bool): If True, realign all sequences from scratch. If False, add new sequences to existing alignment.
+            realign (bool): If True, realign all sequences from scratch. If False, add new sequences to existing alignment.\
+            return_only_new (bool): If True, return only the newly aligned sequences. If False, return all sequences.
             output_fasta (Optional[str]): Path to save the alignment. If None, a temporary file is used.
 
         Returns:
@@ -505,20 +550,28 @@ class ProteinSequences(UserList):
         if not existing_alignment.aligned:
             raise ValueError("Existing alignment must be aligned.")
 
-        return mafft_align(self, existing_alignment=existing_alignment, realign=realign, output_fasta=output_fasta)
+        all_aligned = mafft_align(self, existing_alignment=existing_alignment, realign=realign, output_fasta=output_fasta)
+
+        if return_only_new:
+            id_mapping = all_aligned.get_id_mapping()
+            new_indices = [id_mapping[seq.id if seq.id else str(hash(seq))] for seq in self]
+            return ProteinSequences([all_aligned[i] for i in new_indices])
+        
+        return all_aligned
+
     
     def with_no_gaps(self) -> 'ProteinSequences':
         """Return a new ProteinSequences with all gaps removed."""
         return ProteinSequences([seq.with_no_gaps() for seq in self])
 
-    def get_alignment_mapping(self) -> Dict[int, List[Optional[int]]]:
+    def get_alignment_mapping(self) -> Dict[str, List[Optional[int]]]:
         """
         Create a mapping of original sequence positions to aligned positions for each sequence.
 
         Returns:
-            Dict[int, List[Optional[int]]]: A dictionary where keys are sequence indices and values are
+            Dict[str, List[Optional[int]]]: A dictionary where keys are sequence IDs or hashes and values are
             lists of integers. Each integer represents the position in the aligned sequence
-            corresponding to the original sequence position. Eg. [0,1,2,5,6,7] incidates that the 
+            corresponding to the original sequence position. E.g., [0,1,2,5,6,7] indicates that
             there is a gap between amino acid 2 and 3, and 3 is in position 5 in the aligned sequence.
 
         Raises:
@@ -528,7 +581,8 @@ class ProteinSequences(UserList):
             raise ValueError("Sequences must be aligned to create an alignment mapping.")
 
         mapping = {}
-        for i, seq in enumerate(self):
+        for seq in self:
+            seq_id = seq.id if seq.id else str(hash(seq))
             seq_mapping = []
             original_pos = 0
             for aligned_pos, char in enumerate(seq.iter_protein_characters()):
@@ -537,41 +591,43 @@ class ProteinSequences(UserList):
                     original_pos += 1
                 else:
                     pass
-            mapping[i] = seq_mapping
+            mapping[seq_id] = seq_mapping
 
         return mapping
 
-    def apply_alignment_mapping(self, mapping: Dict[int, List[Optional[int]]]) -> 'ProteinSequences':
+    def apply_alignment_mapping(self, mapping: Dict[str, List[Optional[int]]]) -> 'ProteinSequences':
         """
         Apply an alignment mapping to the current sequences.
 
         Args:
-            mapping (Dict[int, List[Optional[int]]]): The alignment mapping to apply.
+            mapping (Dict[str, List[Optional[int]]]): The alignment mapping to apply.
 
         Returns:
             ProteinSequences: A new ProteinSequences object with aligned sequences.
 
         Raises:
-            ValueError: If a sequence index is not found in the mapping or if the mapping is invalid.
+            ValueError: If a sequence ID or hash is not found in the mapping or if the mapping is invalid.
         """
         if self.has_gaps:
             raise ValueError("Sequences already contain gaps. Cannot apply alignment mapping to gapped sequences.")
 
         aligned_sequences = []
-        for i, seq in enumerate(self):
-            if i not in mapping:
-                raise ValueError(f"Sequence index {i} not found in the alignment mapping.")
+        for seq in self:
+            seq_id = seq.id if seq.id else str(hash(seq))
+            if seq_id not in mapping:
+                raise ValueError(f"Sequence ID or hash '{seq_id}' not found in the alignment mapping.")
 
-            seq_mapping = mapping[i]
+            seq_mapping = mapping[seq_id]
             aligned_seq = ['-'] * (max(filter(None, seq_mapping)) + 1)
             for original_pos, aligned_pos in enumerate(seq_mapping):
                 if original_pos >= len(seq):
-                    raise ValueError(f"Invalid mapping for sequence at index {i}: original position {original_pos} out of range.")
+                    raise ValueError(f"Invalid mapping for sequence '{seq_id}': original position {original_pos} out of range.")
                 aligned_seq[aligned_pos] = seq[original_pos]
 
             aligned_sequences.append(ProteinSequence(''.join(aligned_seq), id=seq.id, structure=seq.structure))
 
         return ProteinSequences(aligned_sequences)
+
     
 ############################################
 # A class with the same API as ProteinSequences but on file instead of in memory
