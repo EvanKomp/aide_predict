@@ -82,7 +82,7 @@ def test_esm_zero_shot():
     # run it with positions specified and get position specific scores
     model = ESM2LikelihoodWrapper(
         model_checkpoint="esm2_t6_8M_UR50D",
-        marginal_method="masked_marginal",
+        marginal_method="wildtype_marginal",
         positions=[8, 9, 10],
         device=DEVICE,
         pool=False,
@@ -93,6 +93,22 @@ def test_esm_zero_shot():
     predictions = model.predict(sequences)
     assert len(predictions) == len(sequences)
     assert len(predictions[0]) == 3
+    
+    # repeat for mutant marginal
+    model = ESM2LikelihoodWrapper(
+        model_checkpoint="esm2_t6_8M_UR50D",
+        marginal_method="mutant_marginal",
+        positions=None,
+        device=DEVICE,
+        pool=True,
+        wt="LADDRTLLMAGVSHDLRTPLTRIRLATEMMSEQDGYLAESINKDIEECNAIIEQFIDYLR",
+        metadata_folder='./tmp/esm',
+    )
+    model.fit(sequences) # does nothing
+    predictions = model.predict(sequences)
+    spearman = spearmanr(scores, predictions)[0]
+    print(f"ESM Spearman: {spearman}")
+    assert abs(spearman - 0.2) < 0.05
 
 if __name__ == "__main__":
     test_esm_zero_shot()

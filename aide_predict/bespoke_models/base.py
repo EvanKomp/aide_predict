@@ -536,8 +536,6 @@ class PositionSpecificMixin:
             ValueError: If the output dimensions do not match the specified positions.
         """
         result = super().transform(X)
-        print(result.shape)
-        print(self.positions)
         
         if self.positions is not None and not self.pool:
             dims = len(self.positions)
