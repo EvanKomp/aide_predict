@@ -167,7 +167,7 @@ class LikelihoodTransformerBase(PositionSpecificMixin, CanRegressMixin, Requires
     @abstractmethod
     def _compute_log_likelihoods(self, X: ProteinSequences, mask_positions: Optional[List[List[int]]] = None) -> List[np.ndarray]:
         """
-        Compute log likelihoods for the input sequences.
+        Compute log likelihoods of each vocab unit at each position in input sequences.
         
         Args:
             X (ProteinSequences): Input protein sequences.
@@ -175,6 +175,7 @@ class LikelihoodTransformerBase(PositionSpecificMixin, CanRegressMixin, Requires
 
         Returns:
             List[np.ndarray]: List of log likelihood arrays for each sequence.
+            Each is expected to have shape (len(sequence), vocab_size).
         """
         pass
 
@@ -184,11 +185,11 @@ class LikelihoodTransformerBase(PositionSpecificMixin, CanRegressMixin, Requires
         Index log probabilities by the observed amino acids in the sequences.
 
         Args:
-            log_probs (np.ndarray): Log probabilities to index.
+            log_probs (np.ndarray): Log probabilities to index. These are each of shape (seq_len, vocab_size).
             sequences (ProteinSequences): Sequences to use for indexing.
 
         Returns:
-            np.ndarray: Indexed log probabilities.
+            np.ndarray: Indexed log probabilities. These should be of shape (1, seq_len).
         """
         pass
 
