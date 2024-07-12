@@ -191,6 +191,20 @@ class ProteinSequence(str):
         """
         other_seq = other if isinstance(other, ProteinSequence) else other
         return [i for i, (a, b) in enumerate(zip(self, other_seq)) if a != b]
+    
+    def get_mutations(self, other: Union[str, 'ProteinSequence']) -> List[str]:
+        """
+        Find mutations between this sequence and another.
+
+        Args:
+            other (Union[str, ProteinSequence]): The sequence to compare against.
+
+        Returns:
+            List[str]: A list of mutations in the format 'A123B' where A is the original character,
+            123 is the position, and B is the new character.
+        """
+        other_seq = other if isinstance(other, ProteinSequence) else other
+        return [f"{a}{i+1}{b}" for i, (a, b) in enumerate(zip(self, other_seq)) if a != b]
 
     def get_protein_character(self, position: int) -> ProteinCharacter:
         """

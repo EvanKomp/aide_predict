@@ -45,6 +45,7 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
     
     Class Attributes:
         requires_msa_for_fit (bool): Whether the model requires an MSA as input for fitting.
+        requires_wt_to_function (bool): Whether the model requires the wild type sequence to function.
         requires_wt_during_inference (bool): Whether the model requires the wild type sequence during inference.
         per_position_capable (bool): Whether the model can output per position scores.
         requires_fixed_length (bool): Whether the model requires a fixed length input.
@@ -68,6 +69,7 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
        - RequiresMSAMixin - if the model requires an MSA for fitting
        - RequiresFixedLengthMixin - if the model requires fixed length sequences at predict time
        - CanRegressMixin - if the model can regress, otherwise it is assumed to be a transformer only eg. embedding
+       - RequiresWTToFunctionMixin - if the model requires the wild type sequence to function
        - RequiresWTDuringInferenceMixin - if the model requires the wild type sequence duing inference in order to normalize by wt
        - PositionSpecificMixin - if the model can output per position scores
     6. If the model requires more than the base package, set the _available attribute to be dynamic based on a check in the module.
@@ -102,6 +104,7 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
 
     _requires_msa_for_fit: bool = False
     _requires_wt_during_inference: bool = False
+    _requires_wt_to_function: bool = False
     _per_position_capable: bool = False
     _requires_fixed_length: bool = False
     _can_regress: bool = False
@@ -133,6 +136,9 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
             if wt.has_gaps:
                 raise ValueError("Wild type sequence cannot have gaps.")
         
+        if wt is None and self.requires_wt_to_function:
+            raise ValueError("This model requires a wild type sequence to function.")
+
         self.wt = wt
 
         self.check_metadata()
@@ -487,6 +493,14 @@ class RequiresWTDuringInferenceMixin:
     This mixin overrides the requires_wt_during_inference attribute to be True.
     """
     _requires_wt_during_inference: bool = True
+
+class RequiresWTToFunctionMixin:
+    """
+    Mixin to ensure model requires wild type to function.
+    
+    This mixin overrides the requires_wt_to_function attribute to be True.
+    """
+    _requires_wt_to_function: bool = True
 
 class PositionSpecificMixin:
     """
