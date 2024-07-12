@@ -132,7 +132,8 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
             wt = ProteinSequence(wt)
         
         if wt is not None:
-            wt = ProteinSequence(wt)
+            if not isinstance(wt, ProteinSequence):
+                wt = ProteinSequence(wt)
             if wt.has_gaps:
                 raise ValueError("Wild type sequence cannot have gaps.")
         
