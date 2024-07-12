@@ -7,9 +7,10 @@
 '''
 from enum import Enum
 from abc import ABC, abstractmethod
-from typing import List, Union, Optional, Any
+from typing import List, Union, Optional, Any, Callable
 import numpy as np
 from tqdm import tqdm
+from contextlib import contextmanager
 
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
 from aide_predict.bespoke_models.base import ProteinModelWrapper, PositionSpecificMixin, RequiresWTDuringInferenceMixin, CanRegressMixin
@@ -18,6 +19,39 @@ class MarginalMethod(Enum):
     MASKED = "masked_marginal"
     WILDTYPE = "wildtype_marginal"
     MUTANT = "mutant_marginal"
+
+class ModelDeviceManager:
+    def __init__(self, model_instance: Any, device: str = 'cpu'):
+        self.model_instance = model_instance
+        self.device = device
+
+    @contextmanager
+    def model_on_device(self, load_func: Callable[[], None], cleanup_func: Callable[[], None]):
+        try:
+            # Load the model and set necessary attributes
+            load_func()
+            yield
+        finally:
+            # Clean up
+            cleanup_func()
+            # Force CUDA to reclaim memory
+            if self.device.startswith('cuda'):
+                import torch
+                torch.cuda.empty_cache()
+            elif self.device.startswith('mps'):
+                import torch
+                torch.mps.empty_cache()
+                
+
+@contextmanager
+def model_device_context(model_instance: Any, load_func: Callable[[], None], cleanup_func: Callable[[], None], device: str = 'cpu'):
+    """Context manager used to load and clean up a model on a specific device.
+    
+    This ensures model weights are not sitting on the GPU when not being accessed.
+    """
+    manager = ModelDeviceManager(model_instance, device)
+    with manager.model_on_device(load_func, cleanup_func):
+        yield
 
 class LikelihoodTransformerBase(PositionSpecificMixin, CanRegressMixin, RequiresWTDuringInferenceMixin, ProteinModelWrapper, ABC):
     """
@@ -71,16 +105,17 @@ class LikelihoodTransformerBase(PositionSpecificMixin, CanRegressMixin, Requires
         Raises:
             ValueError: If an unknown marginal method is specified.
         """
-        if self.marginal_method == MarginalMethod.MUTANT.value:
-            log_likelihoods = self._compute_mutant_marginal(X)
-        elif self.marginal_method == MarginalMethod.WILDTYPE.value:
-            log_likelihoods = self._compute_wildtype_marginal(X)
-        elif self.marginal_method == MarginalMethod.MASKED.value:
-            log_likelihoods = self._compute_masked_marginal(X)
-        else:
-            raise ValueError(f"Unknown marginal method: {self.marginal_method}")
-        
-        return self._post_process_likelihoods(log_likelihoods, X)
+        with model_device_context(self, self._load_model, self._cleanup_model, self.device):
+            if self.marginal_method == MarginalMethod.MUTANT.value:
+                log_likelihoods = self._compute_mutant_marginal(X)
+            elif self.marginal_method == MarginalMethod.WILDTYPE.value:
+                log_likelihoods = self._compute_wildtype_marginal(X)
+            elif self.marginal_method == MarginalMethod.MASKED.value:
+                log_likelihoods = self._compute_masked_marginal(X)
+            else:
+                raise ValueError(f"Unknown marginal method: {self.marginal_method}")
+            
+            return self._post_process_likelihoods(log_likelihoods, X)
     
     def _validate_marginals(self, marginals: Union[np.ndarray, List[np.ndarray]], sequences: ProteinSequences) -> None:
         """
@@ -190,6 +225,25 @@ class LikelihoodTransformerBase(PositionSpecificMixin, CanRegressMixin, Requires
 
         Returns:
             np.ndarray: Indexed log probabilities. These should be of shape (1, seq_len).
+        """
+        pass
+
+    @abstractmethod
+    def _load_model(self) -> None:
+        """
+        Load and the model and other objects into memory on device such that they can be accessed in
+        `_compute_log_likelihoods` and `_index_log_probs`.
+
+        This is used in a context manager to make sure the model is only on device when needed.
+        """
+        pass
+
+    @abstractmethod
+    def _cleanup_model(self) -> None:
+        """
+        Clean up the model and other objects loaded into memory in `_load_model`.
+
+        This is used in a context manager to make sure the model is only on device when needed.
         """
         pass
 

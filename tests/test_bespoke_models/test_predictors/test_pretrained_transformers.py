@@ -10,20 +10,24 @@ import pytest
 import numpy as np
 from typing import List
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
-from aide_predict.bespoke_models.predictors.pretrained_transformers import LikelihoodTransformerBase, MarginalMethod
+from aide_predict.bespoke_models.predictors.pretrained_transformers import LikelihoodTransformerBase, MarginalMethod, model_device_context
 
 class MinimalLikelihoodTransformer(LikelihoodTransformerBase):
     def _compute_log_likelihoods(self, X: ProteinSequences, mask_positions: List[List[int]] = None) -> List[np.ndarray]:
         # Simple mock implementation
-        out = [np.log(np.ones((len(seq), 20)) / 20) for seq in X]
-        print([o.shape for o in out])
-        return out
+        return [np.log(np.ones((len(seq), 20)) / 20) for seq in X]
 
     def _index_log_probs(self, log_probs: np.ndarray, sequences: ProteinSequences) -> np.ndarray:
         # Simple mock implementation
-        out = np.vstack([log_probs[np.arange(len(seq)), 0].reshape(1,-1) for seq in sequences])
-        print([o.shape for o in out])
-        return out
+        return np.vstack([log_probs[np.arange(len(seq)), 0].reshape(1,-1) for seq in sequences])
+
+    def _load_model(self):
+        # Mock implementation
+        self.model_ = "MockModel"
+
+    def _cleanup_model(self):
+        # Mock implementation
+        del self.model_
 
 class TestLikelihoodTransformerBase:
     @pytest.fixture
@@ -66,24 +70,25 @@ class TestLikelihoodTransformerBase:
     ])
     def test_transform(self, transformer, sequences, marginal_method):
         transformer.marginal_method = marginal_method
-        print(type(transformer.wt))
         result = transformer._transform(sequences)
         assert isinstance(result, np.ndarray)
         assert result.shape == (3, 1)  # Assuming pooling is True by default
 
     def test_compute_mutant_marginal(self, transformer, sequences):
-        result = transformer._compute_mutant_marginal(sequences)
+        with model_device_context(transformer, transformer._load_model, transformer._cleanup_model, transformer.device):
+            result = transformer._compute_mutant_marginal(sequences)
         assert len(result) == 3
         assert all(r.shape == (1, 20) for r in result)
 
     def test_compute_wildtype_marginal(self, transformer, sequences):
-        result = transformer._compute_wildtype_marginal(sequences)
+        with model_device_context(transformer, transformer._load_model, transformer._cleanup_model, transformer.device):
+            result = transformer._compute_wildtype_marginal(sequences)
         assert len(result) == 3
         assert all(r.shape == (1, 20) for r in result)
 
     def test_compute_masked_marginal(self, transformer, sequences):
-        result = transformer._compute_masked_marginal(sequences)
-        print(result[0])
+        with model_device_context(transformer, transformer._load_model, transformer._cleanup_model, transformer.device):
+            result = transformer._compute_masked_marginal(sequences)
         assert len(result) == 3
         assert all(r.shape == (1, 20) for r in result)
 
@@ -111,7 +116,8 @@ class TestLikelihoodTransformerBase:
             transformer._compute_masked_marginal(var_sequences)
         
         # Mutant marginal should work with variable length sequences
-        result = transformer._compute_mutant_marginal(var_sequences)
+        with model_device_context(transformer, transformer._load_model, transformer._cleanup_model, transformer.device):
+            result = transformer._compute_mutant_marginal(var_sequences)
         assert len(result) == 3
         assert result[0].shape == (1, 20)
         assert result[1].shape == (1, 18)
@@ -133,3 +139,18 @@ class TestLikelihoodTransformerBase:
             assert result.shape == (3, 1)
         else:
             assert result.shape == (3, 20)
+
+    def test_load_and_cleanup_model(self, transformer):
+        transformer._load_model()
+        assert hasattr(transformer, 'model_')
+        assert transformer.model_ == "MockModel"
+        
+        transformer._cleanup_model()
+        assert not hasattr(transformer, 'model_')
+
+    def test_model_device_context(self, transformer):
+        with model_device_context(transformer, transformer._load_model, transformer._cleanup_model, transformer.device):
+            assert hasattr(transformer, 'model_')
+            assert transformer.model_ == "MockModel"
+        
+        assert not hasattr(transformer, 'model_')

@@ -140,9 +140,27 @@ class ESM2LikelihoodWrapper(RequiresFixedLengthMixin, LikelihoodTransformerBase)
         logger.debug(f"ESM2 model initialized with {self.__dict__}")
 
     def _fit(self, X: ProteinSequences, y: Optional[np.ndarray] = None) -> 'ESM2LikelihoodWrapper':
+        self.fitted_ = True
+        return self
+    
+    def _load_model(self) -> None:
+        """Load and the model and other objects into memory on device such that they can be accessed in
+        `_compute_log_likelihoods` and `_index_log_probs`.
+
+        Required abstract class from `LikelihoodTransformerBase`.
+        """
         self.model_ = EsmForMaskedLM.from_pretrained('facebook/'+self.model_checkpoint).to(self.device)
         self.tokenizer_ = AutoTokenizer.from_pretrained('facebook/'+self.model_checkpoint)
-        return self
+    
+    
+    def _cleanup_model(self) -> None:
+        """
+        Clean up the model and other objects loaded into memory in `_load_model`.
+
+        Required abstract class from `LikelihoodTransformerBase`.
+        """
+        del self.model_
+        del self.tokenizer_
 
     def _tokenize(self, sequences: List[str], on_device: bool=True) -> torch.Tensor:
         if on_device:

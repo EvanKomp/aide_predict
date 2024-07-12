@@ -82,12 +82,30 @@ class MSATransformerLikelihoodWrapper(RequiresMSAMixin, RequiresFixedLengthMixin
         Returns:
             MSATransformerLikelihoodWrapper: The fitted wrapper.
         """
-        self.model_, self.alphabet_ = pretrained.esm_msa1b_t12_100M_UR50S()
-        self.model_ = self.model_.to(self.device)
         self.msa_length_: int = X.width
         self.original_msa_: ProteinSequences = X
-        self.batch_converter_ = self.alphabet_.get_batch_converter()
         return self
+    
+    def _load_model(self) -> None:
+        """Load and the model and other objects into memory on device such that they can be accessed in
+        `_compute_log_likelihoods` and `_index_log_probs`.
+
+        Required abstract class from `LikelihoodTransformerBase`.
+        """
+        self.model_, self.alphabet_ = pretrained.esm_msa1b_t12_100M_UR50S()
+        self.model_ = self.model_.to(self.device)
+        self.batch_converter_ = self.alphabet_.get_batch_converter()
+    
+    
+    def _cleanup_model(self) -> None:
+        """
+        Clean up the model and other objects loaded into memory in `_load_model`.
+
+        Required abstract class from `LikelihoodTransformerBase`.
+        """
+        del self.model_
+        del self.alphabet_
+        del self.batch_converter_
 
     def _prepare_msa_batch(self, msa: ProteinSequences, query_sequence: ProteinSequence, mask_positions: List[int] = []) -> torch.Tensor:
         """
