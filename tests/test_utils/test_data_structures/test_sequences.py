@@ -161,9 +161,11 @@ class TestProteinSequence:
 
     def test_equality(self, sample_sequence):
         same_sequence = ProteinSequence("ACDEFGHIKLMNPQRSTVWY", id="sample")
+        same_sequence_same_structure = ProteinSequence("ACDEFGHIKLMNPQRSTVWY", id="sample", structure=sample_sequence.structure)
         different_sequence = ProteinSequence("ACDEFGHIKLMNPQRSTVWY", id="different")
-        assert sample_sequence == same_sequence
+        assert sample_sequence != same_sequence # because of different structure
         assert sample_sequence != different_sequence
+        assert sample_sequence == same_sequence_same_structure
 
 # ProteinSequences tests
 class TestProteinSequences:

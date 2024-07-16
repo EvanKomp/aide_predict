@@ -119,7 +119,7 @@ class ProteinSequence(str):
     
     def __hash__(self) -> int:
         """Compute a hash value for the ProteinSequence."""
-        return hash((tuple(self._characters), self._id))
+        return hash((tuple(self._characters), self._id, self._structure))
     
     def __eq__(self, other: object) -> bool:
         """Check if two ProteinSequence objects are equal."""

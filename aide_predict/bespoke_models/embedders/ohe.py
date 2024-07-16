@@ -35,7 +35,7 @@ class OneHotProteinEmbedding(PositionSpecificMixin, RequiresFixedLengthMixin, Pr
         seq_length (Optional[int]): The length of the sequences, determined during fitting.
     """
 
-    def __init__(self, metadata_folder: str, wt: Optional[Union[str, ProteinSequence]] = None,
+    def __init__(self, metadata_folder: str=None, wt: Optional[Union[str, ProteinSequence]] = None,
                  positions: Optional[List[int]] = None, flatten: bool = True):
         """
         Initialize the OneHotProteinEmbedding.

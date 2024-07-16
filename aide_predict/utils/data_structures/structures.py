@@ -8,6 +8,7 @@
 import os
 from typing import Optional, Dict, List
 import warnings
+from dataclasses import dataclass
 import glob
 import re
 import json
@@ -19,25 +20,18 @@ import numpy as np
 from Bio.PDB import PDBParser, Structure, Chain
 from Bio.PDB.DSSP import dssp_dict_from_pdb_file
 
+@dataclass(eq=True)
 class ProteinStructure:
-    def __init__(self, pdb_file: str, chain: str = 'A', plddt_file: Optional[str] = None):
-        """
-        Initialize a ProteinStructure object.
+    pdb_file: str
+    chain: str = 'A'
+    plddt_file: Optional[str] = None
 
-        Args:
-            pdb_file (str): Path to the PDB file.
-            chain (str): Chain identifier (default is 'A').
-            plddt_file (Optional[str]): Path to the pLDDT file, if available.
-        """
-        self.pdb_file = pdb_file
-        self.chain = chain
-        self.plddt_file = plddt_file
-
-        if not os.path.exists(pdb_file):
-            raise FileNotFoundError(f"PDB file not found: {pdb_file}")
+    def __post_init__(self):
+        if not os.path.exists(self.pdb_file):
+            raise FileNotFoundError(f"PDB file not found: {self.pdb_file}")
         
-        if plddt_file and not os.path.exists(plddt_file):
-            raise FileNotFoundError(f"pLDDT file not found: {plddt_file}")
+        if self.plddt_file and not os.path.exists(self.plddt_file):
+            raise FileNotFoundError(f"pLDDT file not found: {self.plddt_file}")
 
         self._sequence: Optional[str] = None
         self._plddt: Optional[np.ndarray] = None
@@ -169,6 +163,9 @@ class ProteinStructure:
             raise FileNotFoundError(f"pLDDT file not found: {plddt_file}")
 
         return cls(pdb_file, chain, plddt_file)
+    
+    def __hash__(self) -> int:
+        return hash((self.pdb_file, self.chain, self.plddt_file))
 
     def __repr__(self) -> str:
         return f"ProteinStructure(pdb_file='{self.pdb_file}', chain='{self.chain}')"

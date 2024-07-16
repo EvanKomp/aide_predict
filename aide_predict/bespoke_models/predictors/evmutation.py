@@ -11,6 +11,7 @@ https://github.com/debbiemarkslab/EVcouplings/tree/develop
 Hopf T. A., Green A. G., Schubert B., et al. The EVcouplings Python framework for coevolutionary sequence analysis. Bioinformatics 35, 1582–1584 (2019)
 '''
 import os
+import warnings
 import shutil
 from typing import List, Union, Optional
 import numpy as np
@@ -81,6 +82,12 @@ class EVMutationWrapper(
             self._start = start_region
             self._end = end_region
 
+    def check_metadata(self) -> None:
+        # ensure metadata folder is empty, otherwise delete whats inside
+        if os.path.exists(self.metadata_folder):
+            for f in os.listdir(self.metadata_folder):
+                os.remove(os.path.join(self.metadata_folder, f))
+
     def _fit(self, X: ProteinSequences, y: Optional[np.ndarray] = None) -> 'EVCouplingsWrapper':
         """
         Fit the EVCouplings model to the given MSA.
@@ -94,6 +101,10 @@ class EVMutationWrapper(
         """
         if not X.width == len(self.wt):
             raise ValueError("The sequences in the MSA must all have the same length as the wild-type sequence")
+        if not str(X[0]).upper() == str(self.wt).upper():
+            raise ValueError("The wild-type sequence must be present in the MSA as the first sequence.")
+        if not self.wt.id == X[0].id:
+            raise ValueError("The wild-type sequence must have the same ID as the first sequence in the MSA.")
 
         # Prepare the alignment file
         alignment_file = os.path.join(self.metadata_folder, "alignment.a2m")
@@ -102,7 +113,7 @@ class EVMutationWrapper(
         # need to define frequency file, expected by EVCouplings
         with open(alignment_file, "r") as f:
             ali = Alignment.from_file(f, format='fasta')
-            freqs = describe_frequencies(ali, self._start, self.wt.id)
+            freqs = describe_frequencies(ali, self._start, 0)
             freqs.to_csv(os.path.join(self.metadata_folder, "frequencies.csv"))
 
         # Prepare the configuration for EVCouplings
@@ -116,7 +127,7 @@ class EVMutationWrapper(
             "lambda_group": self.lambda_group,
             "cpu": None,
             "protocol": self.protocol,
-            "focus_mode": True,
+            "focus_mode": False,
             "focus_sequence": self.wt.id,
             "segments": None,
             "min_sequence_distance": self.min_sequence_distance,
@@ -152,7 +163,15 @@ class EVMutationWrapper(
         for seq in X:
             mutations = self.wt.get_mutations(seq)
             evc_mutations = [(int(m[1:-1]), m[0], m[-1]) for m in mutations]
-            delta_h, _, _ = self.model_.delta_hamiltonian(evc_mutations)
+            # remove mutations that evc does not haves scores for
+            new_mutations = []
+            for i, (subs_pos, subs_from, subs_to) in enumerate(evc_mutations):
+                if subs_pos not in self.model_.index_map or subs_to not in self.model_.alphabet_map:
+                    warnings.warn(f"Mutation {subs_from}{subs_pos}{subs_to} is not supported by EVCouplings statistics and will be ignored for scoring.")
+                    continue
+                new_mutations.append((subs_pos, subs_from, subs_to))
+                
+            delta_h, _, _ = self.model_.delta_hamiltonian(new_mutations)
             predictions.append(delta_h)
         return np.array(predictions).reshape(-1, 1)
 

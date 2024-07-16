@@ -39,7 +39,7 @@ class MSATransformerLikelihoodWrapper(RequiresMSAMixin, RequiresFixedLengthMixin
 
     _available = AVAILABLE
 
-    def __init__(self, metadata_folder: str,
+    def __init__(self, metadata_folder: str=None,
                  marginal_method: MarginalMethod = MarginalMethod.WILDTYPE,
                  positions: Optional[List[int]] = None,
                  flatten: bool = False,
@@ -120,7 +120,7 @@ class MSATransformerLikelihoodWrapper(RequiresMSAMixin, RequiresFixedLengthMixin
             torch.Tensor: The prepared MSA batch tokens.
         """
         batch_converter = self.alphabet_.get_batch_converter()
-        data = [(str(hash(s)), str(s)) for s in msa] + [(str(hash(query_sequence)), str(query_sequence))]
+        data = [(str(hash(s)), str(s).upper().replace('.', '-')) for s in msa] + [(str(hash(query_sequence)), str(query_sequence).upper())]
         _, _, batch_tokens = batch_converter(data)
         for i in mask_positions:
             batch_tokens[0, -1, i+1] = self.alphabet_.mask_idx

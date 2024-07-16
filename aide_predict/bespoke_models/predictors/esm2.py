@@ -170,7 +170,7 @@ class ESM2LikelihoodWrapper(RequiresFixedLengthMixin, LikelihoodTransformerBase)
             return self.tokenizer_(sequences, add_special_tokens=False, return_tensors='np', padding=True)
 
     def _compute_log_likelihoods(self, X: ProteinSequences, mask_positions: List[List[int]] = None) -> List[np.ndarray]:
-        prepared_sequences = [list(str(seq)) for seq in X]
+        prepared_sequences = [list(str(seq).upper()) for seq in X]
 
         if mask_positions:
             if not len(mask_positions) == len(X):

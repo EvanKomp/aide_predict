@@ -66,7 +66,7 @@ class LikelihoodTransformerBase(PositionSpecificMixin, CanRegressMixin, Requires
         device (str): The device to use for computations ('cpu' or 'cuda').
     """
 
-    def __init__(self, metadata_folder: str, 
+    def __init__(self, metadata_folder: str=None, 
                  marginal_method: MarginalMethod = MarginalMethod.WILDTYPE,
                  positions: Optional[List[int]] = None, 
                  flatten: bool = False,
@@ -405,7 +405,16 @@ class LikelihoodTransformerBase(PositionSpecificMixin, CanRegressMixin, Requires
             log_likelihoods = np.vstack([ll[:, self.positions] for ll in log_likelihoods])
         
         if self.pool:
-            log_likelihoods = np.array([np.nanmean(ll) for ll in log_likelihoods])
+            # if all values are nana, that means it is equal to wildtype and nanmean will fail, return
+            # zero for that case
+            new_log_likelihoods = []
+            for ll in log_likelihoods:
+                if np.all(np.isnan(ll)):
+                    new_log_likelihoods.append(np.zeros(1))
+                else:
+                    new_log_likelihoods.append(np.nanmean(ll))
+
+            log_likelihoods = np.array(new_log_likelihoods)
             
             # Handle the edge case for mutant marginal with variable length sequences
             if self.marginal_method == MarginalMethod.MUTANT.value and self.wt is not None and not X.aligned and X.width != len(self.wt):

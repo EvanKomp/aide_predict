@@ -8,6 +8,7 @@ Base classes for models to be wrapped into the API as sklearn estimators
 '''
 import os
 from abc import abstractmethod
+import time
 
 from sklearn.base import BaseEstimator, TransformerMixin, RegressorMixin
 from sklearn.utils.validation import check_is_fitted, NotFittedError
@@ -111,7 +112,7 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
     _can_handle_aligned_sequences: bool = False
     _available: bool = MessageBool(True, "This model is available for use.")
 
-    def __init__(self, metadata_folder: str, wt: Optional[Union[str, ProteinSequence]] = None):
+    def __init__(self, metadata_folder: str=None, wt: Optional[Union[str, ProteinSequence]] = None):
         """
         Initialize the ProteinModelWrapper.
 
@@ -122,9 +123,15 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         Raises:
             ValueError: If the wild type sequence contains gaps.
         """
+        if not self._available:
+            raise ValueError(self._available.message)
+        
+        # generate a folder if metadata is None
+        if metadata_folder is None:
+            metadata_folder = os.path.join(os.getcwd(), time.strftime("%Y%m%d_%H%M%S"))
         self.metadata_folder = metadata_folder
 
-        if not os.path.exists(metadata_folder):
+        if metadata_folder is not None and not os.path.exists(metadata_folder):
             os.makedirs(metadata_folder)
             logger.info(f"Created metadata folder: {metadata_folder}")
 
@@ -421,6 +428,11 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
     def can_handle_aligned_sequences(self) -> bool:
         """Whether the model can handle aligned sequences (with gaps) at predict time."""
         return self._can_handle_aligned_sequences
+    
+    @property
+    def requires_wt_to_function(self) -> bool:
+        """Whether the model requires the wild type sequence to function."""
+        return self._requires_wt_to_function
 
     @staticmethod
     def _construct_necessary_metadata(model_directory: str, necessary_metadata: dict) -> None:
