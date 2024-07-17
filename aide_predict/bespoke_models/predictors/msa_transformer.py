@@ -107,7 +107,7 @@ class MSATransformerLikelihoodWrapper(RequiresMSAMixin, RequiresFixedLengthMixin
         del self.alphabet_
         del self.batch_converter_
 
-    def _prepare_msa_batch(self, msa: ProteinSequences, query_sequence: ProteinSequence, mask_positions: List[int] = []) -> torch.Tensor:
+    def _prepare_msa_batch(self, msa: ProteinSequences, query_sequence: ProteinSequence, mask_positions: List[int] = []) -> "torch.Tensor":
         """
         Prepare a batch of the MSA including the query sequence.
 
