@@ -9,6 +9,11 @@ Base classes for models to be wrapped into the API as sklearn estimators
 import os
 from abc import abstractmethod
 import time
+import pickle
+import warnings
+import hashlib
+import json
+import hashlib
 
 from sklearn.base import BaseEstimator, TransformerMixin, RegressorMixin
 from sklearn.utils.validation import check_is_fitted, NotFittedError
@@ -241,7 +246,7 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         """
         raise NotImplementedError("This method must be implemented in the child class.")
     
-    def fit(self, X: Union[ProteinSequences, List[str]], y: Optional[np.ndarray] = None) -> 'ProteinModelWrapper':
+    def fit(self, X: Union[ProteinSequences, List[str]], y: Optional[np.ndarray] = None, force: bool=False) -> 'ProteinModelWrapper':
         """
         Fit the model.
         
@@ -254,8 +259,11 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         """
         try:
             check_is_fitted(self)
-            logger.warning("Model is already fitted. Skipping")
-            return self
+            if not force:
+                logger.warning("Model is already fitted. Skipping")
+                return self
+            else:
+                pass
         except NotFittedError:
             pass
 
@@ -605,4 +613,110 @@ class CanHandleAlignedSequencesMixin:
     """
     _can_handle_aligned_sequences: bool = True
     
+class CacheMixin:
+    """
+    Mixin to provide per-protein caching functionality for ProteinModelWrapper subclasses.
+    """
+    def __init__(self, *args, use_cache: bool=True, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.use_cache = use_cache
+        self._cache_file = os.path.join(self.metadata_folder, 'model_cache.pkl')
+        self._cache_metadata_file = os.path.join(self.metadata_folder, 'cache_metadata.json')
+        self._cache = {}
+        self._cache_metadata = {}
 
+    def _get_model_state_hash(self) -> str:
+        """Generate a hash representing the current state of the model."""
+        model_params = json.dumps(self.get_params(), sort_keys=True)
+        fitted_attrs = json.dumps({attr: getattr(self, attr) for attr in self.get_fitted_attributes()}, sort_keys=True)
+        return hashlib.md5((model_params + fitted_attrs).encode()).hexdigest()
+
+    def _get_protein_hash(self, protein: ProteinSequence) -> str:
+        hash_input = str(protein)
+        if protein.id is not None:
+            hash_input += f"|id:{protein.id}"
+        if protein.structure is not None:
+            hash_input += f"|structure:{str(protein.structure.pdb_file)}{protein.structure.chain}{protein.structure.plddt_file}"
+        return hashlib.sha256(hash_input.encode()).hexdigest()
+
+    def _load_cache(self):
+        """Load the cache from disk if it exists."""
+        if os.path.exists(self._cache_file) and os.path.exists(self._cache_metadata_file):
+            with open(self._cache_file, 'rb') as f:
+                self._cache = pickle.load(f)
+            with open(self._cache_metadata_file, 'r') as f:
+                self._cache_metadata = json.load(f)
+
+    def _save_cache(self):
+        """Save the cache to disk."""
+        with open(self._cache_file, 'wb') as f:
+            pickle.dump(self._cache, f)
+        with open(self._cache_metadata_file, 'w') as f:
+            json.dump(self._cache_metadata, f)
+
+    def _clear_cache(self):
+        """Clear the cache and remove cache files."""
+        self._cache = {}
+        self._cache_metadata = {}
+        if os.path.exists(self._cache_file):
+            os.remove(self._cache_file)
+        if os.path.exists(self._cache_metadata_file):
+            os.remove(self._cache_metadata_file)
+
+    def get_fitted_attributes(self) -> List[str]:
+        """
+        Get a list of attributes that are set during fitting.
+        This method automatically detects attributes ending with an underscore.
+        """
+        return [attr for attr in dir(self) if attr.endswith('_') and not attr.startswith('_')]
+
+    def transform(self, X: Union[ProteinSequences, List[str]]) -> np.ndarray:
+        """Override transform to use cache when possible on a per-protein basis."""
+        if not self.use_cache:
+            return super().transform(X)
+
+        try:
+            check_is_fitted(self)
+        except:
+            return super().transform(X)
+
+        X = self._validate_input(X)
+        self._load_cache()
+
+        current_model_state = self._get_model_state_hash()
+        if self._cache_metadata.get('model_state') != current_model_state:
+            warnings.warn("Cache found but model state has changed. Clearing cache.")
+            self._clear_cache()
+            self._cache_metadata['model_state'] = current_model_state
+
+        cached_results = []
+        proteins_to_process = []
+        original_order = []
+
+        for i, protein in enumerate(X):
+            protein_hash = self._get_protein_hash(protein)
+            if protein_hash in self._cache:
+                cached_results.append((i, self._cache[protein_hash]))
+            else:
+                proteins_to_process.append((i, protein))
+            original_order.append(i)
+
+        if proteins_to_process:
+            proteins_to_transform = ProteinSequences([p[1] for p in proteins_to_process])
+            new_results = super().transform(proteins_to_transform)
+
+            for (i, protein), result in zip(proteins_to_process, new_results):
+                protein_hash = self._get_protein_hash(protein)
+                self._cache[protein_hash] = result
+                self._cache_metadata[protein_hash] = {
+                    'timestamp': time.time(),
+                    'protein_length': len(protein),
+                    'output_shape': result.shape
+                }
+                cached_results.append((i, result))
+
+        self._save_cache()
+
+        # Reorder results to match original input order
+        all_results = sorted(cached_results, key=lambda x: x[0])
+        return np.vstack([r[1] for r in all_results])

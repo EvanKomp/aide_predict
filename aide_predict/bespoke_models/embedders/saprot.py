@@ -12,7 +12,7 @@ import numpy as np
 import torch
 from tqdm import tqdm
 
-from aide_predict.bespoke_models.base import ProteinModelWrapper, PositionSpecificMixin, CanHandleAlignedSequencesMixin
+from aide_predict.bespoke_models.base import ProteinModelWrapper, PositionSpecificMixin, CanHandleAlignedSequencesMixin, CacheMixin
 from aide_predict.bespoke_models import model_device_context
 from aide_predict.bespoke_models.predictors.saprot import get_structure_tokens
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence, ProteinStructure
@@ -24,12 +24,12 @@ try:
 except ImportError:
     AVAILABLE = MessageBool(False, "SaProt model is not available. Please install the transformers library.")
 
-from .saprot_likelihood import get_structure_tokens
+from aide_predict.bespoke_models.predictors.saprot import get_structure_tokens
 
 import logging
 logger = logging.getLogger(__name__)
 
-class SaProtEmbedding(PositionSpecificMixin, CanHandleAlignedSequencesMixin, ProteinModelWrapper):
+class SaProtEmbedding(CacheMixin, PositionSpecificMixin, CanHandleAlignedSequencesMixin, ProteinModelWrapper):
     """
     A protein sequence embedder that uses the SaProt model to generate embeddings.
     
@@ -59,7 +59,8 @@ class SaProtEmbedding(PositionSpecificMixin, CanHandleAlignedSequencesMixin, Pro
                  batch_size: int = 32,
                  device: str = 'cpu',
                  foldseek_path: str = 'foldseek',
-                 wt: Optional[Union[str, ProteinSequence]] = None):
+                 wt: Optional[Union[str, ProteinSequence]] = None,
+                 **kwargs):
         """
         Initialize the SaProtEmbedding.
 
@@ -75,7 +76,7 @@ class SaProtEmbedding(PositionSpecificMixin, CanHandleAlignedSequencesMixin, Pro
             foldseek_path (str): Path to the FoldSeek executable.
             wt (Optional[Union[str, ProteinSequence]]): The wild type sequence, if any.
         """
-        super().__init__(metadata_folder=metadata_folder, wt=wt, positions=positions, pool=pool, flatten=flatten)
+        super().__init__(metadata_folder=metadata_folder, wt=wt, positions=positions, pool=pool, flatten=flatten, **kwargs)
         self.model_checkpoint = model_checkpoint
         self.layer = layer
         self.batch_size = batch_size
