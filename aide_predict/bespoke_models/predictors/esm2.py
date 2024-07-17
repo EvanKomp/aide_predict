@@ -162,7 +162,7 @@ class ESM2LikelihoodWrapper(RequiresFixedLengthMixin, LikelihoodTransformerBase)
         del self.model_
         del self.tokenizer_
 
-    def _tokenize(self, sequences: List[str], on_device: bool=True) -> torch.Tensor:
+    def _tokenize(self, sequences: List[str], on_device: bool=True) -> "torch.Tensor":
         if on_device:
             return self.tokenizer_(sequences, add_special_tokens=True, return_tensors='pt', padding=True).to(self.device)
 
