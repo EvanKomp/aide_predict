@@ -92,7 +92,7 @@ class SaProtLikelihoodWrapper(RequiresFixedLengthMixin, LikelihoodTransformerBas
         flatten: bool = True,
         wt: str = None,
         batch_size: int = 2,
-        device: str = 'cuda' if torch.cuda.is_available() else 'cpu',
+        device: str = 'cpu',
         foldseek_path: str = 'foldseek'
     ):
         super().__init__(
@@ -124,7 +124,7 @@ class SaProtLikelihoodWrapper(RequiresFixedLengthMixin, LikelihoodTransformerBas
         del self.model_
         del self.tokenizer_
 
-    def _tokenize(self, sequences: List[str], on_device: bool=True) -> torch.Tensor:
+    def _tokenize(self, sequences: List[str], on_device: bool=True) -> "torch.Tensor":
         if on_device:
             return self.tokenizer_(sequences, add_special_tokens=True, return_tensors='pt', padding=True).to(self.device)
         else:
