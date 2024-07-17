@@ -124,7 +124,7 @@ class ESM2LikelihoodWrapper(RequiresFixedLengthMixin, LikelihoodTransformerBase)
         flatten: bool = True,
         wt: str = None,
         batch_size: int = 2,
-        device: str = 'cuda' if torch.cuda.is_available() else 'cpu'
+        device: str = 'cpu'
     ):
         super().__init__(
             metadata_folder=metadata_folder,
