@@ -11,6 +11,7 @@ from typing import List, Union, Optional, Any, Callable
 import numpy as np
 from tqdm import tqdm
 from contextlib import contextmanager
+import os
 
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
 from aide_predict.bespoke_models.base import ProteinModelWrapper, PositionSpecificMixin, RequiresWTDuringInferenceMixin, CanRegressMixin
@@ -21,35 +22,52 @@ class MarginalMethod(Enum):
     MUTANT = "mutant_marginal"
 
 class ModelDeviceManager:
+    _instances = {}
+    
+    @classmethod
+    def get_instance(cls, model_instance: Any, device: str):
+        if model_instance not in cls._instances:
+            cls._instances[model_instance] = cls(model_instance, device)
+        return cls._instances[model_instance]
+
     def __init__(self, model_instance: Any, device: str = 'cpu'):
         self.model_instance = model_instance
         self.device = device
+        self.keep_on_device = os.environ.get('KEEP_MODEL_ON_DEVICE', '').lower() in ('true', '1', 'yes')
+        self.model_loaded = False
 
     @contextmanager
     def model_on_device(self, load_func: Callable[[], None], cleanup_func: Callable[[], None]):
         try:
-            # Load the model and set necessary attributes
-            load_func()
+            # Load the model only if it's not already loaded
+            if not self.model_loaded:
+                load_func()
+                self.model_loaded = True
             yield
         finally:
-            # Clean up
-            cleanup_func()
-            # Force CUDA to reclaim memory
-            if self.device.startswith('cuda'):
-                import torch
-                torch.cuda.empty_cache()
-            elif self.device.startswith('mps'):
-                import torch
-                torch.mps.empty_cache()
-                
+            # Clean up only if not set to keep on device
+            if not self.keep_on_device:
+                cleanup_func()
+                self.model_loaded = False
+                self._reclaim_memory()
+
+    def _reclaim_memory(self):
+        if self.device.startswith('cuda'):
+            import torch
+            torch.cuda.empty_cache()
+        elif self.device.startswith('mps'):
+            import torch
+            torch.mps.empty_cache()
 
 @contextmanager
 def model_device_context(model_instance: Any, load_func: Callable[[], None], cleanup_func: Callable[[], None], device: str = 'cpu'):
     """Context manager used to load and clean up a model on a specific device.
     
-    This ensures model weights are not sitting on the GPU when not being accessed.
+    This ensures model weights are not sitting on the GPU when not being accessed,
+    unless the KEEP_MODEL_ON_DEVICE environment variable is set to True.
+    If set to True, the model is loaded only once and kept on the device across multiple calls.
     """
-    manager = ModelDeviceManager(model_instance, device)
+    manager = ModelDeviceManager.get_instance(model_instance, device)
     with manager.model_on_device(load_func, cleanup_func):
         yield
 

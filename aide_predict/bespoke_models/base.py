@@ -27,6 +27,14 @@ from typing import Union, Optional, List, Dict, Any
 import logging
 logger = logging.getLogger(__name__)
 
+def is_jsonable(x):
+    """Checks if an object is JSON serializable."""
+    try:
+        json.dumps(x)
+        return True
+    except (TypeError, OverflowError):
+        return False
+
 #############################################
 # BASE CLASSES FOR DOWNSTREAM MODELS
 #############################################
@@ -668,7 +676,7 @@ class CacheMixin:
         Get a list of attributes that are set during fitting.
         This method automatically detects attributes ending with an underscore.
         """
-        return [attr for attr in dir(self) if attr.endswith('_') and not attr.startswith('_')]
+        return [attr for attr in dir(self) if attr.endswith('_') and not attr.startswith('_') and is_jsonable(getattr(self, attr))]
 
     def transform(self, X: Union[ProteinSequences, List[str]]) -> np.ndarray:
         """Override transform to use cache when possible on a per-protein basis."""
