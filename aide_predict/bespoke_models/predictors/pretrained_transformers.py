@@ -4,6 +4,12 @@
 * Created: 7/11/2024
 * Company: National Renewable Energy Lab, Bioeneergy Science and Technology
 * License: MIT
+
+Base class for log likelihood based transformer models. Supports wildtype, mutant, and masked marginal methods.
+
+See: 
+Meier, J. et al. Language models enable zero-shot prediction of the effects of mutations on protein function. Preprint at https://doi.org/10.1101/2021.07.09.450648 (2021).
+
 '''
 from enum import Enum
 from abc import ABC, abstractmethod
