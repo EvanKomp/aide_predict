@@ -12,10 +12,10 @@ import numpy as np
 import torch
 from tqdm import tqdm
 
-from aide_predict.bespoke_models.base import ProteinModelWrapper, PositionSpecificMixin, CanHandleAlignedSequencesMixin, CacheMixin
+from aide_predict.bespoke_models.base import ProteinModelWrapper, PositionSpecificMixin, CacheMixin
 from aide_predict.bespoke_models import model_device_context
 from aide_predict.bespoke_models.predictors.saprot import get_structure_tokens
-from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence, ProteinStructure
+from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
 from aide_predict.utils.common import MessageBool
 
 try:
@@ -29,7 +29,7 @@ from aide_predict.bespoke_models.predictors.saprot import get_structure_tokens
 import logging
 logger = logging.getLogger(__name__)
 
-class SaProtEmbedding(CacheMixin, PositionSpecificMixin, CanHandleAlignedSequencesMixin, ProteinModelWrapper):
+class SaProtEmbedding(CacheMixin, PositionSpecificMixin, ProteinModelWrapper):
     """
     A protein sequence embedder that uses the SaProt model to generate embeddings.
     

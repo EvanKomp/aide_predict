@@ -511,9 +511,18 @@ class CanRegressMixin(RegressorMixin):
     """
     Mixin to ensure model can regress.
     
-    This mixin overrides the can_regress attribute to be True.
+    This mixin overrides the can_regress attribute to be True. It also overrides the score method to use
+    spearman correlation isntead of R2, such that it can be used out of the mox with zero shot predicors.
     """
     _can_regress: bool = True
+
+    def score(self, X, y, sample_weight=None):
+        """
+        Return the Spearman correlation
+        """
+        from scipy.stats import spearmanr
+        y_pred = self.predict(X)
+        return spearmanr(y, y_pred).correlation
 
 class RequiresWTDuringInferenceMixin:
     """
