@@ -12,7 +12,7 @@ import tqdm
 
 
 from aide_predict.bespoke_models import model_device_context
-from aide_predict.bespoke_models.base import ProteinModelWrapper, PositionSpecificMixin, RequiresMSAMixin, RequiresFixedLengthMixin
+from aide_predict.bespoke_models.base import ProteinModelWrapper, PositionSpecificMixin, RequiresMSAMixin, CacheMixin
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
 from aide_predict.utils.common import MessageBool
 
@@ -25,7 +25,7 @@ try:
 except ImportError:
     AVAILABLE = MessageBool(False, "MSA Transformer requires fair-esm, which is not installed.")
 
-class MSATransformerEmbedding(PositionSpecificMixin, RequiresMSAMixin, RequiresFixedLengthMixin, ProteinModelWrapper):
+class MSATransformerEmbedding(CacheMixin, PositionSpecificMixin, RequiresMSAMixin, ProteinModelWrapper):
     """
     A protein sequence embedder that uses the MSA Transformer model to generate embeddings.
     
@@ -140,8 +140,15 @@ class MSATransformerEmbedding(PositionSpecificMixin, RequiresMSAMixin, RequiresF
         Raises:
             ValueError: If the input sequences are not of the same length as the original MSA.
         """
-        if X.width != self.msa_length_:
-            raise ValueError(f"Input sequences must have the same length as the original MSA ({self.msa_length_}).")
+        if X.aligned:
+            if X.width != self.msa_length_:
+                raise ValueError(f"Aligned input sequences must have width {self.msa_length_}")
+            warnings.warn("Input sequences are already aligned. Using them as-is for encoding.")
+            sequences_to_encode = X
+        else:
+            warnings.warn("Input sequences are not aligned. Aligning them to the original alignment.")
+            sequences_to_encode = X.align_to(self.original_msa_, return_only_new=True, realign=False)
+        X = sequences_to_encode
         
         with model_device_context(self, self._load_model, self._cleanup_model, self.device):
 
