@@ -14,7 +14,6 @@ from scipy.stats import spearmanr
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequencesOnFile, ProteinSequence
 from aide_predict.bespoke_models.predictors.evmutation import EVMutationWrapper
 
-@pytest.mark.optional
 def test_evcouplings_zero_shot():
     # Load the data
     assay_data = pd.read_csv(
