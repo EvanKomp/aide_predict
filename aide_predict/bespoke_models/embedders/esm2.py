@@ -14,7 +14,7 @@ import tqdm
 
 import numpy as np
 
-from aide_predict.bespoke_models.base import ProteinModelWrapper, PositionSpecificMixin, CanHandleAlignedSequencesMixin
+from aide_predict.bespoke_models.base import ProteinModelWrapper, PositionSpecificMixin, CanHandleAlignedSequencesMixin, CacheMixin
 from aide_predict.bespoke_models import model_device_context
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
 
@@ -26,7 +26,7 @@ try:
 except ImportError:
     AVAILABLE = False
 
-class ESM2Embedding(PositionSpecificMixin, CanHandleAlignedSequencesMixin, ProteinModelWrapper):
+class ESM2Embedding(CacheMixin, PositionSpecificMixin, CanHandleAlignedSequencesMixin, ProteinModelWrapper):
     """
     A protein sequence embedder that uses the ESM2 model to generate embeddings.
     
