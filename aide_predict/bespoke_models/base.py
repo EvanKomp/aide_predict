@@ -86,6 +86,7 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
        - RequiresWTToFunctionMixin - if the model requires the wild type sequence to function
        - RequiresWTDuringInferenceMixin - if the model requires the wild type sequence duing inference in order to normalize by wt
        - PositionSpecificMixin - if the model can output per position scores
+       - RequiresStructureMixin - if the model requires structure information
     6. If the model requires more than the base package, set the _available attribute to be dynamic based on a check in the module.
 
     Example:
@@ -123,6 +124,7 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
     _requires_fixed_length: bool = False
     _can_regress: bool = False
     _can_handle_aligned_sequences: bool = False
+    _requires_structure: bool = False
     _available: bool = MessageBool(True, "This model is available for use.")
 
     def __init__(self, metadata_folder: str=None, wt: Optional[Union[str, ProteinSequence]] = None):
@@ -152,10 +154,12 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
             wt = ProteinSequence(wt)
         
         if wt is not None:
-            if not isinstance(wt, ProteinSequence):
-                wt = ProteinSequence(wt)
             if wt.has_gaps:
                 raise ValueError("Wild type sequence cannot have gaps.")
+            
+        if self.requires_structure and wt is not None:
+            if wt.structure is None:
+                raise ValueError("This model acts on structure but a wild type structure was not given.")
         
         if wt is None and self.requires_wt_to_function:
             raise ValueError("This model requires a wild type sequence to function.")
@@ -347,6 +351,10 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         if self.requires_fixed_length:
             self._assert_fixed_length(X)
 
+        if self.requires_structure:
+            if any(seq.structure is None for seq in X) and self.wt is None:
+                raise ValueError("This model requires structure information, at least one of the sequences does not have it, and there is no avialable WT structure.")
+
         if not self.can_handle_aligned_sequences and X.has_gaps:
             logger.info("Input sequences have gaps and the model cannot handle them. Removing gaps.")
             X = X.with_no_gaps()
@@ -449,6 +457,11 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
     def requires_wt_to_function(self) -> bool:
         """Whether the model requires the wild type sequence to function."""
         return self._requires_wt_to_function
+    
+    @property
+    def requires_structure(self) -> bool:
+        """Whether the model requires structure information."""
+        return self._requires_structure
 
     @staticmethod
     def _construct_necessary_metadata(model_directory: str, necessary_metadata: dict) -> None:
@@ -523,6 +536,15 @@ class CanRegressMixin(RegressorMixin):
         from scipy.stats import spearmanr
         y_pred = self.predict(X)
         return spearmanr(y, y_pred).correlation
+    
+class RequiresStructureMixin:
+    """
+    Mixin to ensure model requires structure information.
+    
+    This mixin overrides the requires_structure attribute to be True.
+    """
+    _requires_structure: bool = True
+
 
 class RequiresWTDuringInferenceMixin:
     """

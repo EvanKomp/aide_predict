@@ -12,7 +12,7 @@ import numpy as np
 import torch
 from tqdm import tqdm
 
-from aide_predict.bespoke_models.base import ProteinModelWrapper, PositionSpecificMixin, CacheMixin
+from aide_predict.bespoke_models.base import ProteinModelWrapper, PositionSpecificMixin, CacheMixin, RequiresStructureMixin
 from aide_predict.bespoke_models import model_device_context
 from aide_predict.bespoke_models.predictors.saprot import get_structure_tokens
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
@@ -29,7 +29,7 @@ from aide_predict.bespoke_models.predictors.saprot import get_structure_tokens
 import logging
 logger = logging.getLogger(__name__)
 
-class SaProtEmbedding(CacheMixin, PositionSpecificMixin, ProteinModelWrapper):
+class SaProtEmbedding(CacheMixin, RequiresStructureMixin, PositionSpecificMixin, ProteinModelWrapper):
     """
     A protein sequence embedder that uses the SaProt model to generate embeddings.
     
@@ -47,7 +47,6 @@ class SaProtEmbedding(CacheMixin, PositionSpecificMixin, ProteinModelWrapper):
         device (str): The device to use for computations ('cuda' or 'cpu').
         foldseek_path (str): Path to the FoldSeek executable.
     """
-
     _available = AVAILABLE
 
     def __init__(self, metadata_folder: str=None, 
