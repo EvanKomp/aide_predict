@@ -516,6 +516,11 @@ class ProteinSequences(UserList):
             Dict[str, int]: A dictionary where keys are sequence IDs and values are indices.
         """
         return {seq.id if seq.id else hash(seq): i for i, seq in enumerate(self)}
+    
+    @property
+    def ids(self) -> List[str]:
+        """Get a list of sequence IDs."""
+        return [seq.id for seq in self]
 
 
     def align_all(self, output_fasta: Optional[str] = None) -> Union['ProteinSequences', 'ProteinSequencesOnFile']:
@@ -854,6 +859,11 @@ class ProteinSequencesOnFile(ProteinSequences):
             for i, char in enumerate(str(seq)):
                 positions[i].add(char)
         return [i for i, chars in enumerate(positions) if len(chars) > 1]
+    
+    @property
+    def ids(self) -> List[str]:
+        """Get a list of sequence IDs."""
+        return list(self._index.keys())
 
     def to_dict(self) -> Dict[str, str]:
         """
