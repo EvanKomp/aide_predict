@@ -262,6 +262,7 @@ class ProteinSequence(str):
         """Set the structure of the sequence."""
         if isinstance(new_structure, str):
             new_structure = ProteinStructure(new_structure)
+            assert len(self) == len(new_structure.get_sequence())
         elif not isinstance(new_structure, ProteinStructure):
             raise ValueError("Structure must be a ProteinStructure object or a valid PDB file path.")
         
