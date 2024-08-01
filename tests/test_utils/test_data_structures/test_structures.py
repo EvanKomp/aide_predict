@@ -12,7 +12,8 @@ import json
 import numpy as np
 from Bio.PDB import PDBParser, PDBIO
 from Bio.PDB.Structure import Structure
-from aide_predict.utils.data_structures import ProteinStructure  # Assuming the class is in a file named ProteinStructure.py
+from aide_predict.utils.data_structures import ProteinStructure, StructureMapper
+from aide_predict.utils.data_structures import ProteinSequence, ProteinSequences    
 
 class TestProteinStructure:
     @pytest.fixture
@@ -99,3 +100,73 @@ END
     def test_from_af2_folder_no_suitable_files(self, tmp_path):
         with pytest.raises(FileNotFoundError):
             ProteinStructure.from_af2_folder(str(tmp_path))
+
+
+class TestStructureMapper:
+    @pytest.fixture
+    def temp_structure_folder(self):
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            # Create a PDB file
+            with open(os.path.join(tmpdirname, "protein1.pdb"), "w") as f:
+                f.write("ATOM      1  N   ALA A   1       0.000   0.000   0.000  1.00  0.00           N")
+            
+            # Create an AlphaFold2-like folder
+            af2_folder = os.path.join(tmpdirname, "protein2")
+            os.mkdir(af2_folder)
+            with open(os.path.join(af2_folder, "rank_001_model_1_relaxed_.pdb"), "w") as f:
+                f.write("ATOM      1  N   GLY A   1       0.000   0.000   0.000  1.00  0.00           N")
+            with open(os.path.join(af2_folder, "rank_001_model_1_scores_.json"), "w") as f:
+                f.write('{"plddt": [90.0]}')
+
+            yield tmpdirname
+
+    def test_initialization(self, temp_structure_folder):
+        mapper = StructureMapper(temp_structure_folder)
+        assert isinstance(mapper, StructureMapper)
+        assert mapper.structure_folder == temp_structure_folder
+        assert len(mapper.structure_map) == 2
+
+    def test_scan_folder(self, temp_structure_folder):
+        mapper = StructureMapper(temp_structure_folder)
+        assert "protein1" in mapper.structure_map
+        assert "protein2" in mapper.structure_map
+        assert isinstance(mapper.structure_map["protein1"], ProteinStructure)
+        assert isinstance(mapper.structure_map["protein2"], ProteinStructure)
+
+    def test_is_af2_folder(self, temp_structure_folder):
+        mapper = StructureMapper(temp_structure_folder)
+        assert mapper._is_af2_folder(os.path.join(temp_structure_folder, "protein2"))
+        assert not mapper._is_af2_folder(temp_structure_folder)
+
+    def test_assign_structures_to_sequence(self, temp_structure_folder):
+        mapper = StructureMapper(temp_structure_folder)
+        seq = ProteinSequence("ACGT", id="protein1")
+        assigned_seq = mapper.assign_structures(seq)
+        assert assigned_seq.structure is not None
+        assert isinstance(assigned_seq.structure, ProteinStructure)
+
+    def test_assign_structures_to_sequences(self, temp_structure_folder):
+        mapper = StructureMapper(temp_structure_folder)
+        seqs = ProteinSequences([
+            ProteinSequence("ACGT", id="protein1"),
+            ProteinSequence("TGCA", id="protein2"),
+            ProteinSequence("AAAA", id="protein3")
+        ])
+        assigned_seqs = mapper.assign_structures(seqs)
+        assert assigned_seqs[0].structure is not None
+        assert assigned_seqs[1].structure is not None
+        assert assigned_seqs[2].structure is None
+
+    def test_get_available_structures(self, temp_structure_folder):
+        mapper = StructureMapper(temp_structure_folder)
+        available_structures = mapper.get_available_structures()
+        assert set(available_structures) == {"protein1", "protein2"}
+
+    def test_repr(self, temp_structure_folder):
+        mapper = StructureMapper(temp_structure_folder)
+        assert repr(mapper) == f"StructureMapper(structure_folder='{temp_structure_folder}', available_structures=2)"
+
+    def test_assign_structures_invalid_input(self, temp_structure_folder):
+        mapper = StructureMapper(temp_structure_folder)
+        with pytest.raises(ValueError):
+            mapper.assign_structures("invalid input")

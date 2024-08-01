@@ -354,6 +354,11 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         if self.requires_structure:
             if any(seq.structure is None for seq in X) and self.wt is None:
                 raise ValueError("This model requires structure information, at least one of the sequences does not have it, and there is no avialable WT structure.")
+            elif any(seq.structure is None for seq in X):
+                if X.fixed_length and len(self.wt) == X.width:
+                    pass
+                else:
+                    raise ValueError("This model requires structure information, at least one of the sequences does not have it, and the WT structure size does not match the sequence lengths.")
 
         if not self.can_handle_aligned_sequences and X.has_gaps:
             logger.info("Input sequences have gaps and the model cannot handle them. Removing gaps.")
