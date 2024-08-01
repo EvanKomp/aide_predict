@@ -6,4 +6,4 @@
 * License: MIT
 '''
 from .sequences import ProteinCharacter, ProteinSequence, ProteinSequences, ProteinSequencesOnFile
-from .structures import ProteinStructure
+from .structures import ProteinStructure, StructureMapper

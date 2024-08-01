@@ -6,7 +6,7 @@
 * License: MIT
 '''
 import os
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Union
 import warnings
 from dataclasses import dataclass
 import glob
@@ -169,3 +169,115 @@ class ProteinStructure:
 
     def __repr__(self) -> str:
         return f"ProteinStructure(pdb_file='{self.pdb_file}', chain='{self.chain}')"
+    
+
+class StructureMapper:
+    """
+    A class for mapping protein structures to sequences based on files in a given folder.
+
+    This class scans a specified folder for PDB files and AlphaFold2 prediction folders,
+    creates ProteinStructure objects, and can assign these structures to ProteinSequence
+    or ProteinSequences objects based on their IDs.
+
+    Attributes:
+        structure_folder (str): The path to the folder containing structure files.
+        structure_map (Dict[str, ProteinStructure]): A dictionary mapping protein IDs to ProteinStructure objects.
+    """
+
+    def __init__(self, structure_folder: str):
+        """
+        Initialize the StructureMapper with a folder containing structure files.
+
+        Args:
+            structure_folder (str): The path to the folder containing structure files.
+        """
+        self.structure_folder = structure_folder
+        self.structure_map: Dict[str, ProteinStructure] = {}
+        self._scan_folder()
+
+    def _scan_folder(self):
+        """
+        Scan the structure folder and populate the structure_map.
+
+        This method looks for .pdb files and AlphaFold2 prediction folders in the
+        specified structure_folder and creates ProteinStructure objects for each.
+        """
+        for item in os.listdir(self.structure_folder):
+            item_path = os.path.join(self.structure_folder, item)
+            if item.endswith('.pdb'):
+                structure_id = os.path.splitext(item)[0]
+                self.structure_map[structure_id] = ProteinStructure(item_path)
+            elif os.path.isdir(item_path):
+                if self._is_af2_folder(item_path):
+                    structure_id = item
+                    self.structure_map[structure_id] = ProteinStructure.from_af2_folder(item_path)
+
+    def _is_af2_folder(self, folder_path: str) -> bool:
+        """
+        Check if a folder contains AlphaFold2 prediction outputs.
+
+        Args:
+            folder_path (str): The path to the folder to check.
+
+        Returns:
+            bool: True if the folder appears to contain AlphaFold2 outputs, False otherwise.
+        """
+        pdb_files = [f for f in os.listdir(folder_path) if f.endswith('.pdb')]
+        return any('rank' in pdb_file for pdb_file in pdb_files)
+
+    def assign_structures(self, sequences: Union['ProteinSequence', 'ProteinSequences']) -> Union['ProteinSequence', 'ProteinSequences']:
+        """
+        Assign structures to the given protein sequence(s).
+
+        This method attempts to assign a structure to each protein sequence based on its ID.
+        If a matching structure is found in the structure_map, it is assigned to the sequence.
+
+        Args:
+            sequences (Union['ProteinSequence', 'ProteinSequences']): The protein sequence(s) to assign structures to.
+
+        Returns:
+            Union['ProteinSequence', 'ProteinSequences']: The input sequence(s) with structures assigned where possible.
+
+        Raises:
+            ValueError: If the input is neither a ProteinSequence nor a ProteinSequences object.
+        """
+        from aide_predict.utils.data_structures import ProteinSequence, ProteinSequences
+        
+        if isinstance(sequences, ProteinSequence):
+            return self._assign_structure_to_sequence(sequences)
+        elif isinstance(sequences, ProteinSequences):
+            return ProteinSequences([self._assign_structure_to_sequence(seq) for seq in sequences])
+        else:
+            raise ValueError("Input must be either ProteinSequence or ProteinSequences")
+
+    def _assign_structure_to_sequence(self, sequence: 'ProteinSequence') -> 'ProteinSequence':
+        """
+        Assign a structure to a single protein sequence.
+
+        Args:
+            sequence (ProteinSequence): The protein sequence to assign a structure to.
+
+        Returns:
+            ProteinSequence: The input sequence with a structure assigned if one was found.
+        """
+        if sequence.id in self.structure_map:
+            sequence.structure = self.structure_map[sequence.id]
+        return sequence
+
+    def get_available_structures(self) -> List[str]:
+        """
+        Get a list of all available structure IDs.
+
+        Returns:
+            List[str]: A list of structure IDs available in the structure_map.
+        """
+        return list(self.structure_map.keys())
+
+    def __repr__(self):
+        """
+        Return a string representation of the StructureMapper object.
+
+        Returns:
+            str: A string representation of the StructureMapper.
+        """
+        return f"StructureMapper(structure_folder='{self.structure_folder}', available_structures={len(self.structure_map)})"
