@@ -30,6 +30,9 @@ try:
 except ImportError:
     AVAILABLE = MessageBool(False, "VESPA is not available. Please install it with requirements-vespa.txt.")
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 class VESPAWrapper(CanRegressMixin, RequiresWTDuringInferenceMixin, RequiresWTToFunctionMixin, ProteinModelWrapper):
     _available = AVAILABLE
@@ -58,37 +61,40 @@ class VESPAWrapper(CanRegressMixin, RequiresWTDuringInferenceMixin, RequiresWTTo
             for seq in X:
                 mutation = self.wt.get_mutations(seq)[0]
                 fromAA, pos, toAA = mutation[0], mutation[1:-1], mutation[-1]
-                f.write(f"{self.wt.id}_{fromAA}{pos}{toAA}\n")
+                f.write(f"{self.wt.id}_{fromAA}{int(pos)-1}{toAA}\n")
 
         # create a temporary file for the wild type sequence
         ProteinSequences([self.wt]).to_fasta(wt_fasta_file)
 
         # run the model
-        cmd = ["vespa", str(wt_fasta_file), "-m", str(mutation_file), "--prott5_weights_cache", self.metadata_folder]
+        # convert the paths to just base path because we will move to metadata folder
+        cmd = ["vespa", os.path.basename(wt_fasta_file), "-m", os.path.basename(mutation_file), "--prott5_weights_cache", '.']
         if self.light:
             cmd.append("--vespal")
         else:
             cmd.append("--vespa")
-        stdo, stde = subprocess.Popen(
+        logger.info(f"Running command: {cmd}")
+        stdou, stde = subprocess.Popen(
             cmd,
-            stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             cwd=self.metadata_folder
         ).communicate()
         if stde:
-            raise ValueError(f"VESPA failed with error: {stde.decode()}")
+            logger.error(f"VESPA gave: {stde.decode()}")
         
         results = []
-        outpath = os.path.join(self.metadata_folder, "vespa_run_directory", "0.csv")
+        outpath = os.path.join(self.metadata_folder, "vespa_run_directory", "output", "0.csv")
+        if not os.path.exists(outpath):
+            raise ValueError("VESPA did not return predictions, check logs.")
         column = "VESPA" if not self.light else "VESPAl"
         df = pd.read_csv(outpath, sep=';').set_index('Mutant')
         for seq in X:
             mutation = self.wt.get_mutations(seq)[0]
             fromAA, pos, toAA = mutation[0], mutation[1:-1], mutation[-1]
-            result = df.loc[f"{fromAA}{pos-1}{toAA}"][column]
+            result = df.loc[f"{fromAA}{int(pos)-1}{toAA}"][column]
             results.append(result)
 
-        return np.array(results).reshape(-1, 1)
+        return np.log(1-np.array(results).reshape(-1, 1))
 
     def get_feature_names_out(self, input_features: Optional[List[str]] = None) -> List[str]:
         return ["VESPA_score"]
