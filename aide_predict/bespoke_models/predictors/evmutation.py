@@ -22,6 +22,8 @@ from evcouplings.align.protocol import describe_frequencies, Alignment, parse_he
 from aide_predict.bespoke_models.base import ProteinModelWrapper, RequiresMSAMixin, CanRegressMixin, RequiresWTToFunctionMixin, RequiresFixedLengthMixin, MessageBool
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
 
+from tqdm import tqdm
+
 # check for plmc
 if shutil.which("plmc") is None:
     AVAILABLE = MessageBool(False, "The 'plmc' executable is required for EVCouplings.")
@@ -160,7 +162,7 @@ class EVMutationWrapper(
             np.ndarray: An array of predicted effects for each input sequence.
         """
         predictions = []
-        for seq in X:
+        for seq in tqdm(X):
             mutations = self.wt.get_mutations(seq)
             evc_mutations = [(int(m[1:-1]), m[0], m[-1]) for m in mutations]
             # remove mutations that evc does not haves scores for
