@@ -434,10 +434,9 @@ class LikelihoodTransformerBase(PositionSpecificMixin, CanRegressMixin, Requires
             new_log_likelihoods = []
             for ll in log_likelihoods:
                 if np.all(np.isnan(ll)):
-                    new_log_likelihoods.append(np.zeros(1))
+                    new_log_likelihoods.append(0.0)
                 else:
                     new_log_likelihoods.append(np.nanmean(ll))
-
             log_likelihoods = np.array(new_log_likelihoods)
             
             # Handle the edge case for mutant marginal with variable length sequences
