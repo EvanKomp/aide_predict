@@ -350,7 +350,7 @@ class ProteinSequences(UserList):
         Returns:
             bool: True if all sequences have the same length, False otherwise.
         """
-        return len(set(len(seq) for seq in self)) == 1
+        return len(set(len(seq) for seq in self)) == 1 and len(self) > 1
 
     @property
     def fixed_length(self) -> bool:
@@ -491,7 +491,7 @@ class ProteinSequences(UserList):
     
     def as_array(self) -> np.ndarray:
         """Convert the sequence to a numpy array of characters."""
-        if not self.aligned:
+        if not self.aligned and len(self) > 1:
             raise ValueError("Sequences must be aligned to convert to array.")
         return np.vstack([seq.as_array for seq in self])
 
