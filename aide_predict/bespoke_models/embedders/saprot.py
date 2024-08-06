@@ -9,7 +9,7 @@ import warnings
 from typing import List, Union, Optional
 
 import numpy as np
-import torch
+
 from tqdm import tqdm
 
 from aide_predict.bespoke_models.base import ProteinModelWrapper, PositionSpecificMixin, CacheMixin, RequiresStructureMixin
@@ -20,6 +20,7 @@ from aide_predict.utils.common import MessageBool
 
 try:
     from transformers import EsmTokenizer, EsmModel
+    import torch
     AVAILABLE = MessageBool(True, "SaProt model is available.")
 except ImportError:
     AVAILABLE = MessageBool(False, "SaProt model is not available. Please install the transformers library.")
