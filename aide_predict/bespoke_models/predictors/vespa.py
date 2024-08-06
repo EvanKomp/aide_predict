@@ -35,19 +35,64 @@ logger = logging.getLogger(__name__)
 
 
 class VESPAWrapper(CanRegressMixin, RequiresWTDuringInferenceMixin, RequiresWTToFunctionMixin, ProteinModelWrapper):
+    """
+    A wrapper class for the VESPA (Variant Effect Score Prediction using Attention) model.
+
+    This class provides an interface to use VESPA within the AIDE framework,
+    allowing for prediction of variant effects on protein sequences.
+
+    Attributes:
+        light (bool): If True, uses the lighter VESPAl model. If False, uses the full VESPA model.
+    """
+
     _available = AVAILABLE
-    def __init__(self, metadata_folder: str=None, wt: Optional[Union[str, ProteinSequence]] = None, light: bool=True):
+
+    def __init__(self, metadata_folder: Optional[str] = None, 
+                 wt: Optional[Union[str, ProteinSequence]] = None, 
+                 light: bool = True) -> None:
+        """
+        Initialize the VESPAWrapper.
+
+        Args:
+            metadata_folder (Optional[str]): Folder to store metadata.
+            wt (Optional[Union[str, ProteinSequence]]): Wild-type protein sequence.
+            light (bool): If True, use the lighter VESPAl model. If False, use the full VESPA model.
+        """
         super().__init__(metadata_folder=metadata_folder, wt=wt)
         self.light = light
 
+    def _fit(self, X: ProteinSequences, y: Optional[np.ndarray] = None) -> 'VESPAWrapper':
+        """
+        Fit the VESPA model. This method is a placeholder as VESPA doesn't require fitting.
 
-    def _fit(self, X: ProteinSequences, y: Optional[np.ndarray] = None) -> 'VESPA':
+        Args:
+            X (ProteinSequences): The input protein sequences.
+            y (Optional[np.ndarray]): Ignored. Present for API consistency.
+
+        Returns:
+            VESPAWrapper: The fitted model (self).
+        """
         self.fitted_ = True
         return self
 
     def _transform(self, X: ProteinSequences) -> np.ndarray:
-        
-        # check that each sequence is maximum a single point mutation from the wild type
+        """
+        Transform the input sequences using the VESPA model.
+
+        This method checks that each input sequence is a single point mutation from the wild type,
+        writes the mutations to a file, runs the VESPA model, and processes the results.
+
+        Args:
+            X (ProteinSequences): The input protein sequences to transform.
+
+        Returns:
+            np.ndarray: The log-transformed VESPA scores for each input sequence.
+
+        Raises:
+            ValueError: If any input sequence is not a single point mutation from the wild type,
+                        or if VESPA fails to return predictions.
+        """
+        # Check that each sequence is maximum a single point mutation from the wild type
         for seq in X:
             mutations = self.wt.get_mutations(seq)
             if len(mutations) != 1:
@@ -63,24 +108,23 @@ class VESPAWrapper(CanRegressMixin, RequiresWTDuringInferenceMixin, RequiresWTTo
                 fromAA, pos, toAA = mutation[0], mutation[1:-1], mutation[-1]
                 f.write(f"{self.wt.id}_{fromAA}{int(pos)-1}{toAA}\n")
 
-        # create a temporary file for the wild type sequence
+        # Create a temporary file for the wild type sequence
         ProteinSequences([self.wt]).to_fasta(wt_fasta_file)
 
-        # run the model
-        # convert the paths to just base path because we will move to metadata folder
+        # Run the model
         cmd = ["vespa", os.path.basename(wt_fasta_file), "-m", os.path.basename(mutation_file), "--prott5_weights_cache", '.']
         if self.light:
             cmd.append("--vespal")
         else:
             cmd.append("--vespa")
         logger.info(f"Running command: {cmd}")
-        stdou, stde = subprocess.Popen(
+        stdout, stderr = subprocess.Popen(
             cmd,
             stderr=subprocess.PIPE,
             cwd=self.metadata_folder
         ).communicate()
-        if stde:
-            logger.error(f"VESPA gave: {stde.decode()}")
+        if stderr:
+            logger.error(f"VESPA gave: {stderr.decode()}")
         
         results = []
         outpath = os.path.join(self.metadata_folder, "vespa_run_directory", "output", "0.csv")
@@ -97,4 +141,14 @@ class VESPAWrapper(CanRegressMixin, RequiresWTDuringInferenceMixin, RequiresWTTo
         return np.log(1-np.array(results).reshape(-1, 1))
 
     def get_feature_names_out(self, input_features: Optional[List[str]] = None) -> List[str]:
+        """
+        Get the names of the output features.
+
+        Args:
+            input_features (Optional[List[str]]): Ignored. Present for API consistency.
+
+        Returns:
+            List[str]: A list containing the name of the output feature.
+        """
         return ["VESPA_score"]
+
