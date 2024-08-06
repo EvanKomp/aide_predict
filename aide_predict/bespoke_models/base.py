@@ -144,6 +144,9 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         # generate a folder if metadata is None
         if metadata_folder is None:
             metadata_folder = os.path.join(os.getcwd(), time.strftime("%Y%m%d_%H%M%S"))
+        else:
+            # get full path if relative path is given
+            metadata_folder = os.path.abspath(metadata_folder)
         self.metadata_folder = metadata_folder
 
         if metadata_folder is not None and not os.path.exists(metadata_folder):
