@@ -4,12 +4,6 @@
 * Created: 6/26/2024
 * Company: Bottle Institute @ National Renewable Energy Lab, Bioeneergy Science and Technology
 * License: MIT
-'''
-'''
-* Author: Evan Komp
-* Created: 6/18/2024
-* Company: Bottle Institute @ National Renewable Energy Lab, Bioeneergy Science and Technology
-* License: MIT
 
 This file exists to test wrapped zero shot models against literature values.
 
