@@ -10,12 +10,12 @@ dependencies:
   - pip
   - pip:
     - dvc
-    - numpy<1.20.0
+    - numpy
     - scikit-learn
     - pandas
-    - numba<
+    - numba
     - tqdm
-    - evcouplings @ git+https://github.com/debbiemarkslab/EVcouplings@af27842
-    - ruamel-yaml<0.18.0
+    - evcouplings @ git+https://github.com/debbiemarkslab/EVcouplings@374d4c5
+    - ruamel-yaml
 
 
