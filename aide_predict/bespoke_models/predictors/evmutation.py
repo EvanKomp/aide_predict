@@ -152,6 +152,10 @@ class EVMutationWrapper(
         # Load the resulting model
         self.model_ = CouplingsModel(outcfg["model_file"])
 
+        # patch over index and alphabet to be numpy datatypes for numba compatibility
+        self.model_.index_map = {np.int32(k): np.int32(v) for k, v in self.model_.index_map.items()}
+        self.model_.alphabet_map = {k: np.int32(v) for k, v in self.model_.alphabet_map.items()}
+
         return self
 
     def _transform(self, X: ProteinSequences) -> np.ndarray:
