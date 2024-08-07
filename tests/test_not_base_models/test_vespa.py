@@ -40,7 +40,6 @@ def test_vespa_zero_shot():
         wt=wt,
         light=True,  # Using VESPAl
         metadata_folder='./tmp/vespa',
-        device=DEVICE
     )
 
     assay_data = pd.read_csv(
@@ -60,7 +59,6 @@ def test_vespa_zero_shot():
         wt=wt,
         light=False,
         metadata_folder='./tmp/vespa',
-        device=DEVICE
     )
     model.fit(sequences)
     predictions = model.predict(sequences)

@@ -17,6 +17,6 @@ dependencies:
     - numba
     - tqdm
     - evcouplings @ git+https://github.com/debbiemarkslab/EVcouplings@374d4c5
-    - ruamel-yaml
+    - ruamel-yaml<0.18.0
 
 

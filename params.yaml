@@ -43,7 +43,7 @@ position_specific_scoring: false
 msa_creation:
   # If `starting_sequences` The MSA is created using `data/starting_sequences.fa` and optionally, sequences from supervised training data
   # If `jackhmmer` The MSA is created using `jackhmmer` search against a database
-  msa_mode: starting_sequences
+  msa_mode: jackhmmer
 
   # for using predefined sequences
   # msa_mode: starting_sequences
@@ -65,11 +65,14 @@ msa_creation:
   # note requires `data/wt.fa` to be not empty
   jackhmmer:
     seqdb: uniref100
-    iterations: 1
-    domain_threshold: 100
-    sequence_threshold: 100
+    iterations: 5
+    domain_threshold: 0.4
+    sequence_threshold: 0.4
     use_bitscores: true
-    sequence_identity_filter: 80
+    sequence_identity_filter: 95
+    minimum_sequence_coverage: 50
+    minimum_column_coverage: 70
+    theta: 0.8
     cpus: 16
     mx: 'BLOSUM62'
 
