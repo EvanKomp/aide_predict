@@ -87,8 +87,7 @@ class EVMutationWrapper(
     def check_metadata(self) -> None:
         # ensure metadata folder is empty, otherwise delete whats inside
         if os.path.exists(self.metadata_folder):
-            for f in os.listdir(self.metadata_folder):
-                shutil.rmtree(os.path.join(self.metadata_folder, f))
+            shutil.rmtree(self.metadata_folder)
 
     def _fit(self, X: ProteinSequences, y: Optional[np.ndarray] = None) -> 'EVCouplingsWrapper':
         """
