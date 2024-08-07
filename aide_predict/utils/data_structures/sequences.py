@@ -341,6 +341,7 @@ class ProteinSequences(UserList):
             if not isinstance(s, ProteinSequence):
                 raise ValueError("All elements must be ProteinSequence objects")
         super().__init__(sequences)
+        self._id_to_pos = None
 
     @property
     def aligned(self) -> bool:
@@ -404,6 +405,20 @@ class ProteinSequences(UserList):
             if len(chars) > 1:
                 mutated.append(i)
         return mutated
+    
+    def __getitem__(self, index: Union[int, slice, str]) -> Union[ProteinSequence, 'ProteinSequences']:
+        """
+        Get a ProteinSequence or a subset of sequences.
+
+        Args:
+            index (Union[int, slice, str]): Index, slice, or ID of the sequence(s).
+
+        Returns:
+            Union[ProteinSequence, ProteinSequences]: The requested sequence or a new ProteinSequences object.
+        """
+        if isinstance(index, str):
+            index = self.id_mapping[index]
+        return super().__getitem__(index)
 
     def to_dict(self) -> Dict[str, str]:
         """
@@ -468,6 +483,14 @@ class ProteinSequences(UserList):
             ProteinSequences: A new ProteinSequences object containing the sequences from the list.
         """
         return cls([ProteinSequence(seq) for seq in sequences])
+    
+    @property
+    def id_mapping(self) -> Dict[str, int]:
+        if self._id_to_pos is None or (self._id_to_pos and len(self._id_to_pos) != len(self)):
+            self._id_to_pos = self.get_id_mapping()
+        return self._id_to_pos
+    
+    
 
     def __repr__(self) -> str:
         """
