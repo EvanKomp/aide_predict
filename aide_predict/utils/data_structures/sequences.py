@@ -351,7 +351,7 @@ class ProteinSequences(UserList):
         Returns:
             bool: True if all sequences have the same length, False otherwise.
         """
-        return len(set(len(seq) for seq in self)) == 1 and len(self) > 1
+        return len(set(len(seq) for seq in self)) == 1 and (len(self) > 1 or self.has_gaps)
 
     @property
     def fixed_length(self) -> bool:

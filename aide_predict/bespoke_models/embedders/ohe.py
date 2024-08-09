@@ -226,7 +226,7 @@ class OneHotAlignedEmbedding(PositionSpecificMixin, RequiresMSAMixin, CanHandleA
         Raises:
             ValueError: If the input sequences are aligned but not of the same width as the original alignment.
         """
-        if X.aligned and not X.fixed_length:
+        if X.aligned:
             if X.width != self.alignment_width_:
                 raise ValueError(f"Aligned input sequences must have width {self.alignment_width_}")
             warnings.warn("Input sequences are already aligned. Using them as-is for encoding.")
