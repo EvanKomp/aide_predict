@@ -167,19 +167,23 @@ ESM2 embeddings and log likelihood predictors.
 ### Prediction Models
 
 1. HMM (Hidden Markov Model)
+   - Computes statistics over matching columns in an MSA, treating each column independantly but allowing for alignment of query sequences before scoring
    - Requires MSA for fitting
    - Can handle aligned sequences during inference
 
 2. EVMutation
+   - Computes pairwise couplings between AAs in an MSA for select positions well represented in the MSA, variants are scored by the change in coupling energy.
    - Requires MSA for fitting
    - Requires wild-type sequence for inference
    - Requires fixed-length sequences
 
 3. ESM2 Likelihood Wrapper
+   - Pretrained PLM (BERT style) model for protein sequences, scores variants according to masked, mutant, or wild type marginal likelihoods. Mutant marginal computes likelihoods in the context of the mutant sequence, while masked and wild type marginal compute likelihoods in the context of the wild type sequence. These methods are apprximations of the joint likelihood.
    - Can handle aligned sequences
    - Requires additional dependencies (see `requirements-transformers.txt`)
 
 4. SaProt Likelihood Wrapper
+   - ESM except using a size 400 vocabulary including local structure tokens from Foldseek's VAE. Wild type, Mutant, and masked marginals avialable.
    - Requires fixed-length sequences
    - Uses WT structure if structures of sequences are not passed
    - Requires additional dependencies:
@@ -187,11 +191,13 @@ ESM2 embeddings and log likelihood predictors.
      - `foldseek` executable must be available in the PATH
 
 5. MSA Transformer Likelihood Wrapper
+   - Like ESM but with a transformer model that is trained on MSAs. The variants are placed at the top position in the MSA and scores are computed along that row. Wild type, Mutant, and masked marginals avialable.
    - Requires MSA for fitting
    - Requires wild-type sequence during inference
    - Requires additional dependencies (see `requirements-fair-esm.txt`)
 
 6. VESPA
+   - Conservation head model trained on PLM embeddings and logistic regression used to predict if mutation is detrimental.
    - Requires wild type, only works for single point mutations
    - Requires fixed-length sequences
    - Requires additional dependencies (see `requirements-vespa.txt`)
@@ -199,28 +205,33 @@ ESM2 embeddings and log likelihood predictors.
 ### Embeddings for Downstream ML
 
 1. One Hot Protein Embedding
+   - Columnwise one hot encoding of amino acids for a fixed length set of sequences
    - Requires fixed-length sequences
    - Position specific
 
 2. One Hot Aligned Embedding
+   - Columnwise one hot encoding including gaps for sequences aligned to an MSA.
    - Requires MSA for fitting
    - Position specific
 
 3. Kmer Embedding
+   - Counts of observed amino acid kmers in the sequences
    - Allows for variable length sequences
 
 4. ESM2 Embedding
-   - Accepts aligned sequences
+   - Pretrained PLM (BERT style) model for protein sequences, outputs embeddings for each amino acid in the sequece from the last transformer layer.
    - Position specific
    - Requires additional dependencies (see `requirements-transformers.txt`)
 
 5. SaProt Embedding
+   - ESM except using a size 400 vocabulary including local structure tokens from Foldseek's VAE. AA embeddings from the last layer of the transformer are used.
    - Position specific
    - Requires additional dependencies:
      - `requirements-transformers.txt`
      - `foldseek` executable must be available in the PATH
 
 6. MSA Transformer Embedding
+   - Like ESM but with a transformer model that is trained on MSAs. The embeddings are computed for each amino acid in the query sequence in the context of an existing MSA
    - Requires MSA for fitting
    - Requires fixed-length sequences
    - Requires additional dependencies (see `requirements-fair-esm.txt`)
