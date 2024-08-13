@@ -418,6 +418,8 @@ class ProteinSequences(UserList):
         """
         if isinstance(index, str):
             index = self.id_mapping[index]
+        elif isinstance(index, np.ndarray):
+            return ProteinSequences([self[i] for i in index])
         return super().__getitem__(index)
 
     def to_dict(self) -> Dict[str, str]:

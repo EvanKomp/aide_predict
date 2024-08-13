@@ -154,93 +154,89 @@ y_pred = pipeline.predict(new_homologs)
 Import `aide_predict.utils.common.get_supported_tools()` to see the tools that are available based on your environment.
 The base package has few dependencies and concurrently few tools. Additional tools can be accessed with additional
 dependency steps. This choice was made to reduce dependency clashes for the codebase. For example, the base
-package does not include `pytorch`, but the environment can be extended with "transformers_requirements.txt" to access
+package does not include `pytorch`, but the environment can be extended with "requirements-transformers.txt" to access
 ESM2 embeddings and log likelihood predictors.
 
-### Base package
-#### Utilities
-- Jackhmmer and MSA processing pipelines. Please see section "3rd party software" for more information
-- Data structures for protein sequences and structures that are directly accepted by protein models
+## Available Tools
 
-#### Prediction models
+### Data Structures and Utilities
+- Protein Sequence and Structure data structures
+- Jackhmmer and MSA processing pipelines
+  - Uses EVCoouplings pipeline itnernally (see "3rd party software" section for more information)
+
+### Prediction Models
 
 1. HMM (Hidden Markov Model)
    - Requires MSA for fitting
    - Can handle aligned sequences during inference
-   - Scientific context: HMMs capture position-specific amino acid preferences and insertions/deletions in protein families. Columns are treated independantly. 
 
-2. EVMutation 
+2. EVMutation
    - Requires MSA for fitting
    - Requires wild-type sequence for inference
    - Requires fixed-length sequences
-   - Scientific context: EVMutation uses evolutionary couplings to predict the effects of mutations. It captures both site-specific conservation and pairwise epistatic effects in proteins. [X](https://evcouplings.org/)
 
-#### Embeddings for downstream ML
+3. ESM2 Likelihood Wrapper
+   - Can handle aligned sequences
+   - Requires additional dependencies (see `requirements-transformers.txt`)
+
+4. SaProt Likelihood Wrapper
+   - Requires fixed-length sequences
+   - Uses WT structure if structures of sequences are not passed
+   - Requires additional dependencies:
+     - `requirements-transformers.txt`
+     - `foldseek` executable must be available in the PATH
+
+5. MSA Transformer Likelihood Wrapper
+   - Requires MSA for fitting
+   - Requires wild-type sequence during inference
+   - Requires additional dependencies (see `requirements-fair-esm.txt`)
+
+6. VESPA
+   - Requires wild type, only works for single point mutations
+   - Requires fixed-length sequences
+   - Requires additional dependencies (see `requirements-vespa.txt`)
+
+### Embeddings for Downstream ML
 
 1. One Hot Protein Embedding
    - Requires fixed-length sequences
-   - Position specific, eg. positions in the sequence can be passed and the embedding is subset to those positions.
-   - Scientific context: One-hot encoding represents each amino acid as a binary vector, providing a simple numerical representation of sequences for machine learning models.
+   - Position specific
 
 2. One Hot Aligned Embedding
    - Requires MSA for fitting
-   - Position specific, eg. positions in the alignment can be passed and the embedding is subset to those positions.
-   - Incoming sequences are aligned if not already to the stored MSA, and only aligned columns used in the OHE
-   - Scientific context: This embedding applies one-hot encoding to aligned sequences, preserving positional information in the context of related sequences.
+   - Position specific
 
-### Transformers package
-See "requirements-transformers.txt" for the additional dependencies required to access these tools.
+3. Kmer Embedding
+   - Allows for variable length sequences
 
-#### Embeddings for downstream ML
-
-1. ESM2 Embedding
-   - Language model embeddings have been shown to be useful for downstream ML tasks [X](https://doi.org/10.1016/j.trac.2024.117540)
+4. ESM2 Embedding
    - Accepts aligned sequences
-   - Position specific, eg. positions in the sequence (or alignment if aligned sequences are passed) can be passed and the embedding is subset to those positions.
-   - Scientific context: ESM2 is a large language model trained on millions of protein sequences. Its embeddings capture rich, contextual information about protein sequence and structure.
+   - Position specific
+   - Requires additional dependencies (see `requirements-transformers.txt`)
 
-2. SaProt Embedding
-   - The `foldseek` executable must be available in the PATH
-   - Position specific, eg. positions in the sequence can be passed and the embedding is subset to those positions.
-   - Scientific context: SaProt is a structure-aware protein language model. Its embeddings incorporate both sequence and structural information: structure is tokenized a la foldseek and included in the vocabulary. If passeds sequences do not have structures, it is expected that a WT is passed and has a structure. [X](https://doi.org/10.1101/2023.10.01.560349)
+5. SaProt Embedding
+   - Position specific
+   - Requires additional dependencies:
+     - `requirements-transformers.txt`
+     - `foldseek` executable must be available in the PATH
 
-#### Prediction models
-
-1. ESM2 Likelihood Wrapper
-   - Evolutionary scale protein language model has shown to have zero shot correlation to function. [X](https://doi.org/10.1101/2021.07.09.450648)
-   - Can handle aligned sequences
-   - Scientific context: This model uses ESM2 to compute log-likelihoods of sequences, which can be used to predict the effects of mutations or assess sequence fitness.
-
-2. SaProt Likelihood Wrapper
-   - Currently (7.29.24) holds the best mean score on ProteinGym [X](https://proteingym.org/benchmarks)
+6. MSA Transformer Embedding
+   - Requires MSA for fitting
    - Requires fixed-length sequences
-   - Uses WT structure if structures of sequences are not passed
-   - Scientific context: SaProt's likelihood predictions incorporate both sequence and structural information, potentially providing more accurate assessments of mutation effects.
+   - Requires additional dependencies (see `requirements-fair-esm.txt`)
 
 Each model in this package is implemented as a subclass of `ProteinModelWrapper`, which provides a consistent interface for all models. The specific behaviors (e.g., requiring MSA, fixed-length sequences, etc.) are implemented using mixins, making it easy to understand and extend the functionality of each model.
-
-### FAIR ESM package
-ESM2 can be used with the transformers package, but MSA transformer is not available as a class in the transformers package, and required fair-esm to be installed.
-See "requirements-fair-esm.txt" for the additional dependencies required to access these tools.
-
-#### Embeddings for downstream ML
-
-1. MSA Transformer Embedding
-   - Requires MSA for fitting
-   - Requires fixed-length sequences
-   - Scientific context: This model leverages information from multiple sequence alignments to generate embeddings that capture evolutionary context and conservation patterns. Column and row attention means that hypothetically the emneddings of an amino acid are conditioned on the observed primary structure and conservation of the whole MSA
-
-#### Prediction models
-1. MSA Transformer Likelihood Wrapper
-   - Evolutionary scale protein language model has shown to have zero shot correlation to function. [X](https://doi.org/10.1101/2021.07.09.450648)
-   - Requires MSA for fitting
-   - Requires wild-type sequence during inference
-   - Scientific context: This model computes log-likelihoods based on the MSA Transformer, which captures evolutionary context and conservation patterns in protein sequences.
 
 ## Installation
 ```
 conda env create -f environment.yaml
 pip install .
+```
+
+## Installation of additional modules
+Tools that require additional dependancies can be installed with the corresponding requirements file. See above for those files. For example, to access VESPA:
+```
+pip install -r requirements-vespa.txt
 ```
 
 ## DVC pipeline
