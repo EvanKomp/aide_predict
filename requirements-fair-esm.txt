@@ -1,0 +1,3 @@
+fair-esm
+transformers[torch]
+

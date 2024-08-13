@@ -8,10 +8,11 @@
 import warnings
 from typing import List, Union, Optional
 import numpy as np
+import tqdm
 
 
-
-from aide_predict.bespoke_models.base import ProteinModelWrapper, PositionSpecificMixin, RequiresMSAMixin, RequiresFixedLengthMixin
+from aide_predict.bespoke_models import model_device_context
+from aide_predict.bespoke_models.base import ProteinModelWrapper, PositionSpecificMixin, RequiresMSAMixin, CacheMixin
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
 from aide_predict.utils.common import MessageBool
 
@@ -24,7 +25,7 @@ try:
 except ImportError:
     AVAILABLE = MessageBool(False, "MSA Transformer requires fair-esm, which is not installed.")
 
-class MSATransformerEmbedding(PositionSpecificMixin, RequiresMSAMixin, RequiresFixedLengthMixin, ProteinModelWrapper):
+class MSATransformerEmbedding(CacheMixin, PositionSpecificMixin, RequiresMSAMixin, ProteinModelWrapper):
     """
     A protein sequence embedder that uses the MSA Transformer model to generate embeddings.
     
@@ -43,7 +44,7 @@ class MSATransformerEmbedding(PositionSpecificMixin, RequiresMSAMixin, RequiresF
 
     _available = AVAILABLE
 
-    def __init__(self, metadata_folder: str, 
+    def __init__(self, metadata_folder: str=None, 
                  layer: int = -1,
                  positions: Optional[List[int]] = None, 
                  flatten: bool = False,
@@ -86,12 +87,31 @@ class MSATransformerEmbedding(PositionSpecificMixin, RequiresMSAMixin, RequiresF
         Raises:
             ValueError: If the input sequences are not aligned or of fixed length.
         """
-
-        self.model_, self.alphabet_ = pretrained.esm_msa1b_t12_100M_UR50S()
-        self.model_ = self.model_.to(self.device)
         self.msa_length_ = X.width
         self.original_msa_ = X
         return self
+    
+    def _load_model(self) -> None:
+        """Load and the model and other objects into memory on device such that they can be accessed in
+        `_compute_log_likelihoods` and `_index_log_probs`.
+
+        Required abstract class from `LikelihoodTransformerBase`.
+        """
+        self.model_, self.alphabet_ = pretrained.esm_msa1b_t12_100M_UR50S()
+        self.model_ = self.model_.to(self.device)
+        self.batch_converter_ = self.alphabet_.get_batch_converter()
+    
+    
+    def _cleanup_model(self) -> None:
+        """
+        Clean up the model and other objects loaded into memory in `_load_model`.
+
+        Required abstract class from `LikelihoodTransformerBase`.
+        """
+        del self.model_
+        del self.alphabet_
+        del self.batch_converter_
+
     
     def _prepare_msa_batch(self, msa: ProteinSequences, query_sequence: ProteinSequence) -> ProteinSequences:
         """
@@ -120,47 +140,58 @@ class MSATransformerEmbedding(PositionSpecificMixin, RequiresMSAMixin, RequiresF
         Raises:
             ValueError: If the input sequences are not of the same length as the original MSA.
         """
-        if X.width != self.msa_length_:
-            raise ValueError(f"Input sequences must have the same length as the original MSA ({self.msa_length_}).")
+        if X.aligned:
+            if X.width != self.msa_length_:
+                raise ValueError(f"Aligned input sequences must have width {self.msa_length_}")
+            warnings.warn("Input sequences are already aligned. Using them as-is for encoding.")
+            sequences_to_encode = X
+        else:
+            warnings.warn("Input sequences are not aligned. Aligning them to the original alignment.")
+            sequences_to_encode = X.align_to(self.original_msa_, return_only_new=True, realign=False)
+        X = sequences_to_encode
         
-        batch_converter = self.alphabet_.get_batch_converter()
+        with model_device_context(self, self._load_model, self._cleanup_model, self.device):
 
-        all_embeddings = []
+            batch_converter = self.alphabet_.get_batch_converter()
 
-        for sequence in X:
-            sequence_embeddings = []
-            batch_sizes = []
-            for msa_sequences in self.original_msa_.iter_batches(self.batch_size - 1):
-                sequences_batch = self._prepare_msa_batch(msa_sequences, sequence)
-
-                batch_tokens = batch_converter([(str(hash(s)), s) for s in sequences_batch])[2]
-                batch_tokens = batch_tokens.to(self.device)
-
-                if self.layer == -1:
-                    self.layer = self.model_.num_layers - 1
-
-                with torch.no_grad():
-                    results = self.model_(batch_tokens, repr_layers=[self.layer], return_contacts=False)
-                
-                embeddings = results["representations"][self.layer]
-                
-                # Extract embedding for the query sequence (last in the batch)
-                # remove the start token
-                query_embedding = embeddings[0, -1, 1:, :].cpu().numpy()
-                sequence_embeddings.append(query_embedding)
-                batch_sizes.append(query_embedding.shape[0]-1)
-
-            # Average embeddings across all batches
-            # weigh by batch sizes
-            avg_embedding = np.average(sequence_embeddings, axis=0, weights=batch_sizes)
-
-            if self.positions is not None:
-                avg_embedding = avg_embedding[self.positions]
+            all_embeddings = []
             
-            if self.pool:
-                avg_embedding = avg_embedding.mean(axis=0)
-            
-            all_embeddings.append(np.expand_dims(avg_embedding, axis=0))
+            for sequence in tqdm.tqdm(X, desc="Generating embeddings", unit="sequence"):
+                sequence_embeddings = []
+                batch_sizes = []
+                bar = tqdm.tqdm(total=len(self.original_msa_), desc="Processing msa batches", unit="sequence")
+                for msa_sequences in self.original_msa_.iter_batches(self.batch_size - 1):
+                    sequences_batch = self._prepare_msa_batch(msa_sequences, sequence)
+
+                    batch_tokens = batch_converter([(str(hash(s)), s.upper().replace('.', '-')) for s in sequences_batch])[2]
+                    batch_tokens = batch_tokens.to(self.device)
+
+                    if self.layer == -1:
+                        self.layer = self.model_.num_layers - 1
+
+                    with torch.no_grad():
+                        results = self.model_(batch_tokens, repr_layers=[self.layer], return_contacts=False)
+                    
+                    embeddings = results["representations"][self.layer]
+                    
+                    # Extract embedding for the query sequence (last in the batch)
+                    # remove the start token
+                    query_embedding = embeddings[0, -1, 1:, :].cpu().numpy()
+                    sequence_embeddings.append(query_embedding)
+                    batch_sizes.append(int(query_embedding.shape[0]-1))
+                    bar.update(len(msa_sequences))
+
+                # Average embeddings across all batches
+                # weigh by batch sizes
+                avg_embedding = np.average(sequence_embeddings, axis=0, weights=batch_sizes)
+
+                if self.positions is not None:
+                    avg_embedding = avg_embedding[self.positions]
+                
+                if self.pool:
+                    avg_embedding = avg_embedding.mean(axis=0)
+                
+                all_embeddings.append(np.expand_dims(avg_embedding, axis=0))
 
         return np.vstack(all_embeddings)
 
@@ -178,7 +209,8 @@ class MSATransformerEmbedding(PositionSpecificMixin, RequiresMSAMixin, RequiresF
         if not hasattr(self, 'model_'):
             raise ValueError("Model has not been fitted yet. Call fit() before using this method.")
         
-        embedding_dim = self.model_.args.embed_dim
+        with model_device_context(self, self._load_model, self._cleanup_model, self.device):
+            embedding_dim = self.model_.args.embed_dim
         positions = self.positions if self.positions is not None else range(self.msa_length_)
         
         if self.pool:

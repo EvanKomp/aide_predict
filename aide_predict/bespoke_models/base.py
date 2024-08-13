@@ -8,6 +8,12 @@ Base classes for models to be wrapped into the API as sklearn estimators
 '''
 import os
 from abc import abstractmethod
+import time
+import pickle
+import warnings
+import hashlib
+import json
+import hashlib
 
 from sklearn.base import BaseEstimator, TransformerMixin, RegressorMixin
 from sklearn.utils.validation import check_is_fitted, NotFittedError
@@ -20,6 +26,14 @@ from typing import Union, Optional, List, Dict, Any
 
 import logging
 logger = logging.getLogger(__name__)
+
+def is_jsonable(x):
+    """Checks if an object is JSON serializable."""
+    try:
+        json.dumps(x)
+        return True
+    except (TypeError, OverflowError):
+        return False
 
 #############################################
 # BASE CLASSES FOR DOWNSTREAM MODELS
@@ -45,6 +59,7 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
     
     Class Attributes:
         requires_msa_for_fit (bool): Whether the model requires an MSA as input for fitting.
+        requires_wt_to_function (bool): Whether the model requires the wild type sequence to function.
         requires_wt_during_inference (bool): Whether the model requires the wild type sequence during inference.
         per_position_capable (bool): Whether the model can output per position scores.
         requires_fixed_length (bool): Whether the model requires a fixed length input.
@@ -68,8 +83,10 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
        - RequiresMSAMixin - if the model requires an MSA for fitting
        - RequiresFixedLengthMixin - if the model requires fixed length sequences at predict time
        - CanRegressMixin - if the model can regress, otherwise it is assumed to be a transformer only eg. embedding
+       - RequiresWTToFunctionMixin - if the model requires the wild type sequence to function
        - RequiresWTDuringInferenceMixin - if the model requires the wild type sequence duing inference in order to normalize by wt
        - PositionSpecificMixin - if the model can output per position scores
+       - RequiresStructureMixin - if the model requires structure information
     6. If the model requires more than the base package, set the _available attribute to be dynamic based on a check in the module.
 
     Example:
@@ -102,13 +119,15 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
 
     _requires_msa_for_fit: bool = False
     _requires_wt_during_inference: bool = False
+    _requires_wt_to_function: bool = False
     _per_position_capable: bool = False
     _requires_fixed_length: bool = False
     _can_regress: bool = False
     _can_handle_aligned_sequences: bool = False
+    _requires_structure: bool = False
     _available: bool = MessageBool(True, "This model is available for use.")
 
-    def __init__(self, metadata_folder: str, wt: Optional[Union[str, ProteinSequence]] = None):
+    def __init__(self, metadata_folder: str=None, wt: Optional[Union[str, ProteinSequence]] = None):
         """
         Initialize the ProteinModelWrapper.
 
@@ -119,9 +138,18 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         Raises:
             ValueError: If the wild type sequence contains gaps.
         """
+        if not self._available:
+            raise ValueError(self._available.message)
+        
+        # generate a folder if metadata is None
+        if metadata_folder is None:
+            metadata_folder = os.path.join(os.getcwd(), time.strftime("%Y%m%d_%H%M%S"))
+        else:
+            # get full path if relative path is given
+            metadata_folder = os.path.abspath(metadata_folder)
         self.metadata_folder = metadata_folder
 
-        if not os.path.exists(metadata_folder):
+        if metadata_folder is not None and not os.path.exists(metadata_folder):
             os.makedirs(metadata_folder)
             logger.info(f"Created metadata folder: {metadata_folder}")
 
@@ -129,10 +157,16 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
             wt = ProteinSequence(wt)
         
         if wt is not None:
-            wt = ProteinSequence(wt)
             if wt.has_gaps:
                 raise ValueError("Wild type sequence cannot have gaps.")
+            
+        if self.requires_structure and wt is not None:
+            if wt.structure is None:
+                raise ValueError("This model acts on structure but a wild type structure was not given.")
         
+        if wt is None and self.requires_wt_to_function:
+            raise ValueError("This model requires a wild type sequence to function.")
+
         self.wt = wt
 
         self.check_metadata()
@@ -227,7 +261,7 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         """
         raise NotImplementedError("This method must be implemented in the child class.")
     
-    def fit(self, X: Union[ProteinSequences, List[str]], y: Optional[np.ndarray] = None) -> 'ProteinModelWrapper':
+    def fit(self, X: Union[ProteinSequences, List[str]], y: Optional[np.ndarray] = None, force: bool=False) -> 'ProteinModelWrapper':
         """
         Fit the model.
         
@@ -240,8 +274,11 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         """
         try:
             check_is_fitted(self)
-            logger.warning("Model is already fitted. Skipping")
-            return self
+            if not force:
+                logger.warning("Model is already fitted. Skipping")
+                return self
+            else:
+                pass
         except NotFittedError:
             pass
 
@@ -316,6 +353,15 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
 
         if self.requires_fixed_length:
             self._assert_fixed_length(X)
+
+        if self.requires_structure:
+            if any(seq.structure is None for seq in X) and self.wt is None:
+                raise ValueError("This model requires structure information, at least one of the sequences does not have it, and there is no avialable WT structure.")
+            elif any(seq.structure is None for seq in X):
+                if X.fixed_length and len(self.wt) == X.width:
+                    pass
+                else:
+                    raise ValueError("This model requires structure information, at least one of the sequences does not have it, and the WT structure size does not match the sequence lengths.")
 
         if not self.can_handle_aligned_sequences and X.has_gaps:
             logger.info("Input sequences have gaps and the model cannot handle them. Removing gaps.")
@@ -414,6 +460,16 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
     def can_handle_aligned_sequences(self) -> bool:
         """Whether the model can handle aligned sequences (with gaps) at predict time."""
         return self._can_handle_aligned_sequences
+    
+    @property
+    def requires_wt_to_function(self) -> bool:
+        """Whether the model requires the wild type sequence to function."""
+        return self._requires_wt_to_function
+    
+    @property
+    def requires_structure(self) -> bool:
+        """Whether the model requires structure information."""
+        return self._requires_structure
 
     @staticmethod
     def _construct_necessary_metadata(model_directory: str, necessary_metadata: dict) -> None:
@@ -476,9 +532,27 @@ class CanRegressMixin(RegressorMixin):
     """
     Mixin to ensure model can regress.
     
-    This mixin overrides the can_regress attribute to be True.
+    This mixin overrides the can_regress attribute to be True. It also overrides the score method to use
+    spearman correlation isntead of R2, such that it can be used out of the mox with zero shot predicors.
     """
     _can_regress: bool = True
+
+    def score(self, X, y, sample_weight=None):
+        """
+        Return the Spearman correlation
+        """
+        from scipy.stats import spearmanr
+        y_pred = self.predict(X)
+        return spearmanr(y, y_pred).correlation
+    
+class RequiresStructureMixin:
+    """
+    Mixin to ensure model requires structure information.
+    
+    This mixin overrides the requires_structure attribute to be True.
+    """
+    _requires_structure: bool = True
+
 
 class RequiresWTDuringInferenceMixin:
     """
@@ -487,6 +561,14 @@ class RequiresWTDuringInferenceMixin:
     This mixin overrides the requires_wt_during_inference attribute to be True.
     """
     _requires_wt_during_inference: bool = True
+
+class RequiresWTToFunctionMixin:
+    """
+    Mixin to ensure model requires wild type to function.
+    
+    This mixin overrides the requires_wt_to_function attribute to be True.
+    """
+    _requires_wt_to_function: bool = True
 
 class PositionSpecificMixin:
     """
@@ -536,8 +618,6 @@ class PositionSpecificMixin:
             ValueError: If the output dimensions do not match the specified positions.
         """
         result = super().transform(X)
-        print(result.shape)
-        print(self.positions)
         
         if self.positions is not None and not self.pool:
             dims = len(self.positions)
@@ -580,4 +660,110 @@ class CanHandleAlignedSequencesMixin:
     """
     _can_handle_aligned_sequences: bool = True
     
+class CacheMixin:
+    """
+    Mixin to provide per-protein caching functionality for ProteinModelWrapper subclasses.
+    """
+    def __init__(self, *args, use_cache: bool=True, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.use_cache = use_cache
+        self._cache_file = os.path.join(self.metadata_folder, 'model_cache.pkl')
+        self._cache_metadata_file = os.path.join(self.metadata_folder, 'cache_metadata.json')
+        self._cache = {}
+        self._cache_metadata = {}
 
+    def _get_model_state_hash(self) -> str:
+        """Generate a hash representing the current state of the model."""
+        model_params = json.dumps(self.get_params(), sort_keys=True)
+        fitted_attrs = json.dumps({attr: getattr(self, attr) for attr in self.get_fitted_attributes()}, sort_keys=True)
+        return hashlib.md5((model_params + fitted_attrs).encode()).hexdigest()
+
+    def _get_protein_hash(self, protein: ProteinSequence) -> str:
+        hash_input = str(protein)
+        if protein.id is not None:
+            hash_input += f"|id:{protein.id}"
+        if protein.structure is not None:
+            hash_input += f"|structure:{str(protein.structure.pdb_file)}{protein.structure.chain}{protein.structure.plddt_file}"
+        return hashlib.sha256(hash_input.encode()).hexdigest()
+
+    def _load_cache(self):
+        """Load the cache from disk if it exists."""
+        if os.path.exists(self._cache_file) and os.path.exists(self._cache_metadata_file):
+            with open(self._cache_file, 'rb') as f:
+                self._cache = pickle.load(f)
+            with open(self._cache_metadata_file, 'r') as f:
+                self._cache_metadata = json.load(f)
+
+    def _save_cache(self):
+        """Save the cache to disk."""
+        with open(self._cache_file, 'wb') as f:
+            pickle.dump(self._cache, f)
+        with open(self._cache_metadata_file, 'w') as f:
+            json.dump(self._cache_metadata, f)
+
+    def _clear_cache(self):
+        """Clear the cache and remove cache files."""
+        self._cache = {}
+        self._cache_metadata = {}
+        if os.path.exists(self._cache_file):
+            os.remove(self._cache_file)
+        if os.path.exists(self._cache_metadata_file):
+            os.remove(self._cache_metadata_file)
+
+    def get_fitted_attributes(self) -> List[str]:
+        """
+        Get a list of attributes that are set during fitting.
+        This method automatically detects attributes ending with an underscore.
+        """
+        return [attr for attr in dir(self) if attr.endswith('_') and not attr.startswith('_') and is_jsonable(getattr(self, attr))]
+
+    def transform(self, X: Union[ProteinSequences, List[str]]) -> np.ndarray:
+        """Override transform to use cache when possible on a per-protein basis."""
+        if not self.use_cache:
+            return super().transform(X)
+
+        try:
+            check_is_fitted(self)
+        except:
+            return super().transform(X)
+
+        X = self._validate_input(X)
+        self._load_cache()
+
+        current_model_state = self._get_model_state_hash()
+        if self._cache_metadata.get('model_state') != current_model_state:
+            warnings.warn("Cache found but model state has changed. Clearing cache.")
+            self._clear_cache()
+            self._cache_metadata['model_state'] = current_model_state
+
+        cached_results = []
+        proteins_to_process = []
+        original_order = []
+
+        for i, protein in enumerate(X):
+            protein_hash = self._get_protein_hash(protein)
+            if protein_hash in self._cache:
+                cached_results.append((i, self._cache[protein_hash]))
+            else:
+                proteins_to_process.append((i, protein))
+            original_order.append(i)
+
+        if proteins_to_process:
+            proteins_to_transform = ProteinSequences([p[1] for p in proteins_to_process])
+            new_results = super().transform(proteins_to_transform)
+
+            for (i, protein), result in zip(proteins_to_process, new_results):
+                protein_hash = self._get_protein_hash(protein)
+                self._cache[protein_hash] = result
+                self._cache_metadata[protein_hash] = {
+                    'timestamp': time.time(),
+                    'protein_length': len(protein),
+                    'output_shape': result.shape
+                }
+                cached_results.append((i, result))
+
+        self._save_cache()
+
+        # Reorder results to match original input order
+        all_results = sorted(cached_results, key=lambda x: x[0])
+        return np.vstack([r[1] for r in all_results])

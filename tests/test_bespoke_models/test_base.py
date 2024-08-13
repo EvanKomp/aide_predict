@@ -16,7 +16,9 @@ from aide_predict.utils.data_structures import (
 )
 from aide_predict.bespoke_models.base import (
     ProteinModelWrapper, RequiresMSAMixin, RequiresFixedLengthMixin,
-    CanRegressMixin, RequiresWTDuringInferenceMixin, PositionSpecificMixin
+    CanRegressMixin, RequiresWTDuringInferenceMixin, PositionSpecificMixin,
+    RequiresWTToFunctionMixin, CacheMixin, CanHandleAlignedSequencesMixin,
+
 )
 
 
@@ -138,3 +140,53 @@ class TestProteinModelWrapper:
         feature_names = model.get_feature_names_out()
         # we passed flatten = True, so even though there is only one output above it still has dim
         assert feature_names == ['TestModel_1_dim0', 'TestModel_2_dim0']
+
+
+    def test_wt_with_gaps(self):
+        with pytest.raises(ValueError, match="Wild type sequence cannot have gaps."):
+            ProteinModelWrapper(wt="AC-DE")
+
+    def test_requires_wt_no_wt_provided(self):
+        class TestModel(RequiresWTToFunctionMixin, ProteinModelWrapper):
+            pass
+        with pytest.raises(ValueError, match="This model requires a wild type sequence to function."):
+            TestModel()
+
+    def test_cache_mixin(self):
+        class TestModel(CacheMixin, ProteinModelWrapper):
+            def _transform(self, X):
+                return np.array([len(seq) for seq in X]).reshape(-1, 1)
+
+        model = TestModel(use_cache=True)
+        model.fitted_ = True  # Mock fitted state
+        
+        # First transformation
+        result1 = model.transform(["ACDE", "FGH"])
+        np.testing.assert_array_equal(result1, np.array([[4], [3]]))
+        
+        # Second transformation (should use cache)
+        result2 = model.transform(["ACDE", "FGH"])
+        np.testing.assert_array_equal(result2, np.array([[4], [3]]))
+        
+        # Check that cache was used
+        assert model._cache != {}
+
+    def test_can_handle_aligned_sequences(self):
+        class TestModel(CanHandleAlignedSequencesMixin, ProteinModelWrapper):
+            def _transform(self, X):
+                return np.array([seq.count('-') for seq in X]).reshape(-1, 1)
+
+        model = TestModel()
+        model.fitted_ = True  # Mock fitted state
+        
+        result = model.transform(["AC-DE", "FG-H-"])
+        np.testing.assert_array_equal(result, np.array([[1], [2]]))
+
+    def test_check_fixed_length(self):
+        model = ProteinModelWrapper()
+        
+        fixed_length_sequences = ProteinSequences.from_list(["ACDE", "FGHI"])
+        assert model._check_fixed_length(fixed_length_sequences) == True
+        
+        variable_length_sequences = ProteinSequences.from_list(["ACDE", "FGH"])
+        assert model._check_fixed_length(variable_length_sequences) == False

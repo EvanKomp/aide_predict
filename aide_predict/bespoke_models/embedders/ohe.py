@@ -30,13 +30,13 @@ class OneHotProteinEmbedding(PositionSpecificMixin, RequiresFixedLengthMixin, Pr
         vocab (List[str]): The vocabulary of amino acids used for encoding.
         encoder (OneHotEncoder): The underlying sklearn OneHotEncoder.
         positions (Optional[List[int]]): Specific positions to encode. If None, all positions are encoded.
-        pool (bool): Whether to pool the encoded vectors across positions.
+        pool (bool): Ignored
         flatten (bool): Whether to flatten the output array.
         seq_length (Optional[int]): The length of the sequences, determined during fitting.
     """
 
-    def __init__(self, metadata_folder: str, wt: Optional[Union[str, ProteinSequence]] = None,
-                 positions: Optional[List[int]] = None, flatten: bool = True):
+    def __init__(self, metadata_folder: str=None, wt: Optional[Union[str, ProteinSequence]] = None,
+                 positions: Optional[List[int]] = None, flatten: bool = True, pool: bool = False):
         """
         Initialize the OneHotProteinEmbedding.
 
@@ -162,7 +162,7 @@ class OneHotAlignedEmbedding(PositionSpecificMixin, RequiresMSAMixin, CanHandleA
     """
 
     def __init__(self, metadata_folder: str, wt: Optional[Union[str, ProteinSequence]] = None,
-                 positions: Optional[List[int]] = None, flatten: bool = True):
+                 positions: Optional[List[int]] = None, flatten: bool = True, pool: bool = False):
         """
         Initialize the OneHotAlignedEmbedding.
 
@@ -171,6 +171,7 @@ class OneHotAlignedEmbedding(PositionSpecificMixin, RequiresMSAMixin, CanHandleA
             wt (Optional[Union[str, ProteinSequence]]): The wild type sequence, if any.
             positions (Optional[List[int]]): Specific positions to encode. If None, all positions are encoded.
             flatten (bool): Whether to flatten the output array.
+            pool (bool): Ignored
 
         Notes: WT is set to None to avoid normalization. For an embedder this is effectively a feature scaler which you
         should do manually if you want

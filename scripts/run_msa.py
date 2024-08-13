@@ -122,10 +122,10 @@ if __name__ == '__main__':
             'extract_annotation': True,
             'seqid_filter': PARAMS.msa_creation.jackhmmer.sequence_identity_filter,
             'hhfilter': hhfilter,
-            'minimum_sequence_coverage': 0.0,
-            'minimum_column_coverage': 0.0,
+            'minimum_sequence_coverage': PARAMS.msa_creation.jackhmmer.minimum_sequence_coverage,
+            'minimum_column_coverage': PARAMS.msa_creation.jackhmmer.minimum_column_coverage,
             'compute_num_effective_seqs': False,
-            'theta': 1.0
+            'theta': PARAMS.msa_creation.jackhmmer.theta
         }
         # add the user's database locations
         for db_name, db_loc in PARAMS.sequence_databases.__dict__.items():
@@ -136,6 +136,10 @@ if __name__ == '__main__':
         outcfg = evcouplings_pipeline(**kwargs)
         logger.info(f"jackhmmer complete. evcouplings output config: {outcfg}")
         # outconfig is also saved to file.
+
+        # move the resulting a2m file to the output directory
+        shutil.move(outcfg['alignment_file'], os.path.join(outdir, 'alignment.a2m'))
+
 
     elif PARAMS.msa_creation.msa_mode == 'starting_sequences':
         # here we simply need to align the sequences

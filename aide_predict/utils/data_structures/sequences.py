@@ -17,7 +17,8 @@ from aide_predict.utils.alignment_calls import sw_global_pairwise, mafft_align
 
 from typing import List, Optional, Union, Iterator, Dict, Iterable, Any
 
-from .constants import AA_SINGLE, GAP_CHARACTERS, NON_CONONICAL_AA_SINGLE
+from ..constants import AA_SINGLE, GAP_CHARACTERS, NON_CONONICAL_AA_SINGLE
+from .structures import ProteinStructure
 
 
 ############################################
@@ -82,14 +83,14 @@ class ProteinSequence(str):
     This class inherits from UserString and provides additional methods and properties
     for analyzing and manipulating protein sequences.
     """
-    def __new__(cls, seq: str, id: Optional[str] = None, structure: Optional[str] = None):
+    def __new__(cls, seq: str, id: Optional[str] = None, structure: Optional[Union[str, "ProteinStructure"]] = None):
         """
         Create a new ProteinSequence object.
 
         Args:
             seq (str): The amino acid sequence.
             id (Optional[str]): An identifier for the sequence.
-            structure (Optional[str]): The structure of the protein sequence.
+            structure (Optional[Union[str, "ProteinStructure"]): The structure of the protein sequence.
 
         Returns:
             ProteinSequence: The new ProteinSequence object.
@@ -97,7 +98,7 @@ class ProteinSequence(str):
         obj = str.__new__(cls, seq)
         obj._characters: List[ProteinCharacter] = [ProteinCharacter(c) for c in seq]
         obj._id: Optional[str] = None
-        obj._structure: Optional[str] = None
+        obj._structure: Optional[Union[str, "ProteinStructure"]] = None
 
         if id is not None:
             obj.id = id
@@ -118,7 +119,7 @@ class ProteinSequence(str):
     
     def __hash__(self) -> int:
         """Compute a hash value for the ProteinSequence."""
-        return hash((tuple(self._characters), self._id))
+        return hash((tuple(self._characters), self._id, self._structure))
     
     def __eq__(self, other: object) -> bool:
         """Check if two ProteinSequence objects are equal."""
@@ -190,6 +191,20 @@ class ProteinSequence(str):
         """
         other_seq = other if isinstance(other, ProteinSequence) else other
         return [i for i, (a, b) in enumerate(zip(self, other_seq)) if a != b]
+    
+    def get_mutations(self, other: Union[str, 'ProteinSequence']) -> List[str]:
+        """
+        Find mutations between this sequence and another.
+
+        Args:
+            other (Union[str, ProteinSequence]): The sequence to compare against.
+
+        Returns:
+            List[str]: A list of mutations in the format 'A123B' where A is the original character,
+            123 is the position, and B is the new character.
+        """
+        other_seq = other if isinstance(other, ProteinSequence) else other
+        return [f"{a}{i+1}{b}" for i, (a, b) in enumerate(zip(self, other_seq)) if a != b]
 
     def get_protein_character(self, position: int) -> ProteinCharacter:
         """
@@ -245,10 +260,12 @@ class ProteinSequence(str):
     @structure.setter
     def structure(self, new_structure: str) -> None:
         """Set the structure of the sequence."""
-        if os.path.exists(new_structure):
-            pass
-        else:
-            raise ValueError(f"Structure file {new_structure} does not exist.")
+        if isinstance(new_structure, str):
+            new_structure = ProteinStructure(new_structure)
+            assert len(self) == len(new_structure.get_sequence())
+        elif not isinstance(new_structure, ProteinStructure):
+            raise ValueError("Structure must be a ProteinStructure object or a valid PDB file path.")
+        
         self._structure = new_structure
     
     def align(self, other: 'ProteinSequence') -> 'ProteinSequence':
@@ -324,6 +341,7 @@ class ProteinSequences(UserList):
             if not isinstance(s, ProteinSequence):
                 raise ValueError("All elements must be ProteinSequence objects")
         super().__init__(sequences)
+        self._id_to_pos = None
 
     @property
     def aligned(self) -> bool:
@@ -333,7 +351,7 @@ class ProteinSequences(UserList):
         Returns:
             bool: True if all sequences have the same length, False otherwise.
         """
-        return len(set(len(seq) for seq in self)) == 1
+        return len(set(len(seq) for seq in self)) == 1 and (len(self) > 1 or self.has_gaps)
 
     @property
     def fixed_length(self) -> bool:
@@ -353,7 +371,7 @@ class ProteinSequences(UserList):
         Returns:
             Optional[int]: The length of the sequences if aligned, None otherwise.
         """
-        return len(self[0]) if self.aligned else None
+        return len(self[0]) if self.aligned or len(self)==0 else None
 
     @property
     def has_gaps(self) -> bool:
@@ -387,6 +405,22 @@ class ProteinSequences(UserList):
             if len(chars) > 1:
                 mutated.append(i)
         return mutated
+    
+    def __getitem__(self, index: Union[int, slice, str]) -> Union[ProteinSequence, 'ProteinSequences']:
+        """
+        Get a ProteinSequence or a subset of sequences.
+
+        Args:
+            index (Union[int, slice, str]): Index, slice, or ID of the sequence(s).
+
+        Returns:
+            Union[ProteinSequence, ProteinSequences]: The requested sequence or a new ProteinSequences object.
+        """
+        if isinstance(index, str):
+            index = self.id_mapping[index]
+        elif isinstance(index, np.ndarray):
+            return ProteinSequences([self[i] for i in index])
+        return super().__getitem__(index)
 
     def to_dict(self) -> Dict[str, str]:
         """
@@ -451,6 +485,14 @@ class ProteinSequences(UserList):
             ProteinSequences: A new ProteinSequences object containing the sequences from the list.
         """
         return cls([ProteinSequence(seq) for seq in sequences])
+    
+    @property
+    def id_mapping(self) -> Dict[str, int]:
+        if self._id_to_pos is None or (self._id_to_pos and len(self._id_to_pos) != len(self)):
+            self._id_to_pos = self.get_id_mapping()
+        return self._id_to_pos
+    
+    
 
     def __repr__(self) -> str:
         """
@@ -474,7 +516,7 @@ class ProteinSequences(UserList):
     
     def as_array(self) -> np.ndarray:
         """Convert the sequence to a numpy array of characters."""
-        if not self.aligned:
+        if not self.aligned and len(self) > 1:
             raise ValueError("Sequences must be aligned to convert to array.")
         return np.vstack([seq.as_array for seq in self])
 
@@ -500,6 +542,11 @@ class ProteinSequences(UserList):
             Dict[str, int]: A dictionary where keys are sequence IDs and values are indices.
         """
         return {seq.id if seq.id else hash(seq): i for i, seq in enumerate(self)}
+    
+    @property
+    def ids(self) -> List[str]:
+        """Get a list of sequence IDs."""
+        return [seq.id for seq in self]
 
 
     def align_all(self, output_fasta: Optional[str] = None) -> Union['ProteinSequences', 'ProteinSequencesOnFile']:
@@ -762,7 +809,14 @@ class ProteinSequencesOnFile(ProteinSequences):
         info = self._index[id]
         with open(self.file_path, 'r') as f:
             f.seek(info['start'])
-            sequence = ''.join(f.read(info['length']).split())
+            sequence = []
+            remaining_length = info['length']
+            while remaining_length > 0:
+                line = f.readline().strip()
+                sequence.append(line)
+                remaining_length -= len(line)
+
+        sequence = ''.join(sequence)
         return ProteinSequence(sequence, id=id)
 
     def __iter__(self) -> Iterable[ProteinSequence]:
@@ -831,6 +885,11 @@ class ProteinSequencesOnFile(ProteinSequences):
             for i, char in enumerate(str(seq)):
                 positions[i].add(char)
         return [i for i, chars in enumerate(positions) if len(chars) > 1]
+    
+    @property
+    def ids(self) -> List[str]:
+        """Get a list of sequence IDs."""
+        return list(self._index.keys())
 
     def to_dict(self) -> Dict[str, str]:
         """

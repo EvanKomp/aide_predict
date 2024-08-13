@@ -18,6 +18,9 @@ stages:
       - msa_creation.jackhmmer.sequence_threshold
       - msa_creation.jackhmmer.use_bitscores
       - msa_creation.jackhmmer.sequence_identity_filter
+      - msa_creation.jackhmmer.theta
+      - msa_creation.jackhmmer.minimum_column_coverage
+      - msa_creation.jackhmmer.minimum_sequence_coverage
       - msa_creation.jackhmmer.cpus
       - msa_creation.jackhmmer.mx
     deps:

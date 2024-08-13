@@ -22,30 +22,221 @@ The goals of this project are succinctly as follows:
 1. __Create a generalizable, unittested, API for protein prediction tasks that is compatible with scikit learn__. This API will allow those who are familiar with the gold standard of ML libraries to conduct protein prediction tasks in much the same way you'd see on an intro to ML Medium article. Further, it makes it much easier for bespoke strategies to be accessed and compared; any new method whose authors wrap their code in the API are easily accessed by the community without spending hours studying the codebase.
 2. __Use API components to create a DVC tracked pipeline for protein prediction tasks__. This pipeline will allow for those with zero software experience to conduct protein prediction tasks with a few simple commands. After (optionally) editting a config file, inputing their training data and their putative proteins, they can train and get predictions as simply as executing `dvc repro`.
 
+## API examples:
+
+The following should look and feel like canonical sklearn tasks/code. See the `demo` folder for more details and executable examples.
+
+#### In silico mutagenesis using MSATransformer
+```python
+# data preparation
+wt = ProteinSequence(
+    "LADDRTLLMAGVSHDLRTPLTRIRLATEMMSEQDGYLAESINKDIEECNAIIEQFIDYLR",
+)
+msa = ProteinSequences.from_fasta("data/msa.fasta")
+library = wt.saturation_mutagenesis()
+mutations = [p.id for p in library]
+print(mutations[0])
+>>> 'L1A'
+
+# model fitting
+model = MSATransformerLikelihoodWrapper(
+   wt=wt,
+   marginal_method="masked_marginal"
+)
+model.fit(msa)
+
+# make predictions for each mutated sequence
+predictions = model.predict(library)
+
+results = pd.DataFrame({'mutation': mutations, 'seqeunce': library,'prediction': predictions})
+```
+
+#### Compare a couple of zero shot predictors against experimental data
+```python
+# data preparation
+data = pd.read_csv("data/experimental_data.csv")
+X = ProteinSequences.from_list(data['sequence'])
+y = data['experimental_value']
+wt = X['my_id_for_WT']
+msa = ProteinSequences.from_fasta("data/msa.fasta")
+
+# model defenitions
+evmut = EVMutation(wt=wt, metadata_folder='./tmp/evm')
+esm2 = ESM2LikelihoodWrapper(wt=wt, model_checkpoint='esm2_t33_650M_UR50S')
+models = {'evmut': evmut, 'esm2': esm2}
+
+# model fitting and scoring
+for name, model in models.items():
+    model.fit(msa)
+    score = model.score(X, y)
+    print(f"{name} score: {score}")
+```
+
+#### Train a supervised model to predict activity on an experimental combinatorial library, test on sequences with greater mutational depth than training
+```python
+# data preparation
+data = pd.read_csv("data/experimental_data.csv")
+sequences = ProteinSequences.from_list(data['sequence'])
+sequences.aligned
+>>> True
+sequences.fixed_length
+>>> True
+
+wt = sequences['my_id_for_WT']
+data['sequence'] = sequences
+data['mutational_depth'] = data['sequence'].apply(lambda x: x.num_mutations(wt))
+test = data[data['mutational_depth'] > 5]
+train = data[data['mutational_depth'] <= 5]
+train_X, train_y = train['sequence'], train['experimental_value']
+test_X, test_y = test['sequence'], test['experimental_value']
+
+# embeddings protein sequences
+# use mean pool embeddings of esm2
+embedder = ESM2Embedding(pool=True)
+train_X = embedder.fit_transform(train_X)
+test_X = embedder.transform(test_X)
+
+# model fitting
+model = RandomForestRegressor()
+model.fit(train_X, train_y)
+
+# model scoring
+train_score = model.score(train_X, train_y)
+test_score = model.score(test_X, test_y)
+print(f"Train score: {train_score}, Test score: {test_score}")
+```
+
+#### Train a supervised predictor on a set of homologs, focusing only on positions of known importance, wrap the entire process into an sklearn pipeline including some standard sklearn transormers, and make predictions for a new set of homologs
+```python
+# data preparation
+data = pd.read_csv("data/experimental_data.csv")
+data.set_index('id', inplace=True)
+sequences = ProteinSequences.from_dict(data['sequence'].to_dict())
+y_train = data['experimental_value']
+
+wt = sequences['my_id_for_WT']
+wt_important_positions = [20, 21, 22, 33, 45] # zero indexed, known from analysis elsewhere
+sequences.aligned
+>>> False
+sequences.fixed_length
+>>> False
+
+# align the training sequences and get the important positions
+msa = sequences.align_all()
+msa.fixed_length
+>>> False
+msa.aligned
+>>> True
+
+aligned_important_positions = msa['my_id_for_WT'].get_aligned_positions(wt_important_positions)
+
+# model defenitions
+embedder = OneHotAlignedEmbedding(important_positions=aligned_important_positions)
+scaler = StandardScaler()
+feature_selector = VarianceThreshold(threshold=0.2)
+predictor = RandomForestRegressor()
+pipeline = Pipeline([
+    ('embedder', embedder),
+    ('scaler', scaler),
+    ('feature_selector', feature_selector),
+    ('predictor', predictor)
+])
+
+# model fitting
+pipeline.fit(sequences, y_train)
+
+# score new analigned homologs
+new_homologs = ProteinSequences.from_fasta("data/new_homologs.fasta")
+y_pred = pipeline.predict(new_homologs)
+```
+
 ## Supported tools
-Import `aide_predict.utils.common.get_supported_tools` to see the tools that are available based on your environment.
-The base package has few dependancies and concurrently few tools. Additional tools can be accessed with additional
-dependancy steps. This choice was made to reduce dependancy clashes for the codebase. For example, the base
-package does not include `pytorch`, but the the environment can be extended with "trasnformers_requirements.txt" to access
+Import `aide_predict.utils.common.get_supported_tools()` to see the tools that are available based on your environment.
+The base package has few dependencies and concurrently few tools. Additional tools can be accessed with additional
+dependency steps. This choice was made to reduce dependency clashes for the codebase. For example, the base
+package does not include `pytorch`, but the environment can be extended with "requirements-transformers.txt" to access
 ESM2 embeddings and log likelihood predictors.
 
-### Base package
-#### Utilities
-- Jackhmmer and MSA processing pipelines. Please see section "3rd party software" for more information
-- Data structures for protein sequences and structures that are directly accepted by protein models
+## Available Tools
 
-#### Prediction models
-- HMMs
-- EVCouplings (TODO)
-#### Embeddings for downstream ML
-- One Hot Encoding (fixed length) (TODO)
-- One Hot Encoding (to an alignment) (TODO)
+### Data Structures and Utilities
+- Protein Sequence and Structure data structures
+- Jackhmmer and MSA processing pipelines
+  - Uses EVCoouplings pipeline itnernally (see "3rd party software" section for more information)
 
-### Transformers
-#### Embeddings for downstream ML
-- ESM2 embeddings, mean pooled or position specific (TODO)
-#### Prediction models
-- ESM2 Mutant, WT, and masked marginal likelihoods, pooled or position specific
+### Prediction Models
+
+1. HMM (Hidden Markov Model)
+   - Computes statistics over matching columns in an MSA, treating each column independantly but allowing for alignment of query sequences before scoring
+   - Requires MSA for fitting
+   - Can handle aligned sequences during inference
+
+2. EVMutation
+   - Computes pairwise couplings between AAs in an MSA for select positions well represented in the MSA, variants are scored by the change in coupling energy.
+   - Requires MSA for fitting
+   - Requires wild-type sequence for inference
+   - Requires fixed-length sequences
+
+3. ESM2 Likelihood Wrapper
+   - Pretrained PLM (BERT style) model for protein sequences, scores variants according to masked, mutant, or wild type marginal likelihoods. Mutant marginal computes likelihoods in the context of the mutant sequence, while masked and wild type marginal compute likelihoods in the context of the wild type sequence. These methods are apprximations of the joint likelihood.
+   - Can handle aligned sequences
+   - Requires additional dependencies (see `requirements-transformers.txt`)
+
+4. SaProt Likelihood Wrapper
+   - ESM except using a size 400 vocabulary including local structure tokens from Foldseek's VAE. Wild type, Mutant, and masked marginals avialable.
+   - Requires fixed-length sequences
+   - Uses WT structure if structures of sequences are not passed
+   - Requires additional dependencies:
+     - `requirements-transformers.txt`
+     - `foldseek` executable must be available in the PATH
+
+5. MSA Transformer Likelihood Wrapper
+   - Like ESM but with a transformer model that is trained on MSAs. The variants are placed at the top position in the MSA and scores are computed along that row. Wild type, Mutant, and masked marginals avialable.
+   - Requires MSA for fitting
+   - Requires wild-type sequence during inference
+   - Requires additional dependencies (see `requirements-fair-esm.txt`)
+
+6. VESPA
+   - Conservation head model trained on PLM embeddings and logistic regression used to predict if mutation is detrimental.
+   - Requires wild type, only works for single point mutations
+   - Requires fixed-length sequences
+   - Requires additional dependencies (see `requirements-vespa.txt`)
+
+### Embeddings for Downstream ML
+
+1. One Hot Protein Embedding
+   - Columnwise one hot encoding of amino acids for a fixed length set of sequences
+   - Requires fixed-length sequences
+   - Position specific
+
+2. One Hot Aligned Embedding
+   - Columnwise one hot encoding including gaps for sequences aligned to an MSA.
+   - Requires MSA for fitting
+   - Position specific
+
+3. Kmer Embedding
+   - Counts of observed amino acid kmers in the sequences
+   - Allows for variable length sequences
+
+4. ESM2 Embedding
+   - Pretrained PLM (BERT style) model for protein sequences, outputs embeddings for each amino acid in the sequece from the last transformer layer.
+   - Position specific
+   - Requires additional dependencies (see `requirements-transformers.txt`)
+
+5. SaProt Embedding
+   - ESM except using a size 400 vocabulary including local structure tokens from Foldseek's VAE. AA embeddings from the last layer of the transformer are used.
+   - Position specific
+   - Requires additional dependencies:
+     - `requirements-transformers.txt`
+     - `foldseek` executable must be available in the PATH
+
+6. MSA Transformer Embedding
+   - Like ESM but with a transformer model that is trained on MSAs. The embeddings are computed for each amino acid in the query sequence in the context of an existing MSA
+   - Requires MSA for fitting
+   - Requires fixed-length sequences
+   - Requires additional dependencies (see `requirements-fair-esm.txt`)
+
+Each model in this package is implemented as a subclass of `ProteinModelWrapper`, which provides a consistent interface for all models. The specific behaviors (e.g., requiring MSA, fixed-length sequences, etc.) are implemented using mixins, making it easy to understand and extend the functionality of each model.
 
 ## Installation
 ```
@@ -53,20 +244,19 @@ conda env create -f environment.yaml
 pip install .
 ```
 
-## API
-
-TODO
+## Installation of additional modules
+Tools that require additional dependancies can be installed with the corresponding requirements file. See above for those files. For example, to access VESPA:
+```
+pip install -r requirements-vespa.txt
+```
 
 ## DVC pipeline
 
 TODO
 
 ## TODO:
-- Write embeddings classes
-- Write EVcouplings wrapper
 - Write EVE wrapper
 - Write Tranception wrapper * (low priority, PN did not provide a clear entry point so will require some finagling)
-- Write MSATransformer wrapper. should be esasy if we enforce WT and fixed length. Maybe in the future extend to no WT compare by ensureing all sequences are in the passed are in the MSA
 - Write "training" pipeline to init, potentially fit, and save all sklearn estimators and pipelines
 - Write "predict" pipeline to load all sklearn estimators and pipelines, and predict on the passed data
 
