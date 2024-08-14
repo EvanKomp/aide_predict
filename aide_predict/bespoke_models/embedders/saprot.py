@@ -175,7 +175,7 @@ class SaProtEmbedding(CacheMixin, RequiresStructureMixin, PositionSpecificMixin,
                 bar.update(len(batch))
             
         # stack along 0 dimension
-        return np.vstack(all_embeddings)
+        return all_embeddings
 
     def get_feature_names_out(self, input_features: Optional[List[str]] = None) -> List[str]:
         """

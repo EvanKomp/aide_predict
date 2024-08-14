@@ -143,7 +143,9 @@ class ESM2Embedding(CacheMixin, PositionSpecificMixin, CanHandleAlignedSequences
             if not X.fixed_length and self.positions is not None and not X.aligned:
                 raise ValueError("Cannot specify positions for variable length sequences unless aligned, where positions are interpreted as aligned positions")
             if not X.fixed_length and not self.pool and not X.aligned:
-                raise ValueError("Cannot return position-specific embeddings for variable length sequences.")
+                if self.flatten:
+                    raise ValueError("Cannot flatten variable length sequences without positions or pooling.")
+                warnings.warn("Variable length sequences are being processed without positions or pooling, raw shapes will be output.")
             
             mapping = None
             if X.has_gaps:
@@ -211,7 +213,7 @@ class ESM2Embedding(CacheMixin, PositionSpecificMixin, CanHandleAlignedSequences
                 bar.update(len(batch))
             
         # stack along 0 dimension
-        return np.vstack(all_embeddings)
+        return all_embeddings
 
     def get_feature_names_out(self, input_features: Optional[List[str]] = None) -> List[str]:
         """

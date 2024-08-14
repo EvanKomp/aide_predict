@@ -603,6 +603,15 @@ class PositionSpecificMixin:
         self.flatten = flatten
         super().__init__(*args, **kwargs)
 
+    def _is_ragged_array(self, arr):
+        """Check if the input is a ragged array (list of arrays with different shapes)."""
+        if not isinstance(arr, list):
+            return False
+        if len(arr) == 0:
+            return False
+        first_shape = arr[0].shape
+        return any(a.shape != first_shape for a in arr[1:])
+
     def transform(self, X: Union[ProteinSequences, List[str]]) -> np.ndarray:
         """
         Transform the sequences, ensuring correct output dimensions for position-specific models.
@@ -618,6 +627,17 @@ class PositionSpecificMixin:
             ValueError: If the output dimensions do not match the specified positions.
         """
         result = super().transform(X)
+
+        # we need to determine if the output is a clean numpy array or a set of arrays of different sizes
+        if self._is_ragged_array(result):
+            warnings.warn("The output is a ragged array of embeddings of different sizes, cannot output as an array. Ignoring flatten.")
+            return result
+        else:
+            if type(result) is list:
+                if all(a.shape[0] == 1 for a in result):
+                    result = np.vstack(result)
+                else:
+                    result = np.array(result)
         
         if self.positions is not None and not self.pool:
             dims = len(self.positions)
@@ -755,7 +775,8 @@ class CacheMixin:
             for (i, protein), result in zip(proteins_to_process, new_results):
                 protein_hash = self._get_protein_hash(protein)
                 # make sure we keep our dims
-                result = np.expand_dims(result, axis=0)
+                if result.shape[0] != 1:
+                    result = np.expand_dims(result, axis=0)
                 self._cache[protein_hash] = result
                 self._cache_metadata[protein_hash] = {
                     'timestamp': time.time(),
@@ -768,4 +789,10 @@ class CacheMixin:
 
         # Reorder results to match original input order
         all_results = sorted(cached_results, key=lambda x: x[0])
-        return np.vstack([r[1] for r in all_results])
+        only_outputs = [r[1] for r in all_results]
+        # determine if we can stack or not
+        if len(set([o.shape for o in only_outputs])) == 1:
+            return np.vstack(only_outputs)
+        else:
+            return only_outputs
+
