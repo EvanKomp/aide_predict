@@ -103,6 +103,8 @@ class ESM2Embedding(CacheMixin, PositionSpecificMixin, CanHandleAlignedSequences
             ESM2Embedding: The fitted embedder.
         """
         self.fitted_ = True
+        with model_device_context(self, self._load_model, self._cleanup_model, self.device):
+            self.embedding_dim_ = self.model_.config.hidden_size
         return self
     
     def _load_model(self) -> None:
@@ -147,6 +149,9 @@ class ESM2Embedding(CacheMixin, PositionSpecificMixin, CanHandleAlignedSequences
                 # here we need to store a mapping such that if positions were specified we can map back to
                 # the aligned positions
                 mapping = X.get_alignment_mapping()
+                # convert mapping to have integer keys ascending from 0
+                mapping = {i: m for i, m in enumerate(mapping.values())}
+
                 X = X.with_no_gaps()
                 # raise if positions were not passed - here behavior is uncertain
                 if self.positions is None and not self.pool:
@@ -217,15 +222,17 @@ class ESM2Embedding(CacheMixin, PositionSpecificMixin, CanHandleAlignedSequences
         Returns:
             List[str]: Output feature names.
         """
-        if not hasattr(self, 'model_'):
+        if not hasattr(self, 'fitted_'):
             raise ValueError("Model has not been fitted yet. Call fit() before using this method.")
         
-        embedding_dim = self.model_.config.hidden_size
-        positions = self.positions if self.positions is not None else range(self.model_.config.max_position_embeddings - 2)  # -2 for special tokens
+        embedding_dim = self.embedding_dim_
+        positions = self.positions
         
         if self.pool:
             return [f"ESM2_emb{i}" for i in range(embedding_dim)]
         elif self.flatten:
+            if positions is None:
+                raise ValueError("Cannot return feature names for flattened embeddings without specifying positions, idnetermined number of AAs")
             return [f"pos{p}_emb{i}" for p in positions for i in range(embedding_dim)]
         else:
             raise ValueError("Cannot return feature names for non-flattened non-pooled embeddings.")

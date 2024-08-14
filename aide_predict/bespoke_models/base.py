@@ -754,6 +754,8 @@ class CacheMixin:
 
             for (i, protein), result in zip(proteins_to_process, new_results):
                 protein_hash = self._get_protein_hash(protein)
+                # make sure we keep our dims
+                result = np.expand_dims(result, axis=0)
                 self._cache[protein_hash] = result
                 self._cache_metadata[protein_hash] = {
                     'timestamp': time.time(),
