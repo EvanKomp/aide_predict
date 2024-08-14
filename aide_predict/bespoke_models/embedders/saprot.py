@@ -109,6 +109,8 @@ class SaProtEmbedding(CacheMixin, RequiresStructureMixin, PositionSpecificMixin,
             SaProtEmbedding: The fitted embedder.
         """
         self.fitted_ = True
+        with model_device_context(self, self._load_model, self._cleanup_model, self.device):
+            self.embedding_dim_ = self.model_.config.hidden_size
         return self
     
     def _load_model(self) -> None:
@@ -188,12 +190,14 @@ class SaProtEmbedding(CacheMixin, RequiresStructureMixin, PositionSpecificMixin,
         if not hasattr(self, 'model_'):
             raise ValueError("Model has not been fitted yet. Call fit() before using this method.")
         
-        embedding_dim = self.model_.config.hidden_size
-        positions = self.positions if self.positions is not None else range(self.model_.config.max_position_embeddings - 2)  # -2 for special tokens
+        embedding_dim = self.embedding_dim_
+        positions = self.positions
         
         if self.pool:
-            return [f"SaProt_emb{i}" for i in range(embedding_dim)]
+            return [f"ESM2_emb{i}" for i in range(embedding_dim)]
         elif self.flatten:
+            if positions is None:
+                raise ValueError("Cannot return feature names for flattened embeddings without specifying positions, idnetermined number of AAs")
             return [f"pos{p}_emb{i}" for p in positions for i in range(embedding_dim)]
         else:
-            return [f"pos{p}" for p in positions]
+            raise ValueError("Cannot return feature names for non-flattened non-pooled embeddings.")
