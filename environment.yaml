@@ -9,6 +9,7 @@ dependencies:
   - plmc
   - mafft
   - pip
+  - foldseek
   - pip:
     - dvc
     - numpy
