@@ -18,5 +18,6 @@ dependencies:
     - tqdm
     - evcouplings @ git+https://github.com/debbiemarkslab/EVcouplings@374d4c5
     - ruamel-yaml<0.18.0
+    - biopython==1.84
 
 
