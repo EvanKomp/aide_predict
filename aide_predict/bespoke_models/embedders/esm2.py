@@ -17,14 +17,15 @@ import numpy as np
 from aide_predict.bespoke_models.base import ProteinModelWrapper, PositionSpecificMixin, CanHandleAlignedSequencesMixin, CacheMixin
 from aide_predict.bespoke_models import model_device_context
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
+from aide_predict.utils.common import MessageBool
 
 try:
     import transformers
     from transformers import AutoTokenizer, EsmModel
     import torch
-    AVAILABLE = True
+    AVAILABLE = MessageBool(True, "ESM2 model is available.")
 except ImportError:
-    AVAILABLE = False
+    AVAILABLE = MessageBool(False, "ESM2 model is not available. Please install the transformers library.")
 
 class ESM2Embedding(CacheMixin, PositionSpecificMixin, CanHandleAlignedSequencesMixin, ProteinModelWrapper):
     """
