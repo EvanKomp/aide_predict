@@ -1,6 +1,8 @@
-# Protein Prediction 
+# AIDE
 [![Python Tests](https://github.com/EvanKomp/aide_predict/actions/workflows/ci-tests.yml/badge.svg)](https://github.com/EvanKomp/aide_predict/actions/workflows/ci-tests.yml)
 [![codecov](https://codecov.io/gh/EvanKomp/aide_predict/branch/main/graph/badge.svg)](https://codecov.io/gh/EvanKomp/aide_predict)
+
+![alt text](./images/fig1.png)
 
 This repository serves fundementally to increase the accessibility of protein engineering tasks that fall into the following catagory:
 

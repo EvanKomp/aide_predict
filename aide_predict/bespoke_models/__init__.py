@@ -11,6 +11,7 @@ from .predictors.msa_transformer import MSATransformerLikelihoodWrapper
 from .predictors.evmutation import EVMutationWrapper
 from .predictors.pretrained_transformers import model_device_context
 from .predictors.saprot import SaProtLikelihoodWrapper
+from .predictors.vespa import VESPAWrapper
 
 from .embedders.esm2 import ESM2Embedding
 from .embedders.ohe import OneHotAlignedEmbedding, OneHotProteinEmbedding
@@ -24,6 +25,8 @@ TOOLS = [
     MSATransformerLikelihoodWrapper,
     EVMutationWrapper,
     SaProtLikelihoodWrapper,
+    VESPAWrapper,
+
 
     # embedders
     ESM2Embedding,

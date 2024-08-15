@@ -142,6 +142,52 @@ class OneHotProteinEmbedding(PositionSpecificMixin, RequiresFixedLengthMixin, Pr
         else:
             return [f"pos{i}" for i in positions]
         
+    def inverse_transform(self, X: np.ndarray) -> ProteinSequences:
+        """
+        Convert one-hot encoded vectors back into protein sequences.
+
+        Args:
+            X (np.ndarray): The one-hot encoded sequences to inverse transform.
+
+        Returns:
+            ProteinSequences: The reconstructed protein sequences.
+
+        Raises:
+            ValueError: If the input shape is incompatible with the encoder's expectations.
+        """
+        if not hasattr(self, 'encoder_'):
+            raise ValueError("Encoder has not been fitted yet. Call fit() before using this method.")
+
+        # Reshape X if it's flattened
+        if self.flatten:
+            X = X.reshape(X.shape[0], -1, len(self._vocab))
+
+        # Check input shape
+        expected_shape = (X.shape[0], self.positions_len_, len(self._vocab))
+        if X.shape != expected_shape:
+            raise ValueError(f"Input shape {X.shape} is incompatible. Expected {expected_shape}")
+
+        # Get the feature names to map indices to amino acids
+        feature_names = self.encoder_.get_feature_names_out()
+        aa_map = {i: name.split('_')[-1] for i, name in enumerate(feature_names) if '_' in name}
+
+        # Inverse transform
+        sequences = []
+        for encoded_seq in X:
+            aa_indices = encoded_seq.argmax(axis=1)
+            aa_sequence = ''.join(aa_map[i] for i in aa_indices)
+            
+            # If specific positions were encoded, reconstruct the full sequence
+            if self.positions is not None:
+                full_sequence = ['X'] * self.seq_length_
+                for pos, aa in zip(self.positions, aa_sequence):
+                    full_sequence[pos] = aa
+                aa_sequence = ''.join(full_sequence)
+            
+            sequences.append(ProteinSequence(aa_sequence))
+
+        return ProteinSequences(sequences)
+        
 
 class OneHotAlignedEmbedding(PositionSpecificMixin, RequiresMSAMixin, CanHandleAlignedSequencesMixin, ProteinModelWrapper):
     """
