@@ -87,12 +87,19 @@ class SaProtEmbedding(CacheMixin, RequiresStructureMixin, PositionSpecificMixin,
         """Convert a protein sequence into a string ready for tokenization."""
         if sequence.structure is None:
             if self.wt is not None and self.wt.structure:
-                struc_tokens = get_structure_tokens(self.wt.structure, self.foldseek_path)
+                struc_tokens, seq_tokens = get_structure_tokens(self.wt.structure, self.foldseek_path, return_seq_tokens=True)
                 return ''.join([a + b.lower() for a, b in zip(str(sequence).upper(), struc_tokens)])
             else:
                 return ''.join([aa + '#' for aa in str(sequence).upper()])
         else:
             struc_tokens = get_structure_tokens(sequence.structure, self.foldseek_path)
+            # check for same length
+            if len(struc_tokens) != len(sequence):
+                raise ValueError(f"Structure and sequence lengths do not match: {len(sequence)} != {len(struc_tokens)}")
+            #also check if sequence matches the PDB file. We will let it slide if not in case someone wants to use 
+            # a structure from a close variant, but throw a warnning
+            if not all([a == b for a, b in zip(str(sequence).upper(), seq_tokens)]):
+                warnings.warn(f"Sequence does not match the PDB file sequence. Using user passed sequence.")
             return ''.join([a + b.lower() for a, b in zip(str(sequence).upper(), struc_tokens)])
 
     def _fit(self, X: ProteinSequences, y: Optional[np.ndarray] = None) -> 'SaProtEmbedding':
