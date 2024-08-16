@@ -330,18 +330,41 @@ class ProteinSequences(UserList):
         from_fasta: Create a ProteinSequences object from a FASTA file.
     """
 
-    def __init__(self, sequences: List[ProteinSequence]):
+    def __init__(self, sequences: List[ProteinSequence], weights: Optional[np.ndarray] = None):
         """
         Initialize a ProteinSequences object.
 
         Args:
             sequences (List[ProteinSequence]): A list of ProteinSequence objects.
+            weights (Optional[np.ndarray]): Weights for each sequence. If None, initialized as ones.
         """
         for s in sequences:
             if not isinstance(s, ProteinSequence):
                 raise ValueError("All elements must be ProteinSequence objects")
         super().__init__(sequences)
         self._id_to_pos = None
+        
+        self._weights = None
+        if weights is None:
+            self.weights = np.ones(len(self))
+        else:
+            if len(weights) != len(self):
+                raise ValueError("Length of weights must match the number of sequences")
+            self.weights = weights
+
+    @property
+    def weights(self) -> np.ndarray:
+        """Get the weights for each sequence."""
+        return self._weights
+    
+    @weights.setter
+    def weights(self, new_weights: np.ndarray) -> None:
+        """Set the weights for each sequence."""
+        if type(new_weights) != np.ndarray:
+            new_weights = np.array(new_weights).reshape(-1)
+        if len(new_weights) != len(self):
+            raise ValueError("Length of weights must match the number of sequences")
+        self._weights = new_weights
 
     @property
     def aligned(self) -> bool:
@@ -701,18 +724,26 @@ class ProteinSequencesOnFile(ProteinSequences):
         from_fasta: Create a ProteinSequences object from a FASTA file.
     """
 
-    def __init__(self, file_path: str):
+    def __init__(self, file_path: str, weights: Optional[np.ndarray] = None):
         """
         Initialize a ProteinSequencesOnFile object.
 
         Args:
             file_path (str): Path to the FASTA file containing protein sequences.
+            weights (Optional[np.ndarray]): Weights for each sequence. If None, initialized as ones.
         """
-        super().__init__([])  # Initialize with an empty list
         self.file_path: str = file_path
         self._index: Dict[str, Dict[str, Any]] = {}
         self._create_index()
         self._compute_global_properties()
+        super().__init__([])  # Initialize with an empty list
+        
+        if weights is None:
+            self.weights = np.ones(len(self._index))
+        else:
+            if len(weights) != len(self._index):
+                raise ValueError("Length of weights must match the number of sequences in the file")
+            self.weights = weights
 
     def _create_index(self) -> None:
         """
