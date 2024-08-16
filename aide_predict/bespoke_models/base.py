@@ -14,6 +14,7 @@ import warnings
 import hashlib
 import json
 import hashlib
+import tempfile
 
 from sklearn.base import BaseEstimator, TransformerMixin, RegressorMixin
 from sklearn.utils.validation import check_is_fitted, NotFittedError
@@ -143,7 +144,8 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         
         # generate a folder if metadata is None
         if metadata_folder is None:
-            metadata_folder = os.path.join(os.getcwd(), time.strftime("%Y%m%d_%H%M%S"))
+            prefered_tempdir = tempfile.gettempdir()
+            metadata_folder = os.path.join(prefered_tempdir, time.strftime("%Y%m%d_%H%M%S"))
         else:
             # get full path if relative path is given
             metadata_folder = os.path.abspath(metadata_folder)
