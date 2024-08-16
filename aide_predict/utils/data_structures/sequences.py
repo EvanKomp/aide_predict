@@ -241,6 +241,35 @@ class ProteinSequence(str):
             Iterator[ProteinCharacter]: An iterator over the ProteinCharacters.
         """
         return iter(self._characters)
+    
+    def sample(self, n: int, replace: bool = False) -> 'ProteinSequences':
+        """
+        Sample n sequences from the ProteinSequences object.
+
+        Args:
+            n (int): Number of sequences to sample.
+            replace (bool): Whether to sample with replacement. Default is False.
+
+        Returns:
+            ProteinSequences: A new ProteinSequences object containing the sampled sequences.
+
+        Raises:
+            ValueError: If n is greater than the number of sequences and replace is False.
+        """
+        if n > len(self) and not replace:
+            raise ValueError(f"Cannot sample {n} sequences without replacement from a set of {len(self)} sequences.")
+
+        weights = self.weights if hasattr(self, 'weights') else None
+        if weights is None:
+            weights = np.ones(len(self))
+        
+        sampled_indices = np.random.choice(len(self), size=n, replace=replace, p=weights/np.sum(weights))
+        sampled_sequences = [self[i] for i in sampled_indices]
+        
+        new_sequences = ProteinSequences(sampled_sequences)
+        new_sequences.weights = self.weights[sampled_indices] if hasattr(self, 'weights') else None
+        
+        return new_sequences
 
     @property
     def id(self) -> Optional[str]:
