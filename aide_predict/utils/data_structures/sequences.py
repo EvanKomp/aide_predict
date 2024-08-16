@@ -241,35 +241,6 @@ class ProteinSequence(str):
             Iterator[ProteinCharacter]: An iterator over the ProteinCharacters.
         """
         return iter(self._characters)
-    
-    def sample(self, n: int, replace: bool = False) -> 'ProteinSequences':
-        """
-        Sample n sequences from the ProteinSequences object.
-
-        Args:
-            n (int): Number of sequences to sample.
-            replace (bool): Whether to sample with replacement. Default is False.
-
-        Returns:
-            ProteinSequences: A new ProteinSequences object containing the sampled sequences.
-
-        Raises:
-            ValueError: If n is greater than the number of sequences and replace is False.
-        """
-        if n > len(self) and not replace:
-            raise ValueError(f"Cannot sample {n} sequences without replacement from a set of {len(self)} sequences.")
-
-        weights = self.weights if hasattr(self, 'weights') else None
-        if weights is None:
-            weights = np.ones(len(self))
-        
-        sampled_indices = np.random.choice(len(self), size=n, replace=replace, p=weights/np.sum(weights))
-        sampled_sequences = [self[i] for i in sampled_indices]
-        
-        new_sequences = ProteinSequences(sampled_sequences)
-        new_sequences.weights = self.weights[sampled_indices] if hasattr(self, 'weights') else None
-        
-        return new_sequences
 
     @property
     def id(self) -> Optional[str]:
@@ -333,6 +304,10 @@ class ProteinSequence(str):
                     mutated.id = f"{self[i]}{i+1}{aa}"
                     sequences.append(mutated)
         return ProteinSequences(sequences)
+    
+    def upper(self) -> 'ProteinSequence':
+        """Return a new ProteinSequence with all characters converted to uppercase."""
+        return ProteinSequence(str(self).upper(), id=self._id, structure=self._structure)
 
 
 ############################################
@@ -544,7 +519,17 @@ class ProteinSequences(UserList):
             self._id_to_pos = self.get_id_mapping()
         return self._id_to_pos
     
+    def upper(self) -> 'ProteinSequences':
+        """Return a new ProteinSequences with all sequences converted to uppercase."""
+        return ProteinSequences([seq.upper() for seq in self])
     
+    def has_lower(self) -> bool:
+        """Check if any sequence contains lowercase characters."""
+        if self.aligned:
+            array = self.as_array()
+            return np.any(np.char.islower(array))
+        else:
+            return any(c.upper() != c for seq in self for c in seq)
 
     def __repr__(self) -> str:
         """
@@ -585,6 +570,51 @@ class ProteinSequences(UserList):
         """
         for i in range(0, len(self), batch_size):
             yield ProteinSequences(self[i:i+batch_size])
+
+    def msa_process(self, focus_seq_id: str=None, **kwargs) -> 'ProteinSequence':
+        """
+        Align this sequence with another using global pairwise alignment.
+
+        Kwargs:
+            **kwargs: Additional arguments to pass to MSAprocessing
+        Returns:
+            ProteinSequence: The aligned sequence.
+        """
+        if not self.aligned:
+            raise ValueError("Sequences must be aligned to create an alignment mapping, align first.")
+        
+        from aide_predict.utils.msa import MSAProcessing
+        msa_processor = MSAProcessing(**kwargs)
+        return msa_processor.process(self, focus_seq_id=focus_seq_id)
+    
+    def sample(self, n: int, replace: bool = False) -> 'ProteinSequences':
+        """
+        Sample n sequences from the ProteinSequences object.
+
+        Args:
+            n (int): Number of sequences to sample.
+            replace (bool): Whether to sample with replacement. Default is False.
+
+        Returns:
+            ProteinSequences: A new ProteinSequences object containing the sampled sequences.
+
+        Raises:
+            ValueError: If n is greater than the number of sequences and replace is False.
+        """
+        if n > len(self) and not replace:
+            raise ValueError(f"Cannot sample {n} sequences without replacement from a set of {len(self)} sequences.")
+
+        weights = self.weights if hasattr(self, 'weights') else None
+        if weights is None:
+            weights = np.ones(len(self))
+        
+        sampled_indices = np.random.choice(len(self), size=n, replace=replace, p=weights/np.sum(weights))
+        sampled_sequences = [self[i] for i in sampled_indices]
+        
+        new_sequences = ProteinSequences(sampled_sequences)
+        new_sequences.weights = self.weights[sampled_indices] if hasattr(self, 'weights') else None
+        
+        return new_sequences
 
     def get_id_mapping(self) -> Dict[str, int]:
         """

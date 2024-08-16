@@ -7,3 +7,4 @@
 from .patches_ import *
 from .bespoke_models import *
 from .utils.data_structures import *
+from .utils.checks import check_model_compatibility, get_supported_tools

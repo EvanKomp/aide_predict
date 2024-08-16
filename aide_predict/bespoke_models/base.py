@@ -88,6 +88,7 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
        - RequiresWTDuringInferenceMixin - if the model requires the wild type sequence duing inference in order to normalize by wt
        - PositionSpecificMixin - if the model can output per position scores
        - RequiresStructureMixin - if the model requires structure information
+       - AcceptsLowerCaseMixin - if the model can accept lower case sequences
     6. If the model requires more than the base package, set the _available attribute to be dynamic based on a check in the module.
 
     Example:
@@ -126,6 +127,7 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
     _can_regress: bool = False
     _can_handle_aligned_sequences: bool = False
     _requires_structure: bool = False
+    _accepts_lower_case: bool = False
     _available: bool = MessageBool(True, "This model is available for use.")
 
     def __init__(self, metadata_folder: str=None, wt: Optional[Union[str, ProteinSequence]] = None):
@@ -161,6 +163,7 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         if wt is not None:
             if wt.has_gaps:
                 raise ValueError("Wild type sequence cannot have gaps.")
+            wt = wt.upper()
             
         if self.requires_structure and wt is not None:
             if wt.structure is None:
@@ -168,7 +171,7 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         
         if wt is None and self.requires_wt_to_function:
             raise ValueError("This model requires a wild type sequence to function.")
-
+        
         self.wt = wt
 
         self.check_metadata()
@@ -177,7 +180,7 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         """
         Ensures that everything this model class needs is in the metadata folder.
         """
-        logger.warning("This model class did not implement check_metadata. If the model requires anything other than raw sequences to be fit, this is unexpected.")
+        pass
 
     def _validate_input(self, X: Union[ProteinSequences, List[str]]) -> ProteinSequences:
         """
@@ -191,6 +194,9 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         """
         if not isinstance(X, ProteinSequences):
             X = ProteinSequences([ProteinSequence(seq) for seq in X])
+
+        if X.has_lower() and not self.accepts_lower_case:
+            X = X.upper()
         return X
 
     def _assert_aligned(self, X: ProteinSequences) -> None:
@@ -472,6 +478,11 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
     def requires_structure(self) -> bool:
         """Whether the model requires structure information."""
         return self._requires_structure
+    
+    @property
+    def accepts_lower_case(self) -> bool:
+        """Whether the model can accept lower case sequences."""
+        return self._accepts_lower_case
 
     @staticmethod
     def _construct_necessary_metadata(model_directory: str, necessary_metadata: dict) -> None:
@@ -797,4 +808,13 @@ class CacheMixin:
             return np.vstack(only_outputs)
         else:
             return only_outputs
+
+
+class AcceptsLowerCaseMixin:
+    """
+    Mixin to indicate that a model can accept lower case sequences.
+
+    This mixin overrides the accepts_lower_case attribute to be True.
+    """
+    _accepts_lower_case: bool = True
 

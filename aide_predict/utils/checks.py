@@ -100,10 +100,15 @@ def check_dvc_params():
     if not 'data' in os.listdir() and 'dvc.yaml' in os.listdir():
         raise FileNotFoundError("This directory does not appear to be the aide_predict dvc pipeline. `check_dvc_params` must be run from the root of the dvc pipeline.")
 
-
-def check_input_sequences_against_model_capability():
-    # we need to catch if the user passed non fixed length sequences and the model is not capable of that
-    # or if it is capable of not fixed length AS WELL AS position specific scoring, how can both be recitifed?
-    # If the user passes an alignment and positions, that might work.     
-    
-    pass
+def get_supported_tools():
+    from aide_predict.bespoke_models import TOOLS
+    out_string = ""
+    for tool in TOOLS:
+        avail = tool._available
+        if avail:
+            message = 'AVAILABLE'
+        else:
+            message = tool._available.message
+        out_string += tool.__name__ +f": {message}\n"
+    print(out_string)
+    return out_string

@@ -34,15 +34,3 @@ class MessageBool:
     def __bool__(self):
         return self.value
 
-def get_supported_tools():
-    from aide_predict.bespoke_models import TOOLS
-    out_string = ""
-    for tool in TOOLS:
-        avail = tool._available
-        if avail:
-            message = 'AVAILABLE'
-        else:
-            message = tool._available.message
-        out_string += tool.__name__ +f": {message}\n"
-    print(out_string)
-    return out_string
