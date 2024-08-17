@@ -6,7 +6,7 @@
 * License: MIT
 
 Wrapper around SaProt model. Please see here and all credit to the oroginal authors for their method and model:
-
+https://www.biorxiv.org/content/10.1101/2023.10.01.560349v2
 
 '''
 import os
