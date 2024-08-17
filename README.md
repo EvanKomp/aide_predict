@@ -26,7 +26,7 @@ The goals of this project are succinctly as follows:
 
 ## API examples:
 
-The following should look and feel like canonical sklearn tasks/code. See the `demo` folder for more details and executable examples.
+The following should look and feel like canonical sklearn tasks/code. See the `demo` folder for more details and executable examples. Also see the [colab notebook](https://colab.research.google.com/drive/1baz4DdYkxaw6pPRTDscwh2o-Xqum5Krp#scrollTo=AV9VXhM6ebgI) to play with some if its capabilities in the cloud.
 
 #### In silico mutagenesis using MSATransformer
 ```python
