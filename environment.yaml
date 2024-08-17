@@ -14,7 +14,7 @@ dependencies:
     - dvc
     - numpy
     - scikit-learn
-    - cffi==1.16.0
+    - cffi
     - pandas
     - numba
     - tqdm
