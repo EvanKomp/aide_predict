@@ -6,7 +6,7 @@
 * License: MIT
 
 Wrapper around SaProt model. Please see here and all credit to the oroginal authors for their method and model:
-
+https://www.biorxiv.org/content/10.1101/2023.10.01.560349v2
 
 '''
 import os
@@ -42,7 +42,7 @@ except ImportError:
 import logging
 logger = logging.getLogger(__name__)
 
-def get_structure_tokens(structure: ProteinStructure, foldseek_path: str, process_id: int = 0, plddt_threshold: float = 70.) -> str:
+def get_structure_tokens(structure: ProteinStructure, foldseek_path: str, process_id: int = 0, plddt_threshold: float = 70., return_seq_tokens: bool = False) -> str:
     """
     Extract structure tokens from a ProteinStructure using FoldSeek.
     
@@ -61,7 +61,7 @@ def get_structure_tokens(structure: ProteinStructure, foldseek_path: str, proces
 
     with open(tmp_save_path, "r") as r:
         line = r.readline()
-        _, _, struc_seq = line.split("\t")[:3]
+        _, seq, struc_seq = line.split("\t")[:3]
 
     # Mask low pLDDT regions if pLDDT file is available
     if structure.plddt_file:
@@ -76,8 +76,11 @@ def get_structure_tokens(structure: ProteinStructure, foldseek_path: str, proces
 
     os.remove(tmp_save_path)
     os.remove(tmp_save_path + ".dbtype")
-    
-    return struc_seq
+    if not return_seq_tokens:
+        return struc_seq
+    else:
+        return struc_seq, seq
+
 
 class SaProtLikelihoodWrapper(RequiresStructureMixin, RequiresFixedLengthMixin, LikelihoodTransformerBase):
     _available = AVAILABLE

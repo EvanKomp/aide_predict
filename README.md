@@ -1,6 +1,8 @@
-# Protein Prediction 
+# AIDE
 [![Python Tests](https://github.com/EvanKomp/aide_predict/actions/workflows/ci-tests.yml/badge.svg)](https://github.com/EvanKomp/aide_predict/actions/workflows/ci-tests.yml)
 [![codecov](https://codecov.io/gh/EvanKomp/aide_predict/branch/main/graph/badge.svg)](https://codecov.io/gh/EvanKomp/aide_predict)
+
+![alt text](./images/fig1.png)
 
 This repository serves fundementally to increase the accessibility of protein engineering tasks that fall into the following catagory:
 
@@ -19,8 +21,8 @@ Existing models $f$ in the literature are varied, and a huge amount of work has 
 The variety an nuance of each of these means that each application is a bespoke, independent codebase, and are generally inaccessible to those with little or no coding exprience. Some applications alleviate the second problem by hosting web servers. Add to this problem is a lack of standardization in API across applications, where individual code bases can be extremely poorly documented or hard to use due to hasty development to minimize time to publication.
 
 The goals of this project are succinctly as follows:
-1. __Create a generalizable, unittested, API for protein prediction tasks that is compatible with scikit learn__. This API will allow those who are familiar with the gold standard of ML libraries to conduct protein prediction tasks in much the same way you'd see on an intro to ML Medium article. Further, it makes it much easier for bespoke strategies to be accessed and compared; any new method whose authors wrap their code in the API are easily accessed by the community without spending hours studying the codebase.
-2. __Use API components to create a DVC tracked pipeline for protein prediction tasks__. This pipeline will allow for those with zero software experience to conduct protein prediction tasks with a few simple commands. After (optionally) editting a config file, inputing their training data and their putative proteins, they can train and get predictions as simply as executing `dvc repro`.
+- [X] __Create a generalizable, unittested, API for protein prediction tasks that is compatible with scikit learn__. This API will allow those who are familiar with the gold standard of ML libraries to conduct protein prediction tasks in much the same way you'd see on an intro to ML Medium article. Further, it makes it much easier for bespoke strategies to be accessed and compared; any new method whose authors wrap their code in the API are easily accessed by the community without spending hours studying the codebase.
+- [ ] __Use API components to create a DVC tracked pipeline for protein prediction tasks__. This pipeline will allow for those with zero software experience to conduct protein prediction tasks with a few simple commands. After (optionally) editting a config file, inputing their training data and their putative proteins, they can train and get predictions as simply as executing `dvc repro`.
 
 ## API examples:
 
@@ -166,37 +168,36 @@ ESM2 embeddings and log likelihood predictors.
 
 ### Prediction Models
 
-1. HMM (Hidden Markov Model)
+1. [HMM (Hidden Markov Model)](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1002195)
    - Computes statistics over matching columns in an MSA, treating each column independantly but allowing for alignment of query sequences before scoring
    - Requires MSA for fitting
    - Can handle aligned sequences during inference
 
-2. EVMutation
+2. [EVMutation](https://academic.oup.com/bioinformatics/article/35/9/1582/5124274)
    - Computes pairwise couplings between AAs in an MSA for select positions well represented in the MSA, variants are scored by the change in coupling energy.
    - Requires MSA for fitting
    - Requires wild-type sequence for inference
    - Requires fixed-length sequences
 
-3. ESM2 Likelihood Wrapper
+3. [ESM2 Likelihood Wrapper](https://www.biorxiv.org/content/10.1101/2022.07.20.500902v1)
    - Pretrained PLM (BERT style) model for protein sequences, scores variants according to masked, mutant, or wild type marginal likelihoods. Mutant marginal computes likelihoods in the context of the mutant sequence, while masked and wild type marginal compute likelihoods in the context of the wild type sequence. These methods are apprximations of the joint likelihood.
    - Can handle aligned sequences
    - Requires additional dependencies (see `requirements-transformers.txt`)
 
-4. SaProt Likelihood Wrapper
-   - ESM except using a size 400 vocabulary including local structure tokens from Foldseek's VAE. Wild type, Mutant, and masked marginals avialable.
+4. [SaProt Likelihood Wrapper](https://www.biorxiv.org/content/10.1101/2023.10.01.560349v2)
+   - ESM except using a size 400 vocabulary including local structure tokens from Foldseek's VAE. The authors only used Masked marginal, but we've made Wild type, Mutant, and masked marginals avialable.
    - Requires fixed-length sequences
    - Uses WT structure if structures of sequences are not passed
    - Requires additional dependencies:
      - `requirements-transformers.txt`
-     - `foldseek` executable must be available in the PATH
 
-5. MSA Transformer Likelihood Wrapper
+5. [MSA Transformer Likelihood Wrapper](https://www.biorxiv.org/content/10.1101/2021.02.12.430858v1.full)
    - Like ESM but with a transformer model that is trained on MSAs. The variants are placed at the top position in the MSA and scores are computed along that row. Wild type, Mutant, and masked marginals avialable.
    - Requires MSA for fitting
    - Requires wild-type sequence during inference
    - Requires additional dependencies (see `requirements-fair-esm.txt`)
 
-6. VESPA
+6. [VESPA](https://link.springer.com/article/10.1007/s00439-021-02411-y)
    - Conservation head model trained on PLM embeddings and logistic regression used to predict if mutation is detrimental.
    - Requires wild type, only works for single point mutations
    - Requires fixed-length sequences
@@ -218,19 +219,19 @@ ESM2 embeddings and log likelihood predictors.
    - Counts of observed amino acid kmers in the sequences
    - Allows for variable length sequences
 
-4. ESM2 Embedding
+4. [ESM2 Embedding](https://www.biorxiv.org/content/10.1101/2022.07.20.500902v1)
    - Pretrained PLM (BERT style) model for protein sequences, outputs embeddings for each amino acid in the sequece from the last transformer layer.
    - Position specific
    - Requires additional dependencies (see `requirements-transformers.txt`)
 
-5. SaProt Embedding
+5. [SaProt Embedding](https://www.biorxiv.org/content/10.1101/2023.10.01.560349v2)
    - ESM except using a size 400 vocabulary including local structure tokens from Foldseek's VAE. AA embeddings from the last layer of the transformer are used.
    - Position specific
    - Requires additional dependencies:
      - `requirements-transformers.txt`
      - `foldseek` executable must be available in the PATH
 
-6. MSA Transformer Embedding
+6. [MSA Transformer Embedding](https://www.biorxiv.org/content/10.1101/2021.02.12.430858v1.full)
    - Like ESM but with a transformer model that is trained on MSAs. The embeddings are computed for each amino acid in the query sequence in the context of an existing MSA
    - Requires MSA for fitting
    - Requires fixed-length sequences
@@ -250,22 +251,18 @@ Tools that require additional dependancies can be installed with the correspondi
 pip install -r requirements-vespa.txt
 ```
 
-## DVC pipeline
-
-TODO
-
 ## TODO:
 - Write EVE wrapper
 - Write Tranception wrapper * (low priority, PN did not provide a clear entry point so will require some finagling)
 - Write "training" pipeline to init, potentially fit, and save all sklearn estimators and pipelines
 - Write "predict" pipeline to load all sklearn estimators and pipelines, and predict on the passed data
 
-## Project Structure
+## DVC pipeline
 
-> UPDATE
+TODO
 
 
-## Usage
+### Usage (NOT CURRENTLY AVAILABLE)
 
 To use the tools for ML aided prediction of protein mutation combinatorial libraries, follow these steps:
 
@@ -284,13 +281,12 @@ To use the tools for ML aided prediction of protein mutation combinatorial libra
 
 ## Third party software
 
-1. EVCouplings is a dependancy and their software is used to run jackhmmer searches and available as a position specific predictor (CITE)
-2. MSA processing steps from EVE are refactored here. The original authors should be credited for the method. Here, we implement a 1-2 order of magnitude speedup with vecot processing and GPU acceleration. (CITE)
+1. [EVCouplings](https://academic.oup.com/bioinformatics/article/35/9/1582/5124274) is a dependancy and their software is used to run jackhmmer searches and available as a position specific predictor.
+2. Of course, many of the tools here are just wrapping of the work of others - see above.
 
 ## Citations
 No software or code with viral licenses was used in the creation of this project.
 
-TODO
 
 ## License
 

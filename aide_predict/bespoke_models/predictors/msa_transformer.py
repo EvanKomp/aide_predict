@@ -46,6 +46,7 @@ class MSATransformerLikelihoodWrapper(RequiresMSAMixin, RequiresFixedLengthMixin
                  pool: bool = True,
                  batch_size: int = 32,
                  device: str = 'cpu',
+                 n_msa_seqs: int = 360,
                  wt: Optional[Union[str, ProteinSequence]] = None):
         """
         Initialize the MSATransformerLikelihoodWrapper.
@@ -68,6 +69,7 @@ class MSATransformerLikelihoodWrapper(RequiresMSAMixin, RequiresFixedLengthMixin
                          batch_size=batch_size,
                          device=device,
                          wt=wt)
+        self.n_msa_seqs = n_msa_seqs
 
     def _fit(self, X: ProteinSequences, y: Optional[np.ndarray] = None) -> 'MSATransformerLikelihoodWrapper':
         """
@@ -83,7 +85,8 @@ class MSATransformerLikelihoodWrapper(RequiresMSAMixin, RequiresFixedLengthMixin
             MSATransformerLikelihoodWrapper: The fitted wrapper.
         """
         self.msa_length_: int = X.width
-        self.original_msa_: ProteinSequences = X
+        self.original_msa_: ProteinSequences = X.sample(self.n_msa_seqs)
+        self.fitted_ = True
         return self
     
     def _load_model(self) -> None:

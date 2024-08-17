@@ -14,6 +14,7 @@ import warnings
 import hashlib
 import json
 import hashlib
+import tempfile
 
 from sklearn.base import BaseEstimator, TransformerMixin, RegressorMixin
 from sklearn.utils.validation import check_is_fitted, NotFittedError
@@ -87,6 +88,7 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
        - RequiresWTDuringInferenceMixin - if the model requires the wild type sequence duing inference in order to normalize by wt
        - PositionSpecificMixin - if the model can output per position scores
        - RequiresStructureMixin - if the model requires structure information
+       - AcceptsLowerCaseMixin - if the model can accept lower case sequences
     6. If the model requires more than the base package, set the _available attribute to be dynamic based on a check in the module.
 
     Example:
@@ -125,6 +127,7 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
     _can_regress: bool = False
     _can_handle_aligned_sequences: bool = False
     _requires_structure: bool = False
+    _accepts_lower_case: bool = False
     _available: bool = MessageBool(True, "This model is available for use.")
 
     def __init__(self, metadata_folder: str=None, wt: Optional[Union[str, ProteinSequence]] = None):
@@ -143,7 +146,8 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         
         # generate a folder if metadata is None
         if metadata_folder is None:
-            metadata_folder = os.path.join(os.getcwd(), time.strftime("%Y%m%d_%H%M%S"))
+            prefered_tempdir = tempfile.gettempdir()
+            metadata_folder = os.path.join(prefered_tempdir, time.strftime("%Y%m%d_%H%M%S"))
         else:
             # get full path if relative path is given
             metadata_folder = os.path.abspath(metadata_folder)
@@ -159,6 +163,7 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         if wt is not None:
             if wt.has_gaps:
                 raise ValueError("Wild type sequence cannot have gaps.")
+            wt = wt.upper()
             
         if self.requires_structure and wt is not None:
             if wt.structure is None:
@@ -166,7 +171,7 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         
         if wt is None and self.requires_wt_to_function:
             raise ValueError("This model requires a wild type sequence to function.")
-
+        
         self.wt = wt
 
         self.check_metadata()
@@ -175,7 +180,7 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         """
         Ensures that everything this model class needs is in the metadata folder.
         """
-        logger.warning("This model class did not implement check_metadata. If the model requires anything other than raw sequences to be fit, this is unexpected.")
+        pass
 
     def _validate_input(self, X: Union[ProteinSequences, List[str]]) -> ProteinSequences:
         """
@@ -189,6 +194,9 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         """
         if not isinstance(X, ProteinSequences):
             X = ProteinSequences([ProteinSequence(seq) for seq in X])
+
+        if X.has_lower() and not self.accepts_lower_case:
+            X = X.upper()
         return X
 
     def _assert_aligned(self, X: ProteinSequences) -> None:
@@ -470,6 +478,11 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
     def requires_structure(self) -> bool:
         """Whether the model requires structure information."""
         return self._requires_structure
+    
+    @property
+    def accepts_lower_case(self) -> bool:
+        """Whether the model can accept lower case sequences."""
+        return self._accepts_lower_case
 
     @staticmethod
     def _construct_necessary_metadata(model_directory: str, necessary_metadata: dict) -> None:
@@ -603,6 +616,15 @@ class PositionSpecificMixin:
         self.flatten = flatten
         super().__init__(*args, **kwargs)
 
+    def _is_ragged_array(self, arr):
+        """Check if the input is a ragged array (list of arrays with different shapes)."""
+        if not isinstance(arr, list):
+            return False
+        if len(arr) == 0:
+            return False
+        first_shape = arr[0].shape
+        return any(a.shape != first_shape for a in arr[1:])
+
     def transform(self, X: Union[ProteinSequences, List[str]]) -> np.ndarray:
         """
         Transform the sequences, ensuring correct output dimensions for position-specific models.
@@ -618,6 +640,17 @@ class PositionSpecificMixin:
             ValueError: If the output dimensions do not match the specified positions.
         """
         result = super().transform(X)
+
+        # we need to determine if the output is a clean numpy array or a set of arrays of different sizes
+        if self._is_ragged_array(result):
+            warnings.warn("The output is a ragged array of embeddings of different sizes, cannot output as an array. Ignoring flatten.")
+            return result
+        else:
+            if type(result) is list:
+                if all(a.shape[0] == 1 for a in result):
+                    result = np.vstack(result)
+                else:
+                    result = np.array(result)
         
         if self.positions is not None and not self.pool:
             dims = len(self.positions)
@@ -754,6 +787,9 @@ class CacheMixin:
 
             for (i, protein), result in zip(proteins_to_process, new_results):
                 protein_hash = self._get_protein_hash(protein)
+                # make sure we keep our dims
+                if result.shape[0] != 1:
+                    result = np.expand_dims(result, axis=0)
                 self._cache[protein_hash] = result
                 self._cache_metadata[protein_hash] = {
                     'timestamp': time.time(),
@@ -766,4 +802,19 @@ class CacheMixin:
 
         # Reorder results to match original input order
         all_results = sorted(cached_results, key=lambda x: x[0])
-        return np.vstack([r[1] for r in all_results])
+        only_outputs = [r[1] for r in all_results]
+        # determine if we can stack or not
+        if len(set([o.shape for o in only_outputs])) == 1:
+            return np.vstack(only_outputs)
+        else:
+            return only_outputs
+
+
+class AcceptsLowerCaseMixin:
+    """
+    Mixin to indicate that a model can accept lower case sequences.
+
+    This mixin overrides the accepts_lower_case attribute to be True.
+    """
+    _accepts_lower_case: bool = True
+

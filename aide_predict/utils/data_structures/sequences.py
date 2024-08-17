@@ -304,6 +304,10 @@ class ProteinSequence(str):
                     mutated.id = f"{self[i]}{i+1}{aa}"
                     sequences.append(mutated)
         return ProteinSequences(sequences)
+    
+    def upper(self) -> 'ProteinSequence':
+        """Return a new ProteinSequence with all characters converted to uppercase."""
+        return ProteinSequence(str(self).upper(), id=self._id, structure=self._structure)
 
 
 ############################################
@@ -330,18 +334,41 @@ class ProteinSequences(UserList):
         from_fasta: Create a ProteinSequences object from a FASTA file.
     """
 
-    def __init__(self, sequences: List[ProteinSequence]):
+    def __init__(self, sequences: List[ProteinSequence], weights: Optional[np.ndarray] = None):
         """
         Initialize a ProteinSequences object.
 
         Args:
             sequences (List[ProteinSequence]): A list of ProteinSequence objects.
+            weights (Optional[np.ndarray]): Weights for each sequence. If None, initialized as ones.
         """
         for s in sequences:
             if not isinstance(s, ProteinSequence):
                 raise ValueError("All elements must be ProteinSequence objects")
         super().__init__(sequences)
         self._id_to_pos = None
+        
+        self._weights = None
+        if weights is None:
+            self.weights = np.ones(len(self))
+        else:
+            if len(weights) != len(self):
+                raise ValueError("Length of weights must match the number of sequences")
+            self.weights = weights
+
+    @property
+    def weights(self) -> np.ndarray:
+        """Get the weights for each sequence."""
+        return self._weights
+    
+    @weights.setter
+    def weights(self, new_weights: np.ndarray) -> None:
+        """Set the weights for each sequence."""
+        if type(new_weights) != np.ndarray:
+            new_weights = np.array(new_weights).reshape(-1)
+        if len(new_weights) != len(self):
+            raise ValueError("Length of weights must match the number of sequences")
+        self._weights = new_weights
 
     @property
     def aligned(self) -> bool:
@@ -492,7 +519,17 @@ class ProteinSequences(UserList):
             self._id_to_pos = self.get_id_mapping()
         return self._id_to_pos
     
+    def upper(self) -> 'ProteinSequences':
+        """Return a new ProteinSequences with all sequences converted to uppercase."""
+        return ProteinSequences([seq.upper() for seq in self])
     
+    def has_lower(self) -> bool:
+        """Check if any sequence contains lowercase characters."""
+        if self.aligned:
+            array = self.as_array()
+            return np.any(np.char.islower(array))
+        else:
+            return any(c.upper() != c for seq in self for c in seq)
 
     def __repr__(self) -> str:
         """
@@ -533,6 +570,51 @@ class ProteinSequences(UserList):
         """
         for i in range(0, len(self), batch_size):
             yield ProteinSequences(self[i:i+batch_size])
+
+    def msa_process(self, focus_seq_id: str=None, **kwargs) -> 'ProteinSequence':
+        """
+        Align this sequence with another using global pairwise alignment.
+
+        Kwargs:
+            **kwargs: Additional arguments to pass to MSAprocessing
+        Returns:
+            ProteinSequence: The aligned sequence.
+        """
+        if not self.aligned:
+            raise ValueError("Sequences must be aligned to create an alignment mapping, align first.")
+        
+        from aide_predict.utils.msa import MSAProcessing
+        msa_processor = MSAProcessing(**kwargs)
+        return msa_processor.process(self, focus_seq_id=focus_seq_id)
+    
+    def sample(self, n: int, replace: bool = False) -> 'ProteinSequences':
+        """
+        Sample n sequences from the ProteinSequences object.
+
+        Args:
+            n (int): Number of sequences to sample.
+            replace (bool): Whether to sample with replacement. Default is False.
+
+        Returns:
+            ProteinSequences: A new ProteinSequences object containing the sampled sequences.
+
+        Raises:
+            ValueError: If n is greater than the number of sequences and replace is False.
+        """
+        if n > len(self) and not replace:
+            raise ValueError(f"Cannot sample {n} sequences without replacement from a set of {len(self)} sequences.")
+
+        weights = self.weights if hasattr(self, 'weights') else None
+        if weights is None:
+            weights = np.ones(len(self))
+        
+        sampled_indices = np.random.choice(len(self), size=n, replace=replace, p=weights/np.sum(weights))
+        sampled_sequences = [self[i] for i in sampled_indices]
+        
+        new_sequences = ProteinSequences(sampled_sequences)
+        new_sequences.weights = self.weights[sampled_indices] if hasattr(self, 'weights') else None
+        
+        return new_sequences
 
     def get_id_mapping(self) -> Dict[str, int]:
         """
@@ -701,18 +783,26 @@ class ProteinSequencesOnFile(ProteinSequences):
         from_fasta: Create a ProteinSequences object from a FASTA file.
     """
 
-    def __init__(self, file_path: str):
+    def __init__(self, file_path: str, weights: Optional[np.ndarray] = None):
         """
         Initialize a ProteinSequencesOnFile object.
 
         Args:
             file_path (str): Path to the FASTA file containing protein sequences.
+            weights (Optional[np.ndarray]): Weights for each sequence. If None, initialized as ones.
         """
-        super().__init__([])  # Initialize with an empty list
         self.file_path: str = file_path
         self._index: Dict[str, Dict[str, Any]] = {}
         self._create_index()
         self._compute_global_properties()
+        super().__init__([])  # Initialize with an empty list
+        
+        if weights is None:
+            self.weights = np.ones(len(self._index))
+        else:
+            if len(weights) != len(self._index):
+                raise ValueError("Length of weights must match the number of sequences in the file")
+            self.weights = weights
 
     def _create_index(self) -> None:
         """

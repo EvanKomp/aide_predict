@@ -87,12 +87,19 @@ class SaProtEmbedding(CacheMixin, RequiresStructureMixin, PositionSpecificMixin,
         """Convert a protein sequence into a string ready for tokenization."""
         if sequence.structure is None:
             if self.wt is not None and self.wt.structure:
-                struc_tokens = get_structure_tokens(self.wt.structure, self.foldseek_path)
+                struc_tokens, seq_tokens = get_structure_tokens(self.wt.structure, self.foldseek_path, return_seq_tokens=True)
                 return ''.join([a + b.lower() for a, b in zip(str(sequence).upper(), struc_tokens)])
             else:
                 return ''.join([aa + '#' for aa in str(sequence).upper()])
         else:
             struc_tokens = get_structure_tokens(sequence.structure, self.foldseek_path)
+            # check for same length
+            if len(struc_tokens) != len(sequence):
+                raise ValueError(f"Structure and sequence lengths do not match: {len(sequence)} != {len(struc_tokens)}")
+            #also check if sequence matches the PDB file. We will let it slide if not in case someone wants to use 
+            # a structure from a close variant, but throw a warnning
+            if not all([a == b for a, b in zip(str(sequence).upper(), seq_tokens)]):
+                warnings.warn(f"Sequence does not match the PDB file sequence. Using user passed sequence.")
             return ''.join([a + b.lower() for a, b in zip(str(sequence).upper(), struc_tokens)])
 
     def _fit(self, X: ProteinSequences, y: Optional[np.ndarray] = None) -> 'SaProtEmbedding':
@@ -109,6 +116,8 @@ class SaProtEmbedding(CacheMixin, RequiresStructureMixin, PositionSpecificMixin,
             SaProtEmbedding: The fitted embedder.
         """
         self.fitted_ = True
+        with model_device_context(self, self._load_model, self._cleanup_model, self.device):
+            self.embedding_dim_ = self.model_.config.hidden_size
         return self
     
     def _load_model(self) -> None:
@@ -173,7 +182,7 @@ class SaProtEmbedding(CacheMixin, RequiresStructureMixin, PositionSpecificMixin,
                 bar.update(len(batch))
             
         # stack along 0 dimension
-        return np.vstack(all_embeddings)
+        return all_embeddings
 
     def get_feature_names_out(self, input_features: Optional[List[str]] = None) -> List[str]:
         """
@@ -188,12 +197,14 @@ class SaProtEmbedding(CacheMixin, RequiresStructureMixin, PositionSpecificMixin,
         if not hasattr(self, 'model_'):
             raise ValueError("Model has not been fitted yet. Call fit() before using this method.")
         
-        embedding_dim = self.model_.config.hidden_size
-        positions = self.positions if self.positions is not None else range(self.model_.config.max_position_embeddings - 2)  # -2 for special tokens
+        embedding_dim = self.embedding_dim_
+        positions = self.positions
         
         if self.pool:
-            return [f"SaProt_emb{i}" for i in range(embedding_dim)]
+            return [f"ESM2_emb{i}" for i in range(embedding_dim)]
         elif self.flatten:
+            if positions is None:
+                raise ValueError("Cannot return feature names for flattened embeddings without specifying positions, idnetermined number of AAs")
             return [f"pos{p}_emb{i}" for p in positions for i in range(embedding_dim)]
         else:
-            return [f"pos{p}" for p in positions]
+            raise ValueError("Cannot return feature names for non-flattened non-pooled embeddings.")

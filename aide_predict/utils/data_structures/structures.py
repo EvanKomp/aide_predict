@@ -272,6 +272,16 @@ class StructureMapper:
             List[str]: A list of structure IDs available in the structure_map.
         """
         return list(self.structure_map.keys())
+    
+    def get_protein_sequences(self) -> 'ProteinSequences':
+        """
+        Get a ProteinSequences object containing all available protein sequences.
+
+        Returns:
+            ProteinSequences: A ProteinSequences object containing all available protein sequences.
+        """
+        from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
+        return ProteinSequences([ProteinSequence(struct.get_sequence(), id=struct_id, structure=struct) for struct_id, struct in self.structure_map.items()])
 
     def __repr__(self):
         """

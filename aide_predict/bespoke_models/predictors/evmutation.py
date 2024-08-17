@@ -19,7 +19,7 @@ import pandas as pd
 from evcouplings.couplings.model import CouplingsModel
 from evcouplings.couplings import protocol
 from evcouplings.align.protocol import describe_frequencies, Alignment, parse_header
-from aide_predict.bespoke_models.base import ProteinModelWrapper, RequiresMSAMixin, CanRegressMixin, RequiresWTToFunctionMixin, RequiresFixedLengthMixin, MessageBool
+from aide_predict.bespoke_models.base import ProteinModelWrapper, RequiresMSAMixin, CanRegressMixin, RequiresWTToFunctionMixin, RequiresFixedLengthMixin, MessageBool, AcceptsLowerCaseMixin
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
 
 from tqdm import tqdm
@@ -37,13 +37,14 @@ class EVMutationWrapper(
     RequiresFixedLengthMixin,
     RequiresMSAMixin,
     CanRegressMixin,
+    AcceptsLowerCaseMixin,
     ProteinModelWrapper):
     """
     A wrapper for EVCouplings that implements the ProteinModelWrapper interface.
     """
     _available = AVAILABLE
 
-    def __init__(self, metadata_folder: str, 
+    def __init__(self, metadata_folder: str=None, 
                  wt: Optional[Union[str, ProteinSequence]] = None,
                  protocol: str = "standard",
                  theta: float = 0.8,

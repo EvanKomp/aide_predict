@@ -18,8 +18,7 @@ class TestESM2Embedding:
     @pytest.fixture(scope="class")
     def embedder(self):
         return ESM2Embedding(
-            metadata_folder="test_folder",
-            model_checkpoint="facebook/esm2_t6_8M_UR50D",  # Using a small model for faster tests
+            model_checkpoint="esm2_t6_8M_UR50D",  # Using a small model for faster tests
             layer=-1,
             batch_size=2
         )
@@ -39,7 +38,7 @@ class TestESM2Embedding:
         ])
 
     def test_initialization(self, embedder):
-        assert embedder.model_checkpoint == 'facebook/esm2_t6_8M_UR50D'
+        assert embedder.model_checkpoint == 'esm2_t6_8M_UR50D'
         assert embedder.layer == -1
         assert embedder.positions is None
         assert not embedder.flatten
@@ -48,8 +47,7 @@ class TestESM2Embedding:
 
     def test_fit(self, embedder, sequences):
         embedder.fit(sequences)
-        assert hasattr(embedder, 'model_')
-        assert hasattr(embedder, 'tokenizer_')
+        assert hasattr(embedder, 'fitted_')
 
     @pytest.mark.parametrize("positions,pool,flatten", [
         (None, False, False),
@@ -61,7 +59,8 @@ class TestESM2Embedding:
         embedder.positions = positions
         embedder.pool = pool
         embedder.flatten = flatten
-        
+        embedder.fit([])
+        print(embedder.flatten)
         embeddings = embedder.transform(sequences)
         
         assert isinstance(embeddings, np.ndarray)
@@ -79,7 +78,7 @@ class TestESM2Embedding:
         embedder.positions = [0,4]
         embedder.pool = False
         embedder.flatten = False
-        
+        embedder.fit([])
         embeddings = embedder.transform(aligned_sequences)
         
         assert isinstance(embeddings, np.ndarray)
@@ -95,19 +94,21 @@ class TestESM2Embedding:
             embedder.transform(sequences)
 
     def test_get_feature_names_out_pooled(self, embedder, sequences):
-        embedder.fit(sequences)
+        
         embedder.positions = None
         embedder.pool = True
         embedder.flatten = False
+        embedder.fit(sequences)
         
         feature_names = embedder.get_feature_names_out()
         assert len(feature_names) == 320  # ESM2 t6 8M model has 320 hidden dimensions
 
     def test_get_feature_names_out_flattened(self, embedder, sequences):
-        embedder.fit(sequences)
         embedder.positions = [0, 1]
         embedder.pool = False
         embedder.flatten = True
+        embedder.fit(sequences)
+        
         
         feature_names = embedder.get_feature_names_out()
-        assert len(feature_names) == 2 * 320  # 2 positions * 320 hidden dimensions
+        assert len(feature_names) == 2 * 320

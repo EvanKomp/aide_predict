@@ -50,6 +50,7 @@ class MSATransformerEmbedding(CacheMixin, PositionSpecificMixin, RequiresMSAMixi
                  flatten: bool = False,
                  pool: bool = False,
                  batch_size: int = 32,
+                 n_msa_seqs: int = 360,
                  device: str = 'cpu',
                  wt: Optional[Union[str, ProteinSequence]] = None):
         """
@@ -62,6 +63,7 @@ class MSATransformerEmbedding(CacheMixin, PositionSpecificMixin, RequiresMSAMixi
             flatten (bool): Whether to flatten the output array.
             pool (bool): Whether to pool the encoded vectors across positions.
             batch_size (int): The batch size that will be given as input to the model. Ideally this is the size of the MSA.
+            n_msa_seqs (int): The number of sequences to use from the MSA, sampled from the weight vector.
             device (str): The device to use for computations ('cuda' or 'cpu').
             wt (Optional[Union[str, ProteinSequence]]): The wild type sequence, if any.
         """
@@ -69,6 +71,7 @@ class MSATransformerEmbedding(CacheMixin, PositionSpecificMixin, RequiresMSAMixi
         self.layer = layer
         self.batch_size = batch_size
         self.device = device
+        self.n_msa_seqs = n_msa_seqs
 
 
     def _fit(self, X: ProteinSequences, y: Optional[np.ndarray] = None) -> 'MSATransformerEmbedding':
@@ -88,7 +91,8 @@ class MSATransformerEmbedding(CacheMixin, PositionSpecificMixin, RequiresMSAMixi
             ValueError: If the input sequences are not aligned or of fixed length.
         """
         self.msa_length_ = X.width
-        self.original_msa_ = X
+        self.original_msa_ = X.sample(self.n_msa_seqs)
+        self.fitted_ = True
         return self
     
     def _load_model(self) -> None:
