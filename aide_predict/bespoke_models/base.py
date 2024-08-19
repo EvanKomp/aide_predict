@@ -145,36 +145,38 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
             raise ValueError(self._available.message)
         
         # generate a folder if metadata is None
-        if metadata_folder is None:
-            prefered_tempdir = tempfile.gettempdir()
-            metadata_folder = os.path.join(prefered_tempdir, time.strftime("%Y%m%d_%H%M%S"))
-        else:
-            # get full path if relative path is given
-            metadata_folder = os.path.abspath(metadata_folder)
-        self.metadata_folder = metadata_folder
+        self._metadata_folder = metadata_folder
+        self._processed_metadata_folder = self._process_metadata_folder(metadata_folder)
+        self._ensure_metadata_folder()
 
-        if metadata_folder is not None and not os.path.exists(metadata_folder):
-            os.makedirs(metadata_folder)
-            logger.info(f"Created metadata folder: {metadata_folder}")
+        self._wt = wt
+        self._processed_wt = self._process_wt(wt)
 
-        if not isinstance(wt, ProteinSequence) and wt is not None:
-            wt = ProteinSequence(wt)
-        
-        if wt is not None:
-            if wt.has_gaps:
-                raise ValueError("Wild type sequence cannot have gaps.")
-            wt = wt.upper()
-            
-        if self.requires_structure and wt is not None:
-            if wt.structure is None:
-                raise ValueError("This model acts on structure but a wild type structure was not given.")
-        
-        if wt is None and self.requires_wt_to_function:
+        if self._processed_wt is None and self.requires_wt_to_function:
             raise ValueError("This model requires a wild type sequence to function.")
-        
-        self.wt = wt
 
         self.check_metadata()
+
+    @property
+    def wt(self):
+        return self._processed_wt
+
+    @wt.setter
+    def wt(self, value):
+        self._wt = value
+        self._processed_wt = self._process_wt(value)
+
+    def _process_wt(self, wt):
+        if wt is None:
+            return None
+        if not isinstance(wt, ProteinSequence):
+            wt = ProteinSequence(wt)
+        if wt.has_gaps:
+            raise ValueError("Wild type sequence cannot have gaps.")
+        processed_wt = wt.upper()
+        if self.requires_structure and processed_wt.structure is None:
+            raise ValueError("This model acts on structure but a wild type structure was not given.")
+        return processed_wt
 
     def check_metadata(self) -> None:
         """
@@ -408,7 +410,10 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         Returns:
             Dict[str, Any]: Parameter names mapped to their values.
         """
-        return {s: getattr(self, s) for s in self.__dict__.keys() if not s.startswith("_") and not callable(getattr(self, s)) and not s.endswith('_')}
+        params = {s: getattr(self, s) for s in self.__dict__.keys() if not s.startswith("_") and not callable(getattr(self, s)) and not s.endswith('_')}
+        params['metadata_folder'] = self._metadata_folder
+        params['wt'] = self._wt
+        return params
 
 
     def set_params(self, **params: Any) -> 'ProteinModelWrapper':
@@ -421,6 +426,7 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         Returns:
             ProteinModelWrapper: Estimator instance.
         """
+
         for param, value in params.items():
             setattr(self, param, value)
         return self
@@ -497,6 +503,26 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
             os.makedirs(model_directory)
             logger.info(f"Created model directory: {model_directory}")
         logger.warning("This model class did not implement _construct_necessary_metadata. If the model requires anything other than raw sequences to be fit, this is unexpected.")
+
+    @property
+    def metadata_folder(self):
+        return self._processed_metadata_folder
+
+    @metadata_folder.setter
+    def metadata_folder(self, value):
+        self._metadata_folder = value
+        self._processed_metadata_folder = self._process_metadata_folder(value)
+
+    def _process_metadata_folder(self, metadata_folder):
+        if metadata_folder is None:
+            prefered_tempdir = tempfile.gettempdir()
+            return os.path.join(prefered_tempdir, time.strftime("%Y%m%d_%H%M%S"))
+        return os.path.abspath(metadata_folder)
+    
+    def _ensure_metadata_folder(self):
+        if self.metadata_folder and not os.path.exists(self.metadata_folder):
+            os.makedirs(self.metadata_folder)
+            logger.info(f"Created metadata folder: {self.metadata_folder}")
 
     @classmethod
     def from_basic_info(
