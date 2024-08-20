@@ -815,7 +815,7 @@ class CacheMixin:
                 protein_hash = self._get_protein_hash(protein)
                 # make sure we keep our dims
                 if not isinstance(result, np.ndarray):
-                    result = np.array(result)
+                    result = np.array(result).reshape(1, -1)
                 if result.shape[0] != 1:
                     result = np.expand_dims(result, axis=0)
                 self._cache[protein_hash] = result
