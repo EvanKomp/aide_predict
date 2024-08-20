@@ -161,6 +161,7 @@ aligned_important_positions = msa['my_id_for_WT'].get_aligned_positions(wt_impor
 
 # model defenitions
 embedder = OneHotAlignedEmbedding(positions=aligned_important_positions, flatten=True)
+embedder.fit(msa)
 scaler = StandardScaler()
 feature_selector = VarianceThreshold(threshold=0.2)
 predictor = RandomForestRegressor()
