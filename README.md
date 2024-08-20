@@ -28,6 +28,33 @@ The goals of this project are succinctly as follows:
 
 The following should look and feel like canonical sklearn tasks/code. See the `demo` folder for more details and executable examples. Also see the [colab notebook](https://colab.research.google.com/drive/1baz4DdYkxaw6pPRTDscwh2o-Xqum5Krp#scrollTo=AV9VXhM6ebgI) to play with some if its capabilities in the cloud.
 
+### Checking which protein models are available given the data you have
+
+```python
+from aide_predict.utils.checks import check_model_compatability
+exp = pd.read_csv('exp.csv')
+seqs = ProteinSequences.from_list(exp['sequence'].tolist())
+wt = ProteinSequence("MQYKLILNGKTLKGETTTEAVDAATAEKVFKQYANDNGVDGEWTYDDATKTFTVTELEVLFQGPLDPNSMATYEVLCEVARKLGTDDREVVLFLLNVFIPQPTLAQLIGALRALKEEGRLTFPLLAECLFRAGRRDLLRDLLHLDPRFLERHLAGTMSYFSPYQLTVLHVDGELCARDIRSLIFLSKDTIGSRSTPQTFLHWVYCMENLDLLGPTDVDALMSMLRSLSRVDLQRQVQTLMGLHLSGPSHSQHYRHTPLEHHHHHH", id='WT')
+
+check_model_compatibility(
+    training_msa=None,
+    training_sequences=seqs,
+    wt=wt,
+)
+>>>{'compatible': ['ESM2Embedding',
+  'ESM2LikelihoodWrapper',
+  'KmerEmbedding',
+  'OneHotProteinEmbedding'],
+ 'incompatible': ['EVMutationWrapper',
+  'HMMWrapper',
+  'MSATransformerEmbedding',
+  'MSATransformerLikelihoodWrapper',
+  'OneHotAlignedEmbedding',
+  'SaProtEmbedding',
+  'SaProtLikelihoodWrapper',
+  'VESPAWrapper']}
+```
+
 #### In silico mutagenesis using MSATransformer
 ```python
 # data preparation
@@ -77,8 +104,8 @@ for name, model in models.items():
 #### Train a supervised model to predict activity on an experimental combinatorial library, test on sequences with greater mutational depth than training
 ```python
 # data preparation
-data = pd.read_csv("data/experimental_data.csv")
-sequences = ProteinSequences.from_list(data['sequence'])
+data = pd.read_csv("data/experimental_data.csv").set_index('id')
+sequences = ProteinSequences.from_dict(data['sequence'])
 sequences.aligned
 >>> True
 sequences.fixed_length
@@ -133,7 +160,7 @@ msa.aligned
 aligned_important_positions = msa['my_id_for_WT'].get_aligned_positions(wt_important_positions)
 
 # model defenitions
-embedder = OneHotAlignedEmbedding(important_positions=aligned_important_positions)
+embedder = OneHotAlignedEmbedding(positions=aligned_important_positions, flatten=True)
 scaler = StandardScaler()
 feature_selector = VarianceThreshold(threshold=0.2)
 predictor = RandomForestRegressor()
