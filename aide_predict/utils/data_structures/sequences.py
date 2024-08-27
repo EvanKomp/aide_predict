@@ -398,7 +398,7 @@ class ProteinSequences(UserList):
         Returns:
             Optional[int]: The length of the sequences if aligned, None otherwise.
         """
-        return len(self[0]) if self.aligned or len(self)==0 else None
+        return len(self[0]) if self.aligned or len(self)==1 else None
 
     @property
     def has_gaps(self) -> bool:
