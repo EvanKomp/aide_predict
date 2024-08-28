@@ -171,12 +171,14 @@ class MSATransformerEmbedding(CacheMixin, PositionSpecificMixin, RequiresMSAMixi
                     batch_tokens = batch_tokens.to(self.device)
 
                     if self.layer == -1:
-                        self.layer = self.model_.num_layers - 1
+                        layer = self.model_.num_layers - 1
+                    else:
+                        layer = self.layer
 
                     with torch.no_grad():
-                        results = self.model_(batch_tokens, repr_layers=[self.layer], return_contacts=False)
+                        results = self.model_(batch_tokens, repr_layers=[layer], return_contacts=False)
                     
-                    embeddings = results["representations"][self.layer]
+                    embeddings = results["representations"][layer]
                     
                     # Extract embedding for the query sequence (last in the batch)
                     # remove the start token
