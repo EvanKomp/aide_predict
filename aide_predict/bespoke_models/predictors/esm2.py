@@ -93,7 +93,7 @@ import warnings
 import numpy as np
 from tqdm import tqdm
 
-from aide_predict.bespoke_models.base import RequiresFixedLengthMixin
+from aide_predict.bespoke_models.base import RequiresFixedLengthMixin, CacheMixin
 from aide_predict.bespoke_models.predictors.pretrained_transformers import LikelihoodTransformerBase, MarginalMethod
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
 from aide_predict.utils.common import MessageBool
@@ -111,7 +111,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class ESM2LikelihoodWrapper(RequiresFixedLengthMixin, LikelihoodTransformerBase):
+class ESM2LikelihoodWrapper(CacheMixin, RequiresFixedLengthMixin, LikelihoodTransformerBase):
     _available = AVAILABLE
 
     def __init__(
