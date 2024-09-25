@@ -111,7 +111,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class ESM2LikelihoodWrapper(CacheMixin, RequiresFixedLengthMixin, LikelihoodTransformerBase):
+class ESM2LikelihoodWrapper(RequiresFixedLengthMixin, LikelihoodTransformerBase):
     _available = AVAILABLE
 
     def __init__(

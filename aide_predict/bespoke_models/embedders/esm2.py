@@ -55,7 +55,8 @@ class ESM2Embedding(CacheMixin, PositionSpecificMixin, CanHandleAlignedSequences
                  pool: bool = False,
                  batch_size: int = 32,
                  device: str = 'cpu',
-                 wt: Optional[Union[str, ProteinSequence]] = None):
+                 wt: Optional[Union[str, ProteinSequence]] = None,
+                 **kwargs):
         """
         Initialize the ESM2Embedding.
 
@@ -72,7 +73,7 @@ class ESM2Embedding(CacheMixin, PositionSpecificMixin, CanHandleAlignedSequences
         Notes: WT is set to None to avoid normalization. For an embedder this is effectively a feature scaler which you
         should do manually if you want
         """
-        super().__init__(metadata_folder=metadata_folder, wt=None, positions=positions, pool=pool, flatten=flatten)
+        super().__init__(metadata_folder=metadata_folder, wt=None, positions=positions, pool=pool, flatten=flatten, **kwargs)
         self.model_checkpoint = model_checkpoint
         self.layer = layer
         self.batch_size = batch_size
