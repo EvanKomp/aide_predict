@@ -733,7 +733,13 @@ class CacheMixin:
 
     def _get_model_state_hash(self) -> str:
         """Generate a hash representing the current state of the model."""
-        model_params = json.dumps(self.get_params(), sort_keys=True)
+        model_params = self.get_params()
+        # convert non jsonable model params to str
+        for k, v in model_params.items():
+            if not is_jsonable(v):
+                model_params[k] = str(v)
+        model_params = json.dumps(model_params, sort_keys=True)
+
         fitted_attrs = json.dumps({attr: getattr(self, attr) for attr in self.get_fitted_attributes()}, sort_keys=True)
         return hashlib.md5((model_params + fitted_attrs).encode()).hexdigest()
 
