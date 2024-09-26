@@ -202,8 +202,13 @@ class ESM2Embedding(CacheMixin, PositionSpecificMixin, CanHandleAlignedSequences
                     # is on
                     pass
                 
-                if self.pool:
-                    embeddings = [emb.mean(axis=0) for emb in embeddings]
+                if self.pool is not None:
+                    if self.pool == 'mean':
+                        embeddings = [emb.mean(axis=0) for emb in embeddings]
+                    elif self.pool == 'max':
+                        embeddings = [emb.max(axis=0) for emb in embeddings]
+                    else:
+                        raise ValueError(f"Invalid pooling method: {self.pool}")
                 
                 # add 0th dimension
                 embeddings = [np.expand_dims(emb, 0) for emb in embeddings]
