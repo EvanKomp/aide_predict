@@ -163,7 +163,7 @@ class ProteinSequence(str):
         """Get the length of the sequence excluding gaps."""
         return len(self) - self.num_gaps
 
-    def mutate(self, position: int, new_character: str) -> 'ProteinSequence':
+    def mutate_(self, position: int, new_character: str) -> 'ProteinSequence':
         """
         Create a new ProteinSequence with a mutation at the specified position.
 
@@ -178,6 +178,28 @@ class ProteinSequence(str):
             raise ValueError("Position out of range")
         new_seq = self[:position] + new_character + self[position+1:]
         return ProteinSequence(new_seq, structure=self._structure)  # Note: id is not passed to indicate mutation
+    
+    def mutate(self, mutations: Union[str, List[str]], one_indexed: bool = True):
+        """Create a new ProteinSequence with mutations applied.
+        
+        Params
+        ------
+        mutations: Union[str, List[str]]
+            A single mutation in the format 'A123B' or a list of mutations.
+        one_indexed: bool
+            If True, positions are one-indexed. If False, positions are zero-indexed.
+        """
+        if isinstance(mutations, str):
+            mutations = [mutations]
+
+        new_seq = self
+        for mutation_string in mutations:
+            original, position, new = mutation_string[0], int(mutation_string[1:-1]), mutation_string[-1]
+            if one_indexed:
+                position -= 1
+            new_seq = new_seq.mutate_(position, new)
+        return new_seq
+
 
     def mutated_positions(self, other: Union[str, 'ProteinSequence']) -> List[int]:
         """
@@ -300,7 +322,7 @@ class ProteinSequence(str):
         for i in positions:
             for aa in AA_SINGLE:
                 if aa != self[i]:
-                    mutated = self.mutate(i, aa)
+                    mutated = self.mutate_(i, aa)
                     mutated.id = f"{self[i]}{i+1}{aa}"
                     sequences.append(mutated)
         return ProteinSequences(sequences)
