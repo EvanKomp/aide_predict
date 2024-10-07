@@ -680,7 +680,7 @@ class PositionSpecificMixin:
         
         if self.positions is not None and not self.pool:
             dims = len(self.positions)
-            if result.shape[1] != dims:
+            if not self.flatten and result.shape[1] != dims:
                 raise ValueError(f"The output second dimension must have the same length as number of positions. Expected {dims}, got {result.shape[1]}.")
         
         if self.flatten and result.ndim > 2:
@@ -732,7 +732,12 @@ class CacheMixin:
         self._cache_metadata = {}
 
     def _get_model_state_hash(self) -> str:
-        """Generate a hash representing the current state of the model."""
+        """Generate a hash representing the current state of the model.
+        
+        Includes:
+        - model parameters, those not jsonable are converted to strings
+        - fitted attributes (ends with_), those not jsonable are converted to strings
+        """
         model_params = self.get_params()
         # convert non jsonable model params to str
         for k, v in model_params.items():
