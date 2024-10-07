@@ -818,6 +818,8 @@ class CacheMixin:
                 proteins_to_process.append((i, protein))
             original_order.append(i)
 
+        logger.info(f"Found {len(cached_results)} cached results, processing {len(proteins_to_process)} sequences.")
+
         if proteins_to_process:
             proteins_to_transform = ProteinSequences([p[1] for p in proteins_to_process])
             new_results = super().transform(proteins_to_transform)
