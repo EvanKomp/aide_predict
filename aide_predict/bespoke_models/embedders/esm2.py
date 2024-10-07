@@ -79,6 +79,9 @@ class ESM2Embedding(CacheMixin, PositionSpecificMixin, CanHandleAlignedSequences
         self.batch_size = batch_size
         self.device = device
 
+        with model_device_context(self, self._load_model, self._cleanup_model, self.device):
+            self._embedding_dim = self.model_.config.hidden_size
+
     def _prepare_sequences(self, X: ProteinSequences) -> ProteinSequences:
         """
         Prepare the protein sequences for ESM tokenization
@@ -105,8 +108,6 @@ class ESM2Embedding(CacheMixin, PositionSpecificMixin, CanHandleAlignedSequences
             ESM2Embedding: The fitted embedder.
         """
         self.fitted_ = True
-        with model_device_context(self, self._load_model, self._cleanup_model, self.device):
-            self.embedding_dim_ = self.model_.config.hidden_size
         return self
     
     def _load_model(self) -> None:
@@ -234,7 +235,7 @@ class ESM2Embedding(CacheMixin, PositionSpecificMixin, CanHandleAlignedSequences
         if not hasattr(self, 'fitted_'):
             raise ValueError("Model has not been fitted yet. Call fit() before using this method.")
         
-        embedding_dim = self.embedding_dim_
+        embedding_dim = self._embedding_dim
         positions = self.positions
         
         if self.pool:
