@@ -25,6 +25,9 @@ try:
 except ImportError:
     AVAILABLE = MessageBool(False, "MSA Transformer requires fair-esm, which is not installed.")
 
+import logging
+logger = logging.getLogger(__name__)
+
 class MSATransformerEmbedding(CacheMixin, PositionSpecificMixin, RequiresMSAMixin, ProteinModelWrapper):
     """
     A protein sequence embedder that uses the MSA Transformer model to generate embeddings.
@@ -90,6 +93,12 @@ class MSATransformerEmbedding(CacheMixin, PositionSpecificMixin, RequiresMSAMixi
         Raises:
             ValueError: If the input sequences are not aligned or of fixed length.
         """
+        if X.width > 1024:
+            logger.warning("MSA Transformer model only supports sequences up to length 1024. Using the most populated chunk.")
+            from aide_predict.utils.msa import MSAProcessing
+            proc = MSAProcessing()
+            X = proc.get_most_populated_chunk(X, 1023)
+
         self.msa_length_ = X.width
         self.original_msa_ = X.sample(self.n_msa_seqs)
         self.fitted_ = True
