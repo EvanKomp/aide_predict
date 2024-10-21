@@ -560,7 +560,7 @@ class ProteinSequences(UserList):
         Returns:
             str: A string representation of the object.
         """
-        return f"ProteinSequences(count={len(self)}, aligned={self.aligned}, fixed_length={self.fixed_length})"
+        return f"ProteinSequences(count={len(self)})"
     
     def to_on_file(self, output_path: str) -> None:
         """
@@ -1046,7 +1046,7 @@ class ProteinSequencesOnFile(ProteinSequences):
         Returns:
             str: A string representation of the object.
         """
-        return f"ProteinSequencesOnFile(file='{self.file_path}', count={len(self)}, aligned={self.aligned}, fixed_length={self.fixed_length})"
+        return f"ProteinSequencesOnFile(file='{self.file_path}', count={len(self)})"
     
     def to_memory(self) -> ProteinSequences:
         """
