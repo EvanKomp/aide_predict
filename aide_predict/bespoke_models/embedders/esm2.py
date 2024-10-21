@@ -52,7 +52,7 @@ class ESM2Embedding(CacheMixin, PositionSpecificMixin, CanHandleAlignedSequences
                  layer: int = -1,
                  positions: Optional[List[int]] = None, 
                  flatten: bool = False,
-                 pool: bool = False,
+                 pool: bool = None,
                  batch_size: int = 32,
                  device: str = 'cpu',
                  wt: Optional[Union[str, ProteinSequence]] = None,
