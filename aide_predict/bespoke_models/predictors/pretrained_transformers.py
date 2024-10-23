@@ -91,7 +91,7 @@ class LikelihoodTransformerBase(PositionSpecificMixin, CanRegressMixin, Requires
     """
 
     def __init__(self, metadata_folder: str=None, 
-                 marginal_method: MarginalMethod = MarginalMethod.WILDTYPE,
+                 marginal_method: MarginalMethod = MarginalMethod.WILDTYPE.value,
                  positions: Optional[List[int]] = None, 
                  flatten: bool = False,
                  pool: bool = True,
