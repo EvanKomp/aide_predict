@@ -19,7 +19,7 @@ import pandas as pd
 from evcouplings.couplings.model import CouplingsModel
 from evcouplings.couplings import protocol
 from evcouplings.align.protocol import describe_frequencies, Alignment, parse_header
-from aide_predict.bespoke_models.base import ProteinModelWrapper, RequiresMSAMixin, CanRegressMixin, RequiresWTToFunctionMixin, RequiresFixedLengthMixin, MessageBool, AcceptsLowerCaseMixin
+from aide_predict.bespoke_models.base import ProteinModelWrapper, RequiresMSAMixin, CanRegressMixin, RequiresWTToFunctionMixin, RequiresFixedLengthMixin, MessageBool, AcceptsLowerCaseMixin, CacheMixin
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
 
 from tqdm import tqdm
@@ -33,6 +33,7 @@ else:
 
 
 class EVMutationWrapper(
+    CacheMixin,
     RequiresWTToFunctionMixin, 
     RequiresFixedLengthMixin,
     RequiresMSAMixin,
@@ -53,7 +54,9 @@ class EVMutationWrapper(
                  lambda_J: float = 1e-2,
                  lambda_group: float = None,
                  min_sequence_distance: int = 6,
-                 cpu: int = 1):
+                 cpu: int = 1,
+                 use_cache: bool = False
+                 ):
         """
         Initialize the EVCouplingsWrapper.
 
@@ -68,7 +71,7 @@ class EVMutationWrapper(
             lambda_group (float): Group regularization strength.
             cpu (int): Number of CPUs to use.
         """
-        super().__init__(metadata_folder=metadata_folder, wt=wt)
+        super().__init__(metadata_folder=metadata_folder, wt=wt, use_cache=use_cache)
         self.protocol = protocol
         self.theta = theta
         self.iterations = iterations

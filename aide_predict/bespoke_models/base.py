@@ -15,6 +15,8 @@ import hashlib
 import json
 import hashlib
 import tempfile
+import sqlite3
+import h5py
 
 from sklearn.base import BaseEstimator, TransformerMixin, RegressorMixin
 from sklearn.utils.validation import check_is_fitted, NotFittedError
@@ -66,6 +68,8 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         requires_fixed_length (bool): Whether the model requires a fixed length input.
         can_regress (bool): Whether the model outputs from transform can also be considered estimates of activity label.
         can_handle_aligned_sequences (bool): Whether the model can handle unaligned sequences at predict time.
+        should_refit_on_sequences (bool): Whether the model should refit on new sequences when given.
+        requires_structure (bool): Whether the model requires structure information.
         _available (bool): Flag to indicate whether the model is available for use.
 
     To subclass ProteinModelWrapper:
@@ -89,6 +93,9 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
        - PositionSpecificMixin - if the model can output per position scores
        - RequiresStructureMixin - if the model requires structure information
        - AcceptsLowerCaseMixin - if the model can accept lower case sequences
+       - ShouldRefitOnSequencesMixin - if the model should refit on new sequences when given. Often, we are calling fit on NOT raw sequences, eg. MSAs.
+          We still want to be able to use the model in the context of sklearn pipelines which will attempt to clone and refit the model on X data.
+          We want the models to return themselves already fitted when cloned, unless this is mixex in
     6. If the model requires more than the base package, set the _available attribute to be dynamic based on a check in the module.
 
     Example:
@@ -128,6 +135,7 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
     _can_handle_aligned_sequences: bool = False
     _requires_structure: bool = False
     _accepts_lower_case: bool = False
+    _should_refit_on_sequences: bool = False
     _available: bool = MessageBool(True, "This model is available for use.")
 
     def __init__(self, metadata_folder: str=None, wt: Optional[Union[str, ProteinSequence]] = None):
@@ -195,7 +203,15 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
             ProteinSequences: Validated input sequences.
         """
         if not isinstance(X, ProteinSequences):
-            X = ProteinSequences([ProteinSequence(seq) for seq in X])
+            # check if it is a list of str
+            if not hasattr(X, '__getitem__'):
+                raise ValueError("Input must be a ProteinSequences object or an iterable of ProteinSequence like")
+            if len(X) == 0:
+                return ProteinSequences([])
+            if type(X[0]) is str:
+                X = ProteinSequences([ProteinSequence(seq) for seq in X])
+            else:
+                X = ProteinSequences(list(X))
 
         if X.has_lower() and not self.accepts_lower_case:
             X = X.upper()
@@ -270,6 +286,15 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
             y (Optional[np.ndarray]): Target values.
         """
         raise NotImplementedError("This method must be implemented in the child class.")
+    
+    def __sklearn_clone__(self, safe: bool = True):
+        """Overwrite the sklearn clone method to avoid resetting fitted attributes that are determined from data other than
+        raw sequences, eg. MSA"""
+        if self.should_refit_on_sequences:
+            from sklearn.base import _clone_parametrized
+            return _clone_parametrized(self, safe=safe)
+        else:
+            return self
     
     def fit(self, X: Union[ProteinSequences, List[str]], y: Optional[np.ndarray] = None, force: bool=False) -> 'ProteinModelWrapper':
         """
@@ -489,6 +514,11 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
     def accepts_lower_case(self) -> bool:
         """Whether the model can accept lower case sequences."""
         return self._accepts_lower_case
+    
+    @property
+    def should_refit_on_sequences(self) -> bool:
+        """Whether the model should refit on new sequences when given."""
+        return self._should_refit_on_sequences
 
     @staticmethod
     def _construct_necessary_metadata(model_directory: str, necessary_metadata: dict) -> None:
@@ -680,7 +710,7 @@ class PositionSpecificMixin:
         
         if self.positions is not None and not self.pool:
             dims = len(self.positions)
-            if result.shape[1] != dims:
+            if not self.flatten and result.shape[1] != dims:
                 raise ValueError(f"The output second dimension must have the same length as number of positions. Expected {dims}, got {result.shape[1]}.")
         
         if self.flatten and result.ndim > 2:
@@ -719,68 +749,134 @@ class CanHandleAlignedSequencesMixin:
     """
     _can_handle_aligned_sequences: bool = True
     
+
 class CacheMixin:
     """
     Mixin to provide per-protein caching functionality for ProteinModelWrapper subclasses.
+    Uses SQLite for metadata indexing and HDF5 for efficient embedding storage.
+    Optimized for batch operations and improved file handling.
     """
     def __init__(self, *args, use_cache: bool=True, **kwargs):
         super().__init__(*args, **kwargs)
         self.use_cache = use_cache
-        self._cache_file = os.path.join(self.metadata_folder, 'model_cache.pkl')
-        self._cache_metadata_file = os.path.join(self.metadata_folder, 'cache_metadata.json')
-        self._cache = {}
-        self._cache_metadata = {}
+        self._cache_dir = os.path.join(self.metadata_folder, 'cache')
+        self._db_file = os.path.join(self._cache_dir, 'cache.db')
+        self._hdf5_file = os.path.join(self._cache_dir, 'embeddings.h5')
+        self._ensure_cache_dir()
+        self._init_db()
+        self._hdf5 = None
+
+    def _ensure_cache_dir(self):
+        """Ensure the cache directory exists."""
+        os.makedirs(self._cache_dir, exist_ok=True)
+
+    def _init_db(self):
+        """Initialize the SQLite database for caching metadata."""
+        with sqlite3.connect(self._db_file) as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS cache (
+                    protein_hash TEXT PRIMARY KEY,
+                    model_state TEXT,
+                    timestamp REAL,
+                    protein_length INTEGER,
+                    output_shape TEXT
+                )
+            ''')
+            conn.commit()
 
     def _get_model_state_hash(self) -> str:
         """Generate a hash representing the current state of the model."""
         model_params = self.get_params()
-        # convert non jsonable model params to str
         for k, v in model_params.items():
-            if not is_jsonable(v):
+            if not isinstance(v, (str, int, float, bool, type(None))):
                 model_params[k] = str(v)
         model_params = json.dumps(model_params, sort_keys=True)
-
-        fitted_attrs = json.dumps({attr: getattr(self, attr) for attr in self.get_fitted_attributes()}, sort_keys=True)
+        fitted_attrs = json.dumps({attr: str(getattr(self, attr)) for attr in self.get_fitted_attributes()}, sort_keys=True)
         return hashlib.md5((model_params + fitted_attrs).encode()).hexdigest()
 
-    def _get_protein_hash(self, protein: ProteinSequence) -> str:
-        hash_input = str(protein)
-        if protein.id is not None:
-            hash_input += f"|id:{protein.id}"
-        if protein.structure is not None:
-            hash_input += f"|structure:{str(protein.structure.pdb_file)}{protein.structure.chain}{protein.structure.plddt_file}"
-        return hashlib.sha256(hash_input.encode()).hexdigest()
+    def _get_protein_hashes(self, proteins: ProteinSequences) -> List[str]:
+        """Generate hashes for a batch of protein sequences."""
+        return [hashlib.sha256((str(p) + f"|id:{p.id}" + (f"|structure:{str(p.structure.pdb_file)}{p.structure.chain}{p.structure.plddt_file}" if p.structure else "")).encode()).hexdigest() for p in proteins]
 
-    def _load_cache(self):
-        """Load the cache from disk if it exists."""
-        if os.path.exists(self._cache_file) and os.path.exists(self._cache_metadata_file):
-            with open(self._cache_file, 'rb') as f:
-                self._cache = pickle.load(f)
-            with open(self._cache_metadata_file, 'r') as f:
-                self._cache_metadata = json.load(f)
+    def _safely_close_hdf5(self):
+        """Safely close the HDF5 file if it's open."""
+        if self._hdf5 is not None:
+            self._hdf5.close()
+            self._hdf5 = None
 
-    def _save_cache(self):
-        """Save the cache to disk."""
-        with open(self._cache_file, 'wb') as f:
-            pickle.dump(self._cache, f)
-        with open(self._cache_metadata_file, 'w') as f:
-            json.dump(self._cache_metadata, f)
+    def _batch_is_cached(self, protein_hashes: List[str], model_state: str) -> Dict[str, bool]:
+        """Check if multiple proteins are cached and valid."""
+        with sqlite3.connect(self._db_file) as conn:
+            cursor = conn.cursor()
+            placeholders = ','.join('?' * len(protein_hashes))
+            query = f"SELECT protein_hash, model_state FROM cache WHERE protein_hash IN ({placeholders})"
+            cursor.execute(query, protein_hashes)
+            results = cursor.fetchall()
+        
+        cache_status = {ph: False for ph in protein_hashes}
+        for ph, ms in results:
+            cache_status[ph] = (ms == model_state)
+        return cache_status
+
+    def _batch_get_cached_results(self, protein_hashes: List[str]) -> Dict[str, np.ndarray]:
+        """Retrieve cached results for multiple proteins from HDF5 file."""
+        results = {}
+        if not os.path.exists(self._hdf5_file):
+            return results
+
+        try:
+            with h5py.File(self._hdf5_file, 'r', libver='latest', swmr=True) as f:
+                for ph in protein_hashes:
+                    if ph in f:
+                        results[ph] = f[ph][:]
+        except OSError as e:
+            print(f"Error reading HDF5 file: {e}")
+            self._safely_close_hdf5()
+        return results
+
+    def _batch_cache_results(self, results: Dict[str, np.ndarray], model_state: str, protein_lengths: Dict[str, int]):
+        """Cache results for multiple proteins in HDF5 file and update SQLite metadata."""
+        self._safely_close_hdf5()  # Ensure the file is closed before opening in write mode
+        try:
+            with h5py.File(self._hdf5_file, 'a') as f:
+                for protein_hash, result in results.items():
+                    if protein_hash in f:
+                        del f[protein_hash]
+                    f.create_dataset(protein_hash, data=result, compression="gzip", compression_opts=9)
+        except OSError as e:
+            print(f"Error writing to HDF5 file: {e}")
+            return
+
+        with sqlite3.connect(self._db_file) as conn:
+            cursor = conn.cursor()
+            data = [
+                (ph, model_state, time.time(), protein_lengths[ph], str(result.shape))
+                for ph, result in results.items()
+            ]
+            cursor.executemany('''
+                INSERT OR REPLACE INTO cache
+                (protein_hash, model_state, timestamp, protein_length, output_shape)
+                VALUES (?, ?, ?, ?, ?)
+            ''', data)
+            conn.commit()
 
     def _clear_cache(self):
-        """Clear the cache and remove cache files."""
-        self._cache = {}
-        self._cache_metadata = {}
-        if os.path.exists(self._cache_file):
-            os.remove(self._cache_file)
-        if os.path.exists(self._cache_metadata_file):
-            os.remove(self._cache_metadata_file)
+        """Clear the cache by removing HDF5 file and clearing SQLite database."""
+
+        
+        self._safely_close_hdf5()
+        if os.path.exists(self._hdf5_file):
+            os.remove(self._hdf5_file)
+        
+        with sqlite3.connect(self._db_file) as conn:
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM cache")
+            conn.commit()
 
     def get_fitted_attributes(self) -> List[str]:
-        """
-        Get a list of attributes that are set during fitting.
-        This method automatically detects attributes ending with an underscore.
-        """
-        return [attr for attr in dir(self) if attr.endswith('_') and not attr.startswith('_') and is_jsonable(getattr(self, attr))]
+        """Get a list of attributes that are set during fitting."""
+        return [attr for attr in dir(self) if attr.endswith('_') and not attr.startswith('_')]
 
     def transform(self, X: Union[ProteinSequences, List[str]]) -> np.ndarray:
         """Override transform to use cache when possible on a per-protein basis."""
@@ -793,56 +889,40 @@ class CacheMixin:
             return super().transform(X)
 
         X = self._validate_input(X)
-        self._load_cache()
-
         current_model_state = self._get_model_state_hash()
-        if self._cache_metadata.get('model_state') != current_model_state:
-            warnings.warn("Cache found but model state has changed. Clearing cache.")
-            self._clear_cache()
-            self._cache_metadata['model_state'] = current_model_state
 
-        cached_results = []
-        proteins_to_process = []
-        original_order = []
+        protein_hashes = self._get_protein_hashes(X)
+        cache_status = self._batch_is_cached(protein_hashes, current_model_state)
 
-        for i, protein in enumerate(X):
-            protein_hash = self._get_protein_hash(protein)
-            if protein_hash in self._cache:
-                cached_results.append((i, self._cache[protein_hash]))
-            else:
-                proteins_to_process.append((i, protein))
-            original_order.append(i)
+        cached_hashes = [ph for ph, status in cache_status.items() if status]
+        uncached_hashes = [ph for ph, status in cache_status.items() if not status]
 
-        if proteins_to_process:
-            proteins_to_transform = ProteinSequences([p[1] for p in proteins_to_process])
+        cached_results = self._batch_get_cached_results(cached_hashes)
+
+        logger.info(f"Found {len(cached_results)} cached results, running on {len(uncached_hashes)} uncached sequences.")
+
+        if uncached_hashes:
+            proteins_to_transform = ProteinSequences([X[i] for i, ph in enumerate(protein_hashes) if ph in uncached_hashes])
             new_results = super().transform(proteins_to_transform)
-
-            for (i, protein), result in zip(proteins_to_process, new_results):
-                protein_hash = self._get_protein_hash(protein)
-                # make sure we keep our dims
-                if not isinstance(result, np.ndarray):
-                    result = np.array(result).reshape(1, -1)
-                if result.shape[0] != 1:
-                    result = np.expand_dims(result, axis=0)
-                self._cache[protein_hash] = result
-                self._cache_metadata[protein_hash] = {
-                    'timestamp': time.time(),
-                    'protein_length': len(protein),
-                    'output_shape': result.shape
-                }
-                cached_results.append((i, result))
-
-        self._save_cache()
+            
+            new_results_dict = {
+                ph: (np.array(result).reshape(1, -1) if result.shape[0] != 1 else result)
+                for ph, result in zip(uncached_hashes, new_results)
+            }
+            protein_lengths = {ph: len(X[i]) for i, ph in enumerate(protein_hashes) if ph in uncached_hashes}
+            self._batch_cache_results(new_results_dict, current_model_state, protein_lengths)
+            
+            cached_results.update(new_results_dict)
 
         # Reorder results to match original input order
-        all_results = sorted(cached_results, key=lambda x: x[0])
-        only_outputs = [r[1] for r in all_results]
-        # determine if we can stack or not
-        if len(set([o.shape for o in only_outputs])) == 1:
-            return np.vstack(only_outputs)
-        else:
-            return only_outputs
+        all_results = [cached_results[ph] for ph in protein_hashes]
 
+        self._safely_close_hdf5()
+
+        if len(set([o.shape for o in all_results])) == 1:
+            return np.vstack(all_results)
+        else:
+            return all_results
 
 class AcceptsLowerCaseMixin:
     """
@@ -851,4 +931,12 @@ class AcceptsLowerCaseMixin:
     This mixin overrides the accepts_lower_case attribute to be True.
     """
     _accepts_lower_case: bool = True
+
+class ShouldRefitOnSequencesMixin:
+    """
+    Mixin to indicate that a model should refit on new sequences when given.
+
+    This mixin overrides the should_refit_on_sequences attribute to be True.
+    """
+    _should_refit_on_sequences: bool = True
 

@@ -111,7 +111,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class ESM2LikelihoodWrapper(RequiresFixedLengthMixin, LikelihoodTransformerBase):
+class ESM2LikelihoodWrapper(CacheMixin, RequiresFixedLengthMixin, LikelihoodTransformerBase):
     _available = AVAILABLE
 
     def __init__(
@@ -124,7 +124,8 @@ class ESM2LikelihoodWrapper(RequiresFixedLengthMixin, LikelihoodTransformerBase)
         flatten: bool = True,
         wt: str = None,
         batch_size: int = 2,
-        device: str = 'cpu'
+        device: str = 'cpu',
+        use_cache: bool = True
     ):
         super().__init__(
             metadata_folder=metadata_folder,
@@ -134,7 +135,8 @@ class ESM2LikelihoodWrapper(RequiresFixedLengthMixin, LikelihoodTransformerBase)
             flatten=flatten,
             wt=wt,
             batch_size=batch_size,
-            device=device
+            device=device,
+            use_cache=use_cache
         )
         self.model_checkpoint = model_checkpoint
         logger.debug(f"ESM2 model initialized with {self.__dict__}")

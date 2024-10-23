@@ -13,7 +13,7 @@ import warnings
 from typing import List, Union, Optional
 import numpy as np
 from sklearn.preprocessing import OneHotEncoder
-from aide_predict.bespoke_models.base import ProteinModelWrapper, RequiresMSAMixin, PositionSpecificMixin, CanHandleAlignedSequencesMixin, RequiresFixedLengthMixin
+from aide_predict.bespoke_models.base import ProteinModelWrapper, RequiresMSAMixin, PositionSpecificMixin, CanHandleAlignedSequencesMixin, RequiresFixedLengthMixin, ShouldRefitOnSequencesMixin
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
 from aide_predict.utils.constants import AA_SINGLE, GAP_CHARACTERS
 
@@ -189,7 +189,7 @@ class OneHotProteinEmbedding(PositionSpecificMixin, RequiresFixedLengthMixin, Pr
         return ProteinSequences(sequences)
         
 
-class OneHotAlignedEmbedding(PositionSpecificMixin, RequiresMSAMixin, CanHandleAlignedSequencesMixin, ProteinModelWrapper):
+class OneHotAlignedEmbedding(ShouldRefitOnSequencesMixin, PositionSpecificMixin, RequiresMSAMixin, CanHandleAlignedSequencesMixin, ProteinModelWrapper):
     """
     A protein sequence embedder that performs one-hot encoding for aligned sequences.
     

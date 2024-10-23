@@ -33,18 +33,11 @@ from typing import Optional
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
 from aide_predict.utils.constants import AA_SINGLE, GAP_CHARACTERS
 from aide_predict import OneHotAlignedEmbedding
+import copy
 
 import logging
 logger = logging.getLogger(__name__)
 
-import numpy as np
-from typing import Optional
-from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
-from aide_predict.utils.constants import AA_SINGLE, GAP_CHARACTERS
-from aide_predict import OneHotAlignedEmbedding
-
-import logging
-logger = logging.getLogger(__name__)
 
 class MSAProcessing:
     def __init__(self, 
@@ -273,3 +266,37 @@ class MSAProcessing:
         logger.debug(f"Computed batch weights: min={np.min(weights):.4f}, max={np.max(weights):.4f}, "
                      f"mean={np.mean(weights):.4f}, std={np.std(weights):.4f}")
         return weights
+    
+    def get_most_populated_chunk(self, msa: ProteinSequences, chunk_size: int) -> ProteinSequences:
+        """
+        Get the most populated chunk of contiguous columns from the MSA.
+
+        Args:
+            msa (ProteinSequences): The input MSA.
+            chunk_size (int): The size of the chunk.
+            
+        Returns:
+            ProteinSequences: The chunk of contiguous columns.
+        """
+
+        msa_array = msa.as_array()
+        # count non gap characters
+        non_gap = ~np.isin(msa_array, GAP_CHARACTERS)
+        non_gap_counts = np.sum(non_gap, axis=0)
+
+        # check for the most populated chunk
+        max_populated = 0
+        max_start = 0
+        for i in range(len(non_gap_counts) - chunk_size):
+            populated = np.sum(non_gap_counts[i:i+chunk_size])
+            if populated > max_populated:
+                max_populated = populated
+                max_start = i
+
+        chunk = msa_array[:, max_start:max_start+chunk_size]
+        sequences = []
+        for i in range(len(msa)):
+            sequences.append(ProteinSequence(''.join(chunk[i]), id=msa[i].id, structure=msa[i].structure))
+        return ProteinSequences(sequences)
+    
+
