@@ -118,7 +118,7 @@ class ESM2LikelihoodWrapper(CacheMixin, RequiresFixedLengthMixin, LikelihoodTran
         self,
         metadata_folder: str = None,
         model_checkpoint: str = 'esm2_t6_8M_UR50D',
-        marginal_method: MarginalMethod = MarginalMethod.MUTANT,
+        marginal_method: MarginalMethod = MarginalMethod.MUTANT.value,
         positions: list = None,
         pool: bool = True,
         flatten: bool = True,
