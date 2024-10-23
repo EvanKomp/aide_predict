@@ -91,7 +91,7 @@ class ProteinSequence(str):
             seq (str): The amino acid sequence.
             id (Optional[str]): An identifier for the sequence.
             structure (Optional[Union[str, "ProteinStructure"]): The structure of the protein sequence.
-
+            weights: Optional[np.ndarray]: Weights for each sequence. If None, initialized as ones.
         Returns:
             ProteinSequence: The new ProteinSequence object.
         """
@@ -163,7 +163,7 @@ class ProteinSequence(str):
         """Get the length of the sequence excluding gaps."""
         return len(self) - self.num_gaps
 
-    def mutate_(self, position: int, new_character: str) -> 'ProteinSequence':
+    def _mutate(self, position: int, new_character: str) -> 'ProteinSequence':
         """
         Create a new ProteinSequence with a mutation at the specified position.
 
@@ -197,7 +197,7 @@ class ProteinSequence(str):
             original, position, new = mutation_string[0], int(mutation_string[1:-1]), mutation_string[-1]
             if one_indexed:
                 position -= 1
-            new_seq = new_seq.mutate_(position, new)
+            new_seq = new_seq._mutate(position, new)
         return new_seq
 
 
@@ -322,7 +322,7 @@ class ProteinSequence(str):
         for i in positions:
             for aa in AA_SINGLE:
                 if aa != self[i]:
-                    mutated = self.mutate_(i, aa)
+                    mutated = self._mutate(i, aa)
                     mutated.id = f"{self[i]}{i+1}{aa}"
                     sequences.append(mutated)
         return ProteinSequences(sequences)

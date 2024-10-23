@@ -39,6 +39,11 @@ class KmerEmbedding(CanHandleAlignedSequencesMixin, ProteinModelWrapper):
             normalize (bool): Whether to normalize the K-mer counts.
         """
         super().__init__(metadata_folder=metadata_folder, wt=None)
+        if k < 1:
+            raise ValueError("K must be a positive integer.")
+        if not isinstance(k, int):
+            raise ValueError("K must be an integer.")
+
         self.k = k
         self.normalize = normalize
         self._kmer_to_index = {}
@@ -56,9 +61,13 @@ class KmerEmbedding(CanHandleAlignedSequencesMixin, ProteinModelWrapper):
         Returns:
             KmerEmbedding: The fitted model.
         """
+        if len(X) == 0:
+            raise ValueError("Cannot fit KmerEmbedding with no sequences.")
         unique_kmers = set()
         for seq in X:
             seq_str = str(seq).upper().replace('-', '')  # Remove gaps
+            if len(seq_str) < self.k:
+                raise ValueError(f"Sequence {seq.id} is too short for K={self.k}.")
             unique_kmers.update(seq_str[i:i+self.k] for i in range(len(seq_str) - self.k + 1))
         
         self._kmer_to_index = {kmer: i for i, kmer in enumerate(sorted(unique_kmers))}
@@ -80,6 +89,8 @@ class KmerEmbedding(CanHandleAlignedSequencesMixin, ProteinModelWrapper):
 
         for i, seq in enumerate(X):
             seq_str = str(seq).upper().replace('-', '')  # Remove gaps
+            if len(seq_str) < self.k:
+                raise ValueError(f"Sequence {seq.id} is too short for K={self.k}.")
             kmer_counts = defaultdict(int)
             for j in range(len(seq_str) - self.k + 1):
                 kmer = seq_str[j:j+self.k]

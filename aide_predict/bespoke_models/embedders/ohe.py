@@ -177,12 +177,9 @@ class OneHotProteinEmbedding(PositionSpecificMixin, RequiresFixedLengthMixin, Pr
             aa_indices = encoded_seq.argmax(axis=1)
             aa_sequence = ''.join(aa_map[i] for i in aa_indices)
             
-            # If specific positions were encoded, reconstruct the full sequence
+            # If specific positions were encoded, cannot retrieve the original sequence
             if self.positions is not None:
-                full_sequence = ['X'] * self.seq_length_
-                for pos, aa in zip(self.positions, aa_sequence):
-                    full_sequence[pos] = aa
-                aa_sequence = ''.join(full_sequence)
+                raise ValueError("Inverse transform is not supported for position-specific encoding, as the original sequence is lost.")
             
             sequences.append(ProteinSequence(aa_sequence))
 
