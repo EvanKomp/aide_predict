@@ -91,7 +91,7 @@ class ProteinSequence(str):
             seq (str): The amino acid sequence.
             id (Optional[str]): An identifier for the sequence.
             structure (Optional[Union[str, "ProteinStructure"]): The structure of the protein sequence.
-
+            weights: Optional[np.ndarray]: Weights for each sequence. If None, initialized as ones.
         Returns:
             ProteinSequence: The new ProteinSequence object.
         """
@@ -163,7 +163,7 @@ class ProteinSequence(str):
         """Get the length of the sequence excluding gaps."""
         return len(self) - self.num_gaps
 
-    def mutate(self, position: int, new_character: str) -> 'ProteinSequence':
+    def _mutate(self, position: int, new_character: str) -> 'ProteinSequence':
         """
         Create a new ProteinSequence with a mutation at the specified position.
 
@@ -178,6 +178,28 @@ class ProteinSequence(str):
             raise ValueError("Position out of range")
         new_seq = self[:position] + new_character + self[position+1:]
         return ProteinSequence(new_seq, structure=self._structure)  # Note: id is not passed to indicate mutation
+    
+    def mutate(self, mutations: Union[str, List[str]], one_indexed: bool = True):
+        """Create a new ProteinSequence with mutations applied.
+        
+        Params
+        ------
+        mutations: Union[str, List[str]]
+            A single mutation in the format 'A123B' or a list of mutations.
+        one_indexed: bool
+            If True, positions are one-indexed. If False, positions are zero-indexed.
+        """
+        if isinstance(mutations, str):
+            mutations = [mutations]
+
+        new_seq = self
+        for mutation_string in mutations:
+            original, position, new = mutation_string[0], int(mutation_string[1:-1]), mutation_string[-1]
+            if one_indexed:
+                position -= 1
+            new_seq = new_seq._mutate(position, new)
+        return new_seq
+
 
     def mutated_positions(self, other: Union[str, 'ProteinSequence']) -> List[int]:
         """
@@ -300,7 +322,7 @@ class ProteinSequence(str):
         for i in positions:
             for aa in AA_SINGLE:
                 if aa != self[i]:
-                    mutated = self.mutate(i, aa)
+                    mutated = self._mutate(i, aa)
                     mutated.id = f"{self[i]}{i+1}{aa}"
                     sequences.append(mutated)
         return ProteinSequences(sequences)
@@ -398,7 +420,7 @@ class ProteinSequences(UserList):
         Returns:
             Optional[int]: The length of the sequences if aligned, None otherwise.
         """
-        return len(self[0]) if self.aligned or len(self)==0 else None
+        return len(self[0]) if self.aligned or len(self)==1 else None
 
     @property
     def has_gaps(self) -> bool:
@@ -538,7 +560,7 @@ class ProteinSequences(UserList):
         Returns:
             str: A string representation of the object.
         """
-        return f"ProteinSequences(count={len(self)}, aligned={self.aligned}, fixed_length={self.fixed_length})"
+        return f"ProteinSequences(count={len(self)})"
     
     def to_on_file(self, output_path: str) -> None:
         """
@@ -1024,7 +1046,7 @@ class ProteinSequencesOnFile(ProteinSequences):
         Returns:
             str: A string representation of the object.
         """
-        return f"ProteinSequencesOnFile(file='{self.file_path}', count={len(self)}, aligned={self.aligned}, fixed_length={self.fixed_length})"
+        return f"ProteinSequencesOnFile(file='{self.file_path}', count={len(self)})"
     
     def to_memory(self) -> ProteinSequences:
         """

@@ -13,7 +13,7 @@ import warnings
 from typing import List, Union, Optional
 import numpy as np
 from sklearn.preprocessing import OneHotEncoder
-from aide_predict.bespoke_models.base import ProteinModelWrapper, RequiresMSAMixin, PositionSpecificMixin, CanHandleAlignedSequencesMixin, RequiresFixedLengthMixin
+from aide_predict.bespoke_models.base import ProteinModelWrapper, RequiresMSAMixin, PositionSpecificMixin, CanHandleAlignedSequencesMixin, RequiresFixedLengthMixin, ShouldRefitOnSequencesMixin
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
 from aide_predict.utils.constants import AA_SINGLE, GAP_CHARACTERS
 
@@ -177,19 +177,16 @@ class OneHotProteinEmbedding(PositionSpecificMixin, RequiresFixedLengthMixin, Pr
             aa_indices = encoded_seq.argmax(axis=1)
             aa_sequence = ''.join(aa_map[i] for i in aa_indices)
             
-            # If specific positions were encoded, reconstruct the full sequence
+            # If specific positions were encoded, cannot retrieve the original sequence
             if self.positions is not None:
-                full_sequence = ['X'] * self.seq_length_
-                for pos, aa in zip(self.positions, aa_sequence):
-                    full_sequence[pos] = aa
-                aa_sequence = ''.join(full_sequence)
+                raise ValueError("Inverse transform is not supported for position-specific encoding, as the original sequence is lost.")
             
             sequences.append(ProteinSequence(aa_sequence))
 
         return ProteinSequences(sequences)
         
 
-class OneHotAlignedEmbedding(PositionSpecificMixin, RequiresMSAMixin, CanHandleAlignedSequencesMixin, ProteinModelWrapper):
+class OneHotAlignedEmbedding(ShouldRefitOnSequencesMixin, PositionSpecificMixin, RequiresMSAMixin, CanHandleAlignedSequencesMixin, ProteinModelWrapper):
     """
     A protein sequence embedder that performs one-hot encoding for aligned sequences.
     

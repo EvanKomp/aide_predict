@@ -52,10 +52,11 @@ class ESM2Embedding(CacheMixin, PositionSpecificMixin, CanHandleAlignedSequences
                  layer: int = -1,
                  positions: Optional[List[int]] = None, 
                  flatten: bool = False,
-                 pool: bool = False,
+                 pool: bool = None,
                  batch_size: int = 32,
                  device: str = 'cpu',
-                 wt: Optional[Union[str, ProteinSequence]] = None):
+                 wt: Optional[Union[str, ProteinSequence]] = None,
+                 **kwargs):
         """
         Initialize the ESM2Embedding.
 
@@ -72,11 +73,14 @@ class ESM2Embedding(CacheMixin, PositionSpecificMixin, CanHandleAlignedSequences
         Notes: WT is set to None to avoid normalization. For an embedder this is effectively a feature scaler which you
         should do manually if you want
         """
-        super().__init__(metadata_folder=metadata_folder, wt=None, positions=positions, pool=pool, flatten=flatten)
+        super().__init__(metadata_folder=metadata_folder, wt=None, positions=positions, pool=pool, flatten=flatten, **kwargs)
         self.model_checkpoint = model_checkpoint
         self.layer = layer
         self.batch_size = batch_size
         self.device = device
+
+        with model_device_context(self, self._load_model, self._cleanup_model, self.device):
+            self._embedding_dim = self.model_.config.hidden_size
 
     def _prepare_sequences(self, X: ProteinSequences) -> ProteinSequences:
         """
@@ -104,8 +108,6 @@ class ESM2Embedding(CacheMixin, PositionSpecificMixin, CanHandleAlignedSequences
             ESM2Embedding: The fitted embedder.
         """
         self.fitted_ = True
-        with model_device_context(self, self._load_model, self._cleanup_model, self.device):
-            self.embedding_dim_ = self.model_.config.hidden_size
         return self
     
     def _load_model(self) -> None:
@@ -201,8 +203,13 @@ class ESM2Embedding(CacheMixin, PositionSpecificMixin, CanHandleAlignedSequences
                     # is on
                     pass
                 
-                if self.pool:
-                    embeddings = [emb.mean(axis=0) for emb in embeddings]
+                if self.pool is not None:
+                    if self.pool == 'mean':
+                        embeddings = [emb.mean(axis=0) for emb in embeddings]
+                    elif self.pool == 'max':
+                        embeddings = [emb.max(axis=0) for emb in embeddings]
+                    else:
+                        raise ValueError(f"Invalid pooling method: {self.pool}")
                 
                 # add 0th dimension
                 embeddings = [np.expand_dims(emb, 0) for emb in embeddings]
@@ -228,7 +235,7 @@ class ESM2Embedding(CacheMixin, PositionSpecificMixin, CanHandleAlignedSequences
         if not hasattr(self, 'fitted_'):
             raise ValueError("Model has not been fitted yet. Call fit() before using this method.")
         
-        embedding_dim = self.embedding_dim_
+        embedding_dim = self._embedding_dim
         positions = self.positions
         
         if self.pool:

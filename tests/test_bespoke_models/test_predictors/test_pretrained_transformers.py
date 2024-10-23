@@ -43,7 +43,7 @@ class TestLikelihoodTransformerBase:
         ])
 
     def test_initialization(self, transformer):
-        assert transformer.marginal_method == MarginalMethod.WILDTYPE
+        assert transformer.marginal_method == MarginalMethod.WILDTYPE.value
         assert transformer.batch_size == 2
         assert transformer.device == 'cpu'
 
@@ -80,17 +80,38 @@ class TestLikelihoodTransformerBase:
         assert len(result) == 3
         assert all(r.shape == (1, 20) for r in result)
 
+        # test edge case differing length sequences for post processing
+        sequences = ProteinSequences([
+            ProteinSequence("ACDEFGHIKLMNPQRSTVWY"),
+            ProteinSequence("ACDEFGHIKLMNPQRSTV"),
+            ProteinSequence("ACDEFGHIKLMNPQRSTVWYGG")
+        ])
+        transformer.pool=True
+        transformer.marginal_method = MarginalMethod.MUTANT.value 
+        result = transformer._transform(sequences)
+        assert result.shape == (3, 1)
+
     def test_compute_wildtype_marginal(self, transformer, sequences):
         with model_device_context(transformer, transformer._load_model, transformer._cleanup_model, transformer.device):
             result = transformer._compute_wildtype_marginal(sequences)
         assert len(result) == 3
         assert all(r.shape == (1, 20) for r in result)
 
+        # check throw error without wt
+        transformer.wt = None
+        with pytest.raises(ValueError):
+            transformer._compute_wildtype_marginal(sequences)
+
     def test_compute_masked_marginal(self, transformer, sequences):
         with model_device_context(transformer, transformer._load_model, transformer._cleanup_model, transformer.device):
             result = transformer._compute_masked_marginal(sequences)
         assert len(result) == 3
         assert all(r.shape == (1, 20) for r in result)
+
+        # check requires wt
+        transformer.wt = None
+        with pytest.raises(ValueError):
+            transformer._compute_masked_marginal(sequences)
 
     def test_post_process_likelihoods(self, transformer, sequences):
         log_likelihoods = [np.zeros((1, 20)) for _ in range(3)]
@@ -102,6 +123,16 @@ class TestLikelihoodTransformerBase:
         feature_names = transformer.get_feature_names_out()
         assert len(feature_names) == 1
         assert feature_names[0] == "MinimalLikelihoodTransformer_log_likelihood"
+
+        # try with flatten
+        transformer.pool = False
+        transformer.flatten = True
+        transformer.positions = [0,1]
+        assert transformer.get_feature_names_out() == ["MinimalLikelihoodTransformer_pos0_log_likelihood", "MinimalLikelihoodTransformer_pos1_log_likelihood"]
+        transformer.positions = None
+        with pytest.raises(ValueError):
+            transformer.get_feature_names_out()
+
 
     def test_variable_length_sequences(self, transformer):
         var_sequences = ProteinSequences([

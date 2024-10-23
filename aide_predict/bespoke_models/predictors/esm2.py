@@ -93,7 +93,7 @@ import warnings
 import numpy as np
 from tqdm import tqdm
 
-from aide_predict.bespoke_models.base import RequiresFixedLengthMixin
+from aide_predict.bespoke_models.base import RequiresFixedLengthMixin, CacheMixin
 from aide_predict.bespoke_models.predictors.pretrained_transformers import LikelihoodTransformerBase, MarginalMethod
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
 from aide_predict.utils.common import MessageBool
@@ -111,20 +111,21 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class ESM2LikelihoodWrapper(RequiresFixedLengthMixin, LikelihoodTransformerBase):
+class ESM2LikelihoodWrapper(CacheMixin, RequiresFixedLengthMixin, LikelihoodTransformerBase):
     _available = AVAILABLE
 
     def __init__(
         self,
         metadata_folder: str = None,
         model_checkpoint: str = 'esm2_t6_8M_UR50D',
-        marginal_method: MarginalMethod = MarginalMethod.MUTANT,
+        marginal_method: MarginalMethod = MarginalMethod.MUTANT.value,
         positions: list = None,
         pool: bool = True,
         flatten: bool = True,
         wt: str = None,
         batch_size: int = 2,
-        device: str = 'cpu'
+        device: str = 'cpu',
+        use_cache: bool = True
     ):
         super().__init__(
             metadata_folder=metadata_folder,
@@ -134,7 +135,8 @@ class ESM2LikelihoodWrapper(RequiresFixedLengthMixin, LikelihoodTransformerBase)
             flatten=flatten,
             wt=wt,
             batch_size=batch_size,
-            device=device
+            device=device,
+            use_cache=use_cache
         )
         self.model_checkpoint = model_checkpoint
         logger.debug(f"ESM2 model initialized with {self.__dict__}")

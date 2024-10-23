@@ -92,7 +92,7 @@ class SaProtEmbedding(CacheMixin, RequiresStructureMixin, PositionSpecificMixin,
             else:
                 return ''.join([aa + '#' for aa in str(sequence).upper()])
         else:
-            struc_tokens = get_structure_tokens(sequence.structure, self.foldseek_path)
+            struc_tokens, seq_tokens = get_structure_tokens(sequence.structure, self.foldseek_path, return_seq_tokens=True)
             # check for same length
             if len(struc_tokens) != len(sequence):
                 raise ValueError(f"Structure and sequence lengths do not match: {len(sequence)} != {len(struc_tokens)}")

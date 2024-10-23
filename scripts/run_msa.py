@@ -55,7 +55,7 @@ import dvc.api
 import numpy as np
 
 from aide_predict.utils.common import convert_dvc_params
-from aide_predict.utils.msa import place_target_seq_at_top_of_msa
+# from aide_predict.utils.msa import place_target_seq_at_top_of_msa
 
 from aide_predict.io.bio_files import read_fasta
 
@@ -161,8 +161,8 @@ if __name__ == '__main__':
         raise ValueError(f"Unknown MSA mode: {PARAMS.msa_creation.msa_mode}")
     
     # ensure that the resulting alignment has the WT sequence at the top
-    if sequence_id:
-        place_target_seq_at_top_of_msa(msa_file=os.path.join(outdir, 'alignment.a2m'), target_seq_id=sequence_id)
+    # if sequence_id:
+    #     place_target_seq_at_top_of_msa(msa_file=os.path.join(outdir, 'alignment.a2m'), target_seq_id=sequence_id)
 
     # get the count of sequences in the MSA
     with open(os.path.join(outdir, 'alignment.a2m'), 'r') as f:

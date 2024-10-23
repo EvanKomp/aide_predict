@@ -26,7 +26,7 @@ The goals of this project are succinctly as follows:
 
 ## API examples:
 
-The following should look and feel like canonical sklearn tasks/code. See the `demo` folder for more details and executable examples. Also see the [colab notebook](https://colab.research.google.com/drive/1baz4DdYkxaw6pPRTDscwh2o-Xqum5Krp#scrollTo=AV9VXhM6ebgI) to play with some if its capabilities in the cloud.
+The following should look and feel like canonical sklearn tasks/code. See the `demo` folder for more details and executable examples. Also see the [colab notebook](https://colab.research.google.com/drive/1baz4DdYkxaw6pPRTDscwh2o-Xqum5Krp#scrollTo=AV9VXhM6ebgI) to play with some if its capabilities in the cloud. Finally, checkout the notebooks in `showcase` where we conduct two full protein predictions optimization and scoring tasks on real data that are greater than small example sets. 
 
 ### Checking which protein models are available given the data you have
 
@@ -63,7 +63,7 @@ wt = ProteinSequence(
 )
 msa = ProteinSequences.from_fasta("data/msa.fasta")
 library = wt.saturation_mutagenesis()
-mutations = [p.id for p in library]
+mutations = library.ids
 print(mutations[0])
 >>> 'L1A'
 
@@ -91,12 +91,13 @@ msa = ProteinSequences.from_fasta("data/msa.fasta")
 
 # model defenitions
 evmut = EVMutation(wt=wt, metadata_folder='./tmp/evm')
+evmut.fit(msa)
 esm2 = ESM2LikelihoodWrapper(wt=wt, model_checkpoint='esm2_t33_650M_UR50S')
+esm2.fit([])
 models = {'evmut': evmut, 'esm2': esm2}
 
 # model fitting and scoring
 for name, model in models.items():
-    model.fit(msa)
     score = model.score(X, y)
     print(f"{name} score: {score}")
 ```
@@ -113,7 +114,7 @@ sequences.fixed_length
 
 wt = sequences['my_id_for_WT']
 data['sequence'] = sequences
-data['mutational_depth'] = data['sequence'].apply(lambda x: x.num_mutations(wt))
+data['mutational_depth'] = data['sequence'].apply(lambda x: len(x.mutated_positions(wt)))
 test = data[data['mutational_depth'] > 5]
 train = data[data['mutational_depth'] <= 5]
 train_X, train_y = train['sequence'], train['experimental_value']
@@ -144,7 +145,7 @@ sequences = ProteinSequences.from_dict(data['sequence'].to_dict())
 y_train = data['experimental_value']
 
 wt = sequences['my_id_for_WT']
-wt_important_positions = [20, 21, 22, 33, 45] # zero indexed, known from analysis elsewhere
+wt_important_positions = np.array([20, 21, 22, 33, 45]) # zero indexed, known from analysis elsewhere
 sequences.aligned
 >>> False
 sequences.fixed_length
@@ -157,11 +158,11 @@ msa.fixed_length
 msa.aligned
 >>> True
 
-aligned_important_positions = msa['my_id_for_WT'].get_aligned_positions(wt_important_positions)
+wt_alignment_mapping = msa.get_alignment_mapping()['my_id_for_WT']
+aligned_important_positions = wt_alignment_mapping[wt_important_positions]
 
 # model defenitions
-embedder = OneHotAlignedEmbedding(positions=aligned_important_positions, flatten=True)
-embedder.fit(msa)
+embedder = OneHotAlignedEmbedding(important_positions=aligned_important_positions).fit(msa)
 scaler = StandardScaler()
 feature_selector = VarianceThreshold(threshold=0.2)
 predictor = RandomForestRegressor()
@@ -181,7 +182,7 @@ y_pred = pipeline.predict(new_homologs)
 ```
 
 ## Supported tools
-Import `aide_predict.utils.common.get_supported_tools()` to see the tools that are available based on your environment.
+Import `aide_predict.utils.checks.get_supported_tools()` to see the tools that are available based on your environment.
 The base package has few dependencies and concurrently few tools. Additional tools can be accessed with additional
 dependency steps. This choice was made to reduce dependency clashes for the codebase. For example, the base
 package does not include `pytorch`, but the environment can be extended with "requirements-transformers.txt" to access
@@ -191,8 +192,7 @@ ESM2 embeddings and log likelihood predictors.
 
 ### Data Structures and Utilities
 - Protein Sequence and Structure data structures
-- Jackhmmer and MSA processing pipelines
-  - Uses EVCoouplings pipeline itnernally (see "3rd party software" section for more information)
+- `StructureMapper` - A utility for mapping a folder of PDB structures to sequences
 
 ### Prediction Models
 
@@ -279,33 +279,17 @@ Tools that require additional dependancies can be installed with the correspondi
 pip install -r requirements-vespa.txt
 ```
 
+## Tests
+Continuous integration only runs base module tests, eg.
+`pytest -v -m "not slow and not optional"`
+
+Additional tests are availabe to check the scientific output of wrapped models, that they meet the expected values, such as:
+- Score of ESM2 log liklihood, MSATransformer, SaProt, VESPA againstENVZ_ECOLI_Ghose benchmark of [ProteinGym](https://proteingym.org/)
+- run with `pytest -v -m tests/not_base_models`
+
 ## TODO:
-- Write EVE wrapper
 - Write Tranception wrapper * (low priority, PN did not provide a clear entry point so will require some finagling)
-- Write "training" pipeline to init, potentially fit, and save all sklearn estimators and pipelines
-- Write "predict" pipeline to load all sklearn estimators and pipelines, and predict on the passed data
-
-## DVC pipeline
-
-TODO
-
-
-### Usage (NOT CURRENTLY AVAILABLE)
-
-To use the tools for ML aided prediction of protein mutation combinatorial libraries, follow these steps:
-
-1. Install the required dependencies by running the following command:
-
-   ```
-   conda env create -f environment.yaml
-   ```
-
-2. Prepare the data by placing it in the `data/` directory.
-
-3. Configure the parameters for the ML models and prediction tools in the `params.yaml` file.
-
-4. Run `dvc repro` to execute the ML models and prediction tools, spitting out what to select next
-
+- DVC pipeline of common tasks
 
 ## Third party software
 

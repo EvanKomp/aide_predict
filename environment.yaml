@@ -16,6 +16,7 @@ dependencies:
     - numpy
     - scikit-learn
     - pandas
+    - h5py
     - numba
     - tqdm
     - evcouplings @ git+https://github.com/debbiemarkslab/EVcouplings@374d4c5

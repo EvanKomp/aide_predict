@@ -12,6 +12,7 @@ import pytest
 from tempfile import NamedTemporaryFile
 import os
 import numpy as np
+from unittest.mock import patch, MagicMock
 
 from aide_predict.utils.data_structures import ProteinCharacter, ProteinSequence, ProteinSequences, ProteinSequencesOnFile
 from aide_predict.utils.constants import AA_SINGLE, GAP_CHARACTERS, NON_CONONICAL_AA_SINGLE
@@ -190,8 +191,13 @@ END
         assert gapped.with_no_gaps() == ProteinSequence("ACD")
 
 
-    def test_mutation(self, sample_sequence):
-        mutated = sample_sequence.mutate(0, "M")
+    def test__mutate(self, sample_sequence):
+        mutated = sample_sequence._mutate(0, "M")
+        assert str(mutated) == "MCDEFGHIKLMNPQRSTVWY"
+        assert mutated.id is None  # id should not be passed to indicate mutation
+
+    def test_mutate(self, sample_sequence):
+        mutated = sample_sequence.mutate("A0M", one_indexed=False)
         assert str(mutated) == "MCDEFGHIKLMNPQRSTVWY"
         assert mutated.id is None  # id should not be passed to indicate mutation
 
@@ -257,6 +263,17 @@ END
         assert sample_sequence != different_sequence
         assert sample_sequence == same_sequence_same_structure
 
+    def test_get_mutations(self, sample_sequence):
+        other = ProteinSequence("MCDEFGHIKLMNPQRSTVWY")
+        mutations = sample_sequence.get_mutations(other)
+        assert mutations == [f"A1M"]
+
+    def test_saturation_mutagenesis(self, sample_sequence):
+        mutants = sample_sequence.saturation_mutagenesis()
+        assert len(mutants) == 380 # 20 * 20 - 20 (no mutation) = 380
+        assert all(isinstance(mutant, ProteinSequence) for mutant in mutants)
+        assert len(mutants.mutated_positions) == 20
+
 # ProteinSequences tests
 class TestProteinSequences:
     @pytest.fixture
@@ -267,6 +284,23 @@ class TestProteinSequences:
             ProteinSequence("ACD-", id="seq3")
         ])
 
+    def test_add_weights(self):
+        sample_sequences = ProteinSequences([
+            ProteinSequence("ACDE", id="seq1"),
+            ProteinSequence("ACDF", id="seq2"),
+            ProteinSequence("ACD-", id="seq3")
+        ], weights=[1, 2, 3])
+        assert sample_sequences.weights.shape == (3,)
+
+        # bad weights length
+        with pytest.raises(ValueError):
+            ProteinSequences([
+                ProteinSequence("ACDE", id="seq1"),
+                ProteinSequence("ACDF", id="seq2"),
+                ProteinSequence("ACD-", id="seq3")
+            ], weights=[1, 2])
+
+
     def test_properties(self, sample_sequences):
         assert sample_sequences.aligned
         assert not sample_sequences.fixed_length
@@ -275,6 +309,25 @@ class TestProteinSequences:
 
     def test_mutated_positions(self, sample_sequences):
         assert sample_sequences.mutated_positions == [3]
+
+        # try without aligned sequences
+        sample_sequences = ProteinSequences([
+            ProteinSequence("ACDE", id="seq1"),
+            ProteinSequence("ACDF", id="seq2"),
+            ProteinSequence("ACD", id="seq3")
+        ])
+        assert sample_sequences.mutated_positions == None
+
+    def test___getitem__(self, sample_sequences):
+        assert str(sample_sequences[0]) == "ACDE"
+        assert str(sample_sequences["seq2"]) == "ACDF"
+        with pytest.raises(IndexError):
+            sample_sequences[3]
+        with pytest.raises(KeyError):
+            sample_sequences["nonexistent"]
+
+        assert len(sample_sequences[:2]) == 2
+        assert len(sample_sequences[np.array([0,1])]) == 2
 
     def test_to_dict(self, sample_sequences):
         d = sample_sequences.to_dict()
@@ -317,6 +370,29 @@ class TestProteinSequences:
         assert isinstance(no_gaps, ProteinSequences)
         assert len(no_gaps) == 3
         assert str(no_gaps[2]) == "ACD"
+
+    def test_align_to(self, sample_sequences):
+        sample_sequences = sample_sequences[:2]
+        others = ProteinSequences([
+            ProteinSequence("ACDEFGHIKLMNPQRSTVWY", id="other1"),
+            ProteinSequence("ACDEFGHIKLMNPQRSTVWY", id="other2")
+        ])
+        aligned = sample_sequences.align_to(others, realign=False, return_only_new=False)
+        assert aligned.width == 20
+        assert aligned[0].id == "other1"
+        assert len(aligned) == 4
+        
+        # only new
+        aligned = sample_sequences.align_to(others, realign=False, return_only_new=True)
+        assert aligned.width == 20
+        assert len(aligned) == 2
+
+    def test_align_all(self):
+        sample_sequences = ProteinSequences([
+            ProteinSequence("ACDE", id="seq1"),
+            ProteinSequence("ACD", id="seq2"),])
+        aligned = sample_sequences.align_all()
+        assert aligned.width == 4 
 
     def test_get_alignment_mapping(self, sample_sequences):
         sample_sequences.append(ProteinSequence("A-DE", id="seq4"))
@@ -396,6 +472,31 @@ class TestProteinSequences:
         assert isinstance(batches[0], ProteinSequences)
         assert len(batches[0]) == 2
         assert len(batches[1]) == 1
+
+    def test_has_lower(self, sample_sequences):
+        assert not sample_sequences.has_lower()
+        sample_sequences.append(ProteinSequence("acde", id="seq4"))
+        assert sample_sequences.has_lower()
+
+        # try without aligned sequences
+        sample_sequences = ProteinSequences([
+            ProteinSequence("ACDE", id="seq1"),
+            ProteinSequence("ACDF", id="seq2"),
+            ProteinSequence("ACD", id="seq3")
+        ])
+        assert not sample_sequences.has_lower()
+
+    def test_msa_process(self, sample_sequences):
+        with patch("aide_predict.utils.msa.MSAProcessing") as mock_msa_processing:
+            sample_sequences.msa_process()
+            mock_msa_processing = mock_msa_processing.return_value
+            mock_msa_processing.process.assert_called_once()
+
+    def test_sample(self, sample_sequences):
+        sample_sequences.weights = np.array([0.0, 0.5, 0.5])
+        sampled = sample_sequences.sample(2)
+        assert len(sampled) == 2
+        assert sample_sequences[0] not in sampled
 
 # ProteinSequencesOnFile tests
 class TestProteinSequencesOnFile:
@@ -515,7 +616,7 @@ def test_integration():
     seq = ProteinSequence("ACDEFGHIKLMNPQRSTVWY", id="test_seq")
     
     # Mutate it
-    mutated_seq = seq.mutate(0, "M")
+    mutated_seq = seq.mutate("A1M")
     
     # Create ProteinSequences
     sequences = ProteinSequences([seq, mutated_seq])

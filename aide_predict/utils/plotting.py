@@ -11,7 +11,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 import pandas as pd
-from typing import Optional
+from typing import Optional, Dict
+import copy
 
 from aide_predict.utils.data_structures import ProteinSequences
 
@@ -111,3 +112,81 @@ def plot_mutation_heatmap(mutations, scores):
     
     plt.tight_layout()
     plt.show()
+
+def plot_conservation(
+    conservation_scores: Dict[str, np.ndarray],
+    p_values: Optional[Dict[str, np.ndarray]] = None,
+    alpha: float = 1e-10,
+    stacked: bool = False,
+    figsize: tuple = (20, 6),
+    title: str = "Conservation Scores Across Alignment Positions"
+) -> plt.Figure:
+    """
+    Create a bar plot of conservation scores across alignment positions.
+
+    Args:
+        conservation_scores (Dict[str, np.ndarray]): Dictionary of conservation scores for each property.
+        p_values (Optional[Dict[str, np.ndarray]]): Dictionary of p-values for each property. If provided,
+            insignificant bars will be colored grey.
+        alpha (float): Significance level for p-values. Default is 0.05.
+        stacked (bool): If True, create a stacked bar plot with colors for different properties.
+            If False, create a single bar plot with height determined by sum of conservation scores.
+        figsize (tuple): Figure size (width, height) in inches. Default is (12, 6).
+        title (str): Title of the plot. Default is "Conservation Scores Across Alignment Positions".
+
+    Returns:
+        plt.Figure: The matplotlib Figure object containing the plot.
+    """
+    # copy the scores
+    conservation_scores = copy.deepcopy(conservation_scores)
+
+    # Set up the plot
+    fig, ax = plt.subplots(figsize=figsize)
+    sns.set_style("whitegrid")
+
+    # Prepare data
+    positions = range(len(next(iter(conservation_scores.values()))))
+    total_scores = np.sum([scores for scores in conservation_scores.values()], axis=0)
+
+    if stacked:
+        # Create stacked bar plot
+        bottom = np.zeros(len(positions))
+        for prop, scores in conservation_scores.items():
+            # mark 0 insiginificant p-values
+            if p_values is not None:
+                insignificant_mask = p_values[prop] > alpha
+                scores[insignificant_mask] = 0.0
+
+            ax.bar(positions, scores, bottom=bottom, label=prop, linewidth=0)
+            bottom += scores
+    else:
+        # Create single bar plot
+        bars = ax.bar(positions, total_scores)
+
+        # Color bars based on conservation score if p_values not provided
+        colors = plt.cm.viridis(total_scores / 10.0)
+        for bar, color in zip(bars, colors):
+            bar.set_color(color)
+
+        if p_values is None:
+            pass
+        else:
+            # Color bars grey if insignificant
+            significant = np.any(np.array([p < alpha for p in p_values.values()]), axis=0)
+            for i, bar in enumerate(bars):
+                if not significant[i]:
+                    bar.set_color("grey")
+                    bar.set_alpha(0.2)
+
+    # Set labels and title
+    ax.set_xlabel("Alignment Position")
+    ax.set_ylabel("Conservation Score")
+    ax.set_title(title)
+
+    # Add legend if stacked
+    if stacked:
+        ax.legend(title="Properties", bbox_to_anchor=(1.05, 1), loc='upper left')
+
+    # Adjust layout and return figure
+    plt.tight_layout()
+    return fig

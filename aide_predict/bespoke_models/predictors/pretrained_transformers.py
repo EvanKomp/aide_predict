@@ -91,7 +91,7 @@ class LikelihoodTransformerBase(PositionSpecificMixin, CanRegressMixin, Requires
     """
 
     def __init__(self, metadata_folder: str=None, 
-                 marginal_method: MarginalMethod = MarginalMethod.WILDTYPE,
+                 marginal_method: MarginalMethod = MarginalMethod.WILDTYPE.value,
                  positions: Optional[List[int]] = None, 
                  flatten: bool = False,
                  pool: bool = True,
@@ -472,7 +472,9 @@ class LikelihoodTransformerBase(PositionSpecificMixin, CanRegressMixin, Requires
         if self.pool:
             return [f"{self.__class__.__name__}_log_likelihood"]
         elif self.flatten:
-            positions = self.positions if self.positions is not None else range(self.msa_length_)
+            positions = self.positions
+            if positions is None:
+                raise ValueError("Cannot return feature names for flattened output without positions. unknown number of features")
             return [f"{self.__class__.__name__}_pos{p}_log_likelihood" for p in positions]
         else:
             raise ValueError("Cannot return feature names for non-flattened, non-pooled output.")

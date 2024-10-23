@@ -89,6 +89,24 @@ class TestOneHotProteinEmbedding:
         transformed = embedder.transform(sample_sequences)
         assert transformed.shape == expected_shape
 
+    def test_inverse_transform(self, embedder, sample_sequences):
+        embedder.fit(sample_sequences)
+        transformed = embedder.transform(sample_sequences)
+        inverse = embedder.inverse_transform(transformed)
+        assert inverse == sample_sequences
+
+        # check that it doesn'w work for different sequences
+        fake_ohe = np.ones((3, 5, 21))
+        with pytest.raises(ValueError):
+            embedder.inverse_transform(fake_ohe)
+
+        # try with flatten as well
+        embedder.flatten = True
+        embedder.fit(sample_sequences)
+        transformed = embedder.transform(sample_sequences)
+        inverse = embedder.inverse_transform(transformed)
+        assert inverse == sample_sequences
+
 
 class TestOneHotAlignedEmbedding:
     @pytest.fixture
