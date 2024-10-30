@@ -51,7 +51,7 @@ def test_eve_zero_shot():
         wt=wt,
         # Reduce training time for testing
         # take default values
-        training_steps=3000
+        training_steps=30000
     )
 
     print('Fitting EVE model...')

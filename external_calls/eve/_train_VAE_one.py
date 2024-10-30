@@ -13,6 +13,7 @@ import os
 import argparse
 import json
 import sys
+import torch
 
 # Add EVE repo to Python path
 eve_repo = os.environ.get('EVE_REPO')
@@ -84,7 +85,12 @@ if __name__=='__main__':
         decoder_parameters=model_params["decoder_parameters"],
         random_seed=42
     )
+    if str(model.device) == 'cpu' and torch.backends.mps.is_available():
+        model.device = 'mps'
+        model.encoder.device = 'mps'
+        model.decoder.device = 'mps'
     model = model.to(model.device)
+    print("Using device:", model.device)
 
     # Update training parameters with new paths
     model_params["training_parameters"].update({

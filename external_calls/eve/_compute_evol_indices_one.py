@@ -103,6 +103,10 @@ if __name__=='__main__':
         decoder_parameters=model_params["decoder_parameters"],
         random_seed=42
     )
+    if str(model.device) == 'cpu' and torch.backends.mps.is_available():
+        model.device = 'mps'
+        model.encoder.device = 'mps'
+        model.decoder.device = 'mps'
     model = model.to(model.device)
 
     # Load model checkpoint
