@@ -190,6 +190,8 @@ ESM2 embeddings and log likelihood predictors.
 
 ## Available Tools
 
+You can always check which modules are installed/available to you by running `get_supported_tools()`. The following is a list of tools that are available. Models marked with a * require additional dependencies or envionments to be installed, see `Installation`
+
 ### Data Structures and Utilities
 - Protein Sequence and Structure data structures
 - `StructureMapper` - A utility for mapping a folder of PDB structures to sequences
@@ -207,29 +209,35 @@ ESM2 embeddings and log likelihood predictors.
    - Requires wild-type sequence for inference
    - Requires fixed-length sequences
 
-3. [ESM2 Likelihood Wrapper](https://www.biorxiv.org/content/10.1101/2022.07.20.500902v1)
+3. [ESM2 Likelihood Wrapper*](https://www.biorxiv.org/content/10.1101/2022.07.20.500902v1)
    - Pretrained PLM (BERT style) model for protein sequences, scores variants according to masked, mutant, or wild type marginal likelihoods. Mutant marginal computes likelihoods in the context of the mutant sequence, while masked and wild type marginal compute likelihoods in the context of the wild type sequence. These methods are apprximations of the joint likelihood.
    - Can handle aligned sequences
    - Requires additional dependencies (see `requirements-transformers.txt`)
 
-4. [SaProt Likelihood Wrapper](https://www.biorxiv.org/content/10.1101/2023.10.01.560349v2)
+4. [SaProt Likelihood Wrapper*](https://www.biorxiv.org/content/10.1101/2023.10.01.560349v2)
    - ESM except using a size 400 vocabulary including local structure tokens from Foldseek's VAE. The authors only used Masked marginal, but we've made Wild type, Mutant, and masked marginals avialable.
    - Requires fixed-length sequences
    - Uses WT structure if structures of sequences are not passed
    - Requires additional dependencies:
      - `requirements-transformers.txt`
 
-5. [MSA Transformer Likelihood Wrapper](https://www.biorxiv.org/content/10.1101/2021.02.12.430858v1.full)
+5. [MSA Transformer Likelihood Wrapper*](https://www.biorxiv.org/content/10.1101/2021.02.12.430858v1.full)
    - Like ESM but with a transformer model that is trained on MSAs. The variants are placed at the top position in the MSA and scores are computed along that row. Wild type, Mutant, and masked marginals avialable.
    - Requires MSA for fitting
    - Requires wild-type sequence during inference
    - Requires additional dependencies (see `requirements-fair-esm.txt`)
 
-6. [VESPA](https://link.springer.com/article/10.1007/s00439-021-02411-y)
+6. [VESPA*](https://link.springer.com/article/10.1007/s00439-021-02411-y)
    - Conservation head model trained on PLM embeddings and logistic regression used to predict if mutation is detrimental.
    - Requires wild type, only works for single point mutations
    - Requires fixed-length sequences
    - Requires additional dependencies (see `requirements-vespa.txt`)
+
+7. [EVE*](https://www.nature.com/articles/s41586-021-04043-8)
+   - VAE trained on MSA, learns conditional distribution of AA. Latent space tends to be bimodal for deleterious vs neutral mutations.
+    - Requires MSA for fitting
+    - Requires fixed-length sequences
+    - Requires independant EVE environment, see Installation.
 
 ### Embeddings for Downstream ML
 
@@ -247,19 +255,19 @@ ESM2 embeddings and log likelihood predictors.
    - Counts of observed amino acid kmers in the sequences
    - Allows for variable length sequences
 
-4. [ESM2 Embedding](https://www.biorxiv.org/content/10.1101/2022.07.20.500902v1)
+4. [ESM2 Embedding*](https://www.biorxiv.org/content/10.1101/2022.07.20.500902v1)
    - Pretrained PLM (BERT style) model for protein sequences, outputs embeddings for each amino acid in the sequece from the last transformer layer.
    - Position specific
    - Requires additional dependencies (see `requirements-transformers.txt`)
 
-5. [SaProt Embedding](https://www.biorxiv.org/content/10.1101/2023.10.01.560349v2)
+5. [SaProt Embedding*](https://www.biorxiv.org/content/10.1101/2023.10.01.560349v2)
    - ESM except using a size 400 vocabulary including local structure tokens from Foldseek's VAE. AA embeddings from the last layer of the transformer are used.
    - Position specific
    - Requires additional dependencies:
      - `requirements-transformers.txt`
      - `foldseek` executable must be available in the PATH
 
-6. [MSA Transformer Embedding](https://www.biorxiv.org/content/10.1101/2021.02.12.430858v1.full)
+6. [MSA Transformer Embedding*](https://www.biorxiv.org/content/10.1101/2021.02.12.430858v1.full)
    - Like ESM but with a transformer model that is trained on MSAs. The embeddings are computed for each amino acid in the query sequence in the context of an existing MSA
    - Requires MSA for fitting
    - Requires fixed-length sequences
@@ -279,26 +287,62 @@ Tools that require additional dependancies can be installed with the correspondi
 pip install -r requirements-vespa.txt
 ```
 
+Some tools were deemed to heavy in terms of their environment to be included as a pip module. These require manual setup, see below.
+
+### Installation of EVE
+
+To access the EVE module, first clone the repo (NOT inside of AIDE):
+```
+git clone https://github.com/OATML/EVE.git
+```
+
+__IMPORTANT__: set the environment variable `EVE_REPO` to the path of the cloned repo. This is used by AIDE to import EVE modules as it is not installable.
+
+Build a new conda environment according to instructions/`.yaml` file there.
+
+We recommend testing that the environment is set up correctly and that the package is using any GPUs but running their example script and observing the log.
+
+__IMPORTANT__: set the environment variable `EVE_CONDA_ENV` to the name of the conda environment you created for EVE. This is used by AIDE to activate the EVE environment.
+
+Confirm AIDE now has access to the EVE module:
+```
+from aide_predicts import get_supported_tools
+get_supported_tools()
+```
+
 ## Tests
 Continuous integration only runs base module tests, eg.
 `pytest -v -m "not slow and not optional"`
 
 Additional tests are availabe to check the scientific output of wrapped models, that they meet the expected values, such as:
-- Score of ESM2 log liklihood, MSATransformer, SaProt, VESPA againstENVZ_ECOLI_Ghose benchmark of [ProteinGym](https://proteingym.org/)
+- Score of ESM2 log liklihood, MSATransformer, SaProt, VESPA, EVE against ENVZ_ECOLI_Ghose benchmark of [ProteinGym](https://proteingym.org/)
 - run with `pytest -v -m tests/not_base_models`
 
 ## TODO:
-- Write Tranception wrapper * (low priority, PN did not provide a clear entry point so will require some finagling)
-- DVC pipeline of common tasks
 
 ## Third party software
 
-1. [EVCouplings](https://academic.oup.com/bioinformatics/article/35/9/1582/5124274) is a dependancy and their software is used to run jackhmmer searches and available as a position specific predictor.
+1. [EVCouplings](https://academic.oup.com/bioinformatics/article/35/9/1582/5124274) is a dependancy and their software is to avoid redundant code writing, as a result EVMutation is available as a base module.
 2. Of course, many of the tools here are just wrapping of the work of others - see above.
 
-## Citations
+## Citations and Acknowledgements
 No software or code with viral licenses was used in the creation of this project.
 
+The following deserve credit as they are either directly wrapped within AIDE, serve as code inspiration (noted in modules when necessary), or are used for testing:
+
+1. Frazer, J. et al. Disease variant prediction with deep generative models of evolutionary data. Nature 599, 91–95 (2021).
+2.	Hopf, T. A. et al. The EVcouplings Python framework for coevolutionary sequence analysis. Bioinforma. Oxf. Engl. 35, 1582–1584 (2019).
+3.	Notin, P. et al. Tranception: protein fitness prediction with autoregressive transformers and inference-time retrieval. Preprint at https://doi.org/10.48550/arXiv.2205.13760 (2022).
+Rao, R. et al. MSA Transformer. 2021.02.12.430858 Pre-print at https://doi.org/10.1101/2021.02.12.430858 (2021).
+4.	Hopf, T. A. et al. Mutation effects predicted from se-quence co-variation. Nat. Biotechnol. 35, 128–135 (2017).
+5.	Hsu, C., Nisonoff, H., Fannjiang, C. & Listgarten, J. Learning protein fitness models from evolutionary and assay-labeled data. Nat. Biotechnol. 40, 1114–1122 (2022).
+6.  Meier, J. et al. Language models enable zero-shot prediction of the effects of mutations on protein func-tion. Preprint at https://doi.org/10.1101/2021.07.09.450648 (2021).
+7. Verkuil, R. et al. Language models generalize beyond natural proteins. 2022.12.21.521521 Preprint at https://doi.org/10.1101/2022.12.21.521521 (2022).
+8. Su, J. et al. SaProt: Protein Language Modeling with Structure-aware Vocabulary. 2023.10.01.560349 Preprint at https://doi.org/10.1101/2023.10.01.560349 (2023).
+9. Marquet, C. et al. Embeddings from protein language models predict conservation and variant effects. Hum Genet 141, 1629–1647 (2022).
+10. Eddy, S. R. Accelerated Profile HMM Searches. PLOS Computational Biology 7, e1002195 (2011).
+11. Pedregosa, F. et al. Scikit-learn: Machine Learning in Python. MACHINE LEARNING IN PYTHON.
+12. Notin, P. et al. ProteinGym: Large-Scale Benchmarks for Protein Fitness Prediction and Design.
 
 ## License
 

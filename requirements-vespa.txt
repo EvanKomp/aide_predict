@@ -1,0 +1,3 @@
+transformers[torch]
+vespa-effect
+h5py
