@@ -49,7 +49,7 @@ class OneHotProteinEmbedding(PositionSpecificMixin, RequiresFixedLengthMixin, Pr
         Notes: WT is set to None to avoid normalization. For an embedder this is effectively a feature scaler which you
         should do manually if you want
         """
-        super().__init__(metadata_folder=metadata_folder, wt=None, positions=positions, pool=False, flatten=flatten)
+        super().__init__(metadata_folder=metadata_folder, wt=wt, positions=positions, pool=False, flatten=flatten)
         self._vocab = list(AA_SINGLE)
 
     def _fit(self, X: ProteinSequences, y: Optional[np.ndarray] = None) -> 'OneHotProteinEmbedding':

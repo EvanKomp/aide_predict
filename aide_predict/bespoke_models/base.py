@@ -405,6 +405,25 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         outputs = self._transform(X)
         if not self.requires_wt_during_inference and self.wt is not None:
             wt_output = self._transform(ProteinSequences([self.wt]))
+            # make the outputs arrays so that we can subtract
+            if not isinstance(outputs, np.ndarray):
+                try:
+                    outputs = np.array(outputs)
+                except:
+                    raise ValueError("The model outputs could not be converted to a numpy array, likely because of difference in protein length and no pooling.")
+                
+            if not isinstance(wt_output, np.ndarray):
+                try:
+                    wt_output = np.array(wt_output)
+                    if wt_output.ndim == 1:
+                        wt_output = wt_output.reshape(-1, 1)
+                except:
+                    raise ValueError("The model outputs could not be converted to a numpy array, likely because of difference in protein length and no pooling.")
+                
+            # take the difference
+            if wt_output.shape[1:] != outputs.shape[1:]:
+                raise ValueError("The model outputs and WT outputs do not have the same shape.")
+            
             outputs -= wt_output
         return outputs
     

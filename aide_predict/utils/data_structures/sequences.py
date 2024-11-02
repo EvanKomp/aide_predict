@@ -12,7 +12,7 @@ import os
 import warnings
 import numpy as np
 
-from aide_predict.io.bio_files import read_fasta, write_fasta
+from aide_predict.io.bio_files import read_fasta, write_fasta, read_a3m
 from aide_predict.utils.alignment_calls import sw_global_pairwise, mafft_align
 
 from typing import List, Optional, Union, Iterator, Dict, Iterable, Any
@@ -506,6 +506,24 @@ class ProteinSequences(UserList):
         sequences = []
         with open(input_path, 'r') as f:
             for id, seq in read_fasta(f):
+                sequences.append(ProteinSequence(seq, id=id))
+        return cls(sequences)
+    
+    @classmethod
+    def from_a3m(cls, input_path: str) -> 'ProteinSequences':
+        """
+        Create a ProteinSequences object from an A3M file.
+
+        Args:
+            input_path (str): The path to the input A3M file.
+
+        Returns:
+            ProteinSequences: A new ProteinSequences object containing the sequences from the A3M file.
+        """
+
+        sequences = []
+        with open(input_path, 'r') as f:
+            for id, seq in read_a3m(f).items():
                 sequences.append(ProteinSequence(seq, id=id))
         return cls(sequences)
     
