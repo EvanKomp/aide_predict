@@ -181,7 +181,7 @@ class SaProtEmbedding(CacheMixin, RequiresStructureMixin, PositionSpecificMixin,
 
                 bar.update(len(batch))
             
-        # stack along 0 dimension
+        # do not stack in case WT sequences
         return all_embeddings
 
     def get_feature_names_out(self, input_features: Optional[List[str]] = None) -> List[str]:
