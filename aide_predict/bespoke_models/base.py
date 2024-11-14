@@ -309,7 +309,7 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         """
         try:
             check_is_fitted(self)
-            if not force:
+            if not force and not self.should_refit_on_sequences:
                 logger.warning("Model is already fitted. Skipping")
                 return self
             else:
