@@ -566,7 +566,7 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
     def _process_metadata_folder(self, metadata_folder):
         if metadata_folder is None:
             prefered_tempdir = tempfile.gettempdir()
-            return os.path.join(prefered_tempdir, time.strftime("%Y%m%d_%H%M%S"))
+            return os.path.join(prefered_tempdir, self.__class__.__name__+"_"+str(time.strftime("%Y%m%d_%H%M%S")))
         return os.path.abspath(metadata_folder)
     
     def _ensure_metadata_folder(self):
@@ -913,7 +913,7 @@ class CacheMixin:
             new_results = super().transform(proteins_to_transform)
             
             new_results_dict = {
-                ph: (np.array(result).reshape(1, -1) if result.shape[0] != 1 else result)
+                ph: (np.asarray(result)[np.newaxis, :] if np.asarray(result).shape[0] != 1 else np.asarray(result))
                 for ph, result in zip(uncached_hashes, new_results)
             }
             protein_lengths = {ph: len(X[i]) for i, ph in enumerate(protein_hashes) if ph in uncached_hashes}

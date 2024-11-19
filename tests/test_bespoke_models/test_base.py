@@ -239,6 +239,24 @@ class TestProteinModelWrapper:
         con = sqlite3.connect(model._db_file)
         assert con.execute("SELECT COUNT(*) FROM cache").fetchone()[0] == 2
 
+        # test that results remain the same when shapes are multidimensional
+        outs = np.random.random((1, 2, 3))
+        class TestModel2(CacheMixin, ProteinModelWrapper):
+            def _transform(self, X):
+                return np.vstack([outs for _ in range(len(X))])
+            
+        model = TestModel2(use_cache=True)
+        model.fitted_ = True  # Mock fitted state
+        result1 = model.transform(["ACDE", "FGH"])
+        np.testing.assert_array_equal(result1, np.vstack([outs, outs]))
+
+        result2 = model.transform(["ACDE", "FGH"])
+        np.testing.assert_array_equal(result2, np.vstack([outs, outs]))
+
+        # check cache
+        con = sqlite3.connect(model._db_file)
+        assert con.execute("SELECT COUNT(*) FROM cache").fetchone()[0] == 2
+
     def test_can_handle_aligned_sequences(self):
         class TestModel(CanHandleAlignedSequencesMixin, ProteinModelWrapper):
             def _transform(self, X):
