@@ -12,7 +12,7 @@ import tqdm
 
 
 from aide_predict.bespoke_models import model_device_context
-from aide_predict.bespoke_models.base import ProteinModelWrapper, PositionSpecificMixin, RequiresMSAMixin, CacheMixin
+from aide_predict.bespoke_models.base import ProteinModelWrapper, PositionSpecificMixin, RequiresMSAMixin, CacheMixin, CanHandleAlignedSequencesMixin
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
 from aide_predict.utils.common import MessageBool
 
@@ -28,7 +28,7 @@ except ImportError:
 import logging
 logger = logging.getLogger(__name__)
 
-class MSATransformerEmbedding(CacheMixin, PositionSpecificMixin, RequiresMSAMixin, ProteinModelWrapper):
+class MSATransformerEmbedding(CacheMixin, PositionSpecificMixin, CanHandleAlignedSequencesMixin, RequiresMSAMixin, ProteinModelWrapper):
     """
     A protein sequence embedder that uses the MSA Transformer model to generate embeddings.
     
@@ -204,7 +204,12 @@ class MSATransformerEmbedding(CacheMixin, PositionSpecificMixin, RequiresMSAMixi
                     avg_embedding = avg_embedding[self.positions]
                 
                 if self.pool:
-                    avg_embedding = avg_embedding.mean(axis=0)
+                    if callable(self.pool):
+                        avg_embedding = self.pool(avg_embedding, axis=0)
+                    elif type(self.pool) == str:
+                        avg_embedding = getattr(np, self.pool)(avg_embedding, axis=0)
+                    else:
+                        raise ValueError(f"Invalid pooling method: {self.pool}")
                 
                 all_embeddings.append(np.expand_dims(avg_embedding, axis=0))
 
