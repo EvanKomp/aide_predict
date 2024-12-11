@@ -55,6 +55,7 @@ class MSATransformerEmbedding(CacheMixin, PositionSpecificMixin, CanHandleAligne
                  batch_size: int = 32,
                  n_msa_seqs: int = 360,
                  device: str = 'cpu',
+                 use_cache: bool = True,
                  wt: Optional[Union[str, ProteinSequence]] = None):
         """
         Initialize the MSATransformerEmbedding.
@@ -70,7 +71,7 @@ class MSATransformerEmbedding(CacheMixin, PositionSpecificMixin, CanHandleAligne
             device (str): The device to use for computations ('cuda' or 'cpu').
             wt (Optional[Union[str, ProteinSequence]]): The wild type sequence, if any.
         """
-        super().__init__(metadata_folder=metadata_folder, wt=None, positions=positions, pool=pool, flatten=flatten)
+        super().__init__(metadata_folder=metadata_folder, wt=wt, positions=positions, pool=pool, flatten=flatten, use_cache=use_cache)
         self.layer = layer
         self.batch_size = batch_size
         self.device = device
