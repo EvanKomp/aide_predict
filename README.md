@@ -203,11 +203,12 @@ You can always check which modules are installed/available to you by running `ge
    - Requires MSA for fitting
    - Can handle aligned sequences during inference
 
-2. [EVMutation](https://academic.oup.com/bioinformatics/article/35/9/1582/5124274)
+2. [EVMutation*](https://academic.oup.com/bioinformatics/article/35/9/1582/5124274)
    - Computes pairwise couplings between AAs in an MSA for select positions well represented in the MSA, variants are scored by the change in coupling energy.
    - Requires MSA for fitting
    - Requires wild-type sequence for inference
    - Requires fixed-length sequences
+   - Requires additional dependencies (see `requirements-evmutation.txt`)
 
 3. [ESM2 Likelihood Wrapper*](https://www.biorxiv.org/content/10.1101/2022.07.20.500902v1)
    - Pretrained PLM (BERT style) model for protein sequences, scores variants according to masked, mutant, or wild type marginal likelihoods. Mutant marginal computes likelihoods in the context of the mutant sequence, while masked and wild type marginal compute likelihoods in the context of the wild type sequence. These methods are apprximations of the joint likelihood.
@@ -322,7 +323,7 @@ Additional tests are availabe to check the scientific output of wrapped models, 
 
 ## Third party software
 
-1. [EVCouplings](https://academic.oup.com/bioinformatics/article/35/9/1582/5124274) is a dependancy and their software is to avoid redundant code writing, as a result EVMutation is available as a base module.
+1. [EVCouplings](https://academic.oup.com/bioinformatics/article/35/9/1582/5124274): Some functions are used directly from their codebase, and credit noted when appropriate.
 2. Of course, many of the tools here are just wrapping of the work of others - see above.
 
 ## Citations and Acknowledgements
