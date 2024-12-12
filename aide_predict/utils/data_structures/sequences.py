@@ -510,7 +510,7 @@ class ProteinSequences(UserList):
         return cls(sequences)
     
     @classmethod
-    def from_a3m(cls, input_path: str) -> 'ProteinSequences':
+    def from_a3m(cls, input_path: str, inserts: str='first') -> 'ProteinSequences':
         """
         Create a ProteinSequences object from an A3M file.
 
@@ -523,7 +523,7 @@ class ProteinSequences(UserList):
 
         sequences = []
         with open(input_path, 'r') as f:
-            for id, seq in read_a3m(f).items():
+            for id, seq in read_a3m(f, inserts).items():
                 sequences.append(ProteinSequence(seq, id=id))
         return cls(sequences)
     

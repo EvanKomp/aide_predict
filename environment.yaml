@@ -4,23 +4,20 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - python=3.10
+  - python<=3.10
   - hmmer
+  - mmseqs2
   - plmc
   - cffi
   - mafft
   - pip
   - foldseek
   - pip:
-    - dvc
     - numpy
     - scikit-learn
     - pandas
     - h5py
-    - numba
     - tqdm
-    - evcouplings @ git+https://github.com/debbiemarkslab/EVcouplings@374d4c5
-    - ruamel-yaml<0.18.0
     - biopython==1.84
 
 
