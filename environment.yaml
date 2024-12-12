@@ -13,7 +13,7 @@ dependencies:
   - pip
   - foldseek
   - pip:
-    - numpy
+    - numpy<2.0
     - scikit-learn
     - pandas
     - h5py
