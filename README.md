@@ -276,6 +276,33 @@ You can always check which modules are installed/available to you by running `ge
 
 Each model in this package is implemented as a subclass of `ProteinModelWrapper`, which provides a consistent interface for all models. The specific behaviors (e.g., requiring MSA, fixed-length sequences, etc.) are implemented using mixins, making it easy to understand and extend the functionality of each model.
 
+## Helper tools
+The tools within the API often require somewhat expensive input information such as MSA and structures. We provide the following interfaces to make it easier to get the data you need for the models.
+
+### ESMFold
+ESMFold is a contact map predicting neural network on top of ESM LLM embeddings, and requires only sequence to predict strucuture. You can install ESMFold via `pip install -r requirements_files/requirements-esmfold.txt`. See their [documentation](https://github.com/facebookresearch/esm?tab=readme-ov-file#available), You can call their command line interface eg. `esm-fold -i my_fasta.fa ...` and then use `aide_predict.utils.StructureMapper` to apply the predicted structures to your sequences.
+
+Alternatively, we provide an in-python api:
+```python
+from aide_predict.utils.esmfold import run_esm_fold
+from aide_predict import ProteinSequences
+
+my_sequences = ProteinSequences.from_fasta("my_sequences.fasta") # or from any other source
+my_sequences = run_esm_fold(my_sequences) # these now have structures
+```
+Note that ESMFold is GPU intensive and does not work with Apple MPS silicon - if you do not have a CUDA chip then this is out of reach.
+Note that for more accurate predictions, consider running AlphaFold (out of scope/too heavy to include directly in AIDE)
+
+### mmseqs2
+If the tool you want to use requires MSAs, you can use mmseqs2 to generate them, which comes installed with the base AIDE package. The protocol used in [ColabFold](https://github.com/sokrypton/ColabFold/tree/main) has been adapted for use here. As opposed to the original implementation which uses many databases, here we search only UniRef. You will need to aqcuire the search database [here](https://wwwuser.gwdg.de/~compbiol/colabfold/uniref30_2302.tar.gz) QUITE LARGE! By default, we run the protocol with the same sensitivity as ColabFold (minus the additional data sources) but this can be quite expensive. If you are running more sequences, it is recommended to reduce the mode, from 'standard' (0) to 'fast' (0).
+
+```bash
+mmseqs-msa-pipeline -i my_sequences.fasta -db <path_to_uniref30> -o my_msas --mode 1
+```
+
+The output folder `my_msas` will contain a3m files with names equal to the ids in the fasta file. We do not currently provide a direct python interface to be used on `ProteinSequences` as the MSA step is likely too expensive to be called at runtime and should be run seperately.
+
+
 ## Installation
 ```
 conda env create -f environment.yaml
