@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.abspath('..'))
 
 project = 'aide'
 copyright = '2024, Evan Komp'
-author = 'Evan Komp'
+author = 'Evan Komp, Gregg T. Beckham'
 release = '1.0.0'
 
 # -- General configuration ---------------------------------------------------
