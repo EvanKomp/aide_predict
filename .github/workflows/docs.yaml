@@ -16,11 +16,11 @@ jobs:
       
       - name: Install dependencies
         run: |
-          pip install sphinx sphinx_rtd_theme myst_parser
+          pip install sphinx sphinx_rtd_theme myst_parser napolean
       
       - name: Sphinx build
         run: |
-          sphinx-build -b html doc _build/html
+          sphinx-build -b html docs _build/html
           touch _build/html/.nojekyll
       
       - name: Deploy to GitHub Pages
