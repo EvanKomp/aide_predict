@@ -4,6 +4,8 @@ on: [push, pull_request, workflow_dispatch]
 
 permissions:
   contents: write
+  pages: write      # Add this
+  id-token: write  # Add this
 
 jobs:
   docs:
@@ -11,17 +13,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
+      
       - name: Install dependencies
         run: |
           pip install sphinx sphinx_rtd_theme myst_parser
+      
       - name: Sphinx build
         run: |
-          sphinx-build docs _build
+          sphinx-build -b html doc _build/html
+          touch _build/html/.nojekyll
+      
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         with:
-          publish_branch: gh-pages
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: _build/
+          publish_dir: _build/html
           force_orphan: true
