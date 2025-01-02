@@ -4,6 +4,9 @@
 
 ![alt text](../images/fig1.png)
 
+__Authors__: Evan Komp, Gregg T. Beckham
+__Associated manuscript__: TODO
+
 This repository serves fundementally to increase the accessibility of protein engineering tasks that fall into the following catagory:
 
 $$\hat{y}=f(X)$$
