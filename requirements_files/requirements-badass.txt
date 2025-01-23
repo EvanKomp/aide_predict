@@ -1,2 +1,3 @@
-badass @ git+https://github.com/EvanKomp/BADASS@fafb8a4
+badass @ git+https://github.com/EvanKomp/BADASS@69f3723
+
 
