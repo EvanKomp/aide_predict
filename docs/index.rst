@@ -27,6 +27,7 @@ User Guide
    user_guide/pipelines.md
    user_guide/caching.md
    user_guide/position_specific.md
+   user_guide/structure_pred.md
 
 .. toctree::
    :maxdepth: 2
