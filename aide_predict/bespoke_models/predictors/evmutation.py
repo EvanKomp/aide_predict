@@ -16,21 +16,23 @@ import shutil
 from typing import List, Union, Optional
 import numpy as np
 import pandas as pd
-from evcouplings.couplings.model import CouplingsModel
-from evcouplings.couplings import protocol
-from evcouplings.align.protocol import describe_frequencies, Alignment, parse_header
 from aide_predict.bespoke_models.base import ProteinModelWrapper, RequiresMSAMixin, CanRegressMixin, RequiresWTToFunctionMixin, RequiresFixedLengthMixin, MessageBool, AcceptsLowerCaseMixin, CacheMixin
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
 
 from tqdm import tqdm
 
-# check for plmc
+# check for plmc and evcouplings
 if shutil.which("plmc") is None:
     AVAILABLE = MessageBool(False, "The 'plmc' executable is required for EVCouplings.")
 else:
     AVAILABLE = MessageBool(True, "EVMutation is available.")
     plmc = shutil.which("plmc")
-
+try:
+    from evcouplings.couplings.model import CouplingsModel
+    from evcouplings.couplings import protocol
+    from evcouplings.align.protocol import describe_frequencies, Alignment, parse_header
+except ImportError:
+    AVAILABLE = MessageBool(False, "The 'evcouplings' package is required for EVCouplings.")
 
 class EVMutationWrapper(
     CacheMixin,
