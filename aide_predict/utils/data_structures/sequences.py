@@ -289,6 +289,46 @@ class ProteinSequence(str):
             raise ValueError("Structure must be a ProteinStructure object or a valid PDB file path.")
         
         self._structure = new_structure
+
+    @classmethod
+    def from_pdb(cls, pdb_file: str, chain: str = 'A', id: Optional[str] = None) -> 'ProteinSequence':
+        """
+        Create a ProteinSequence from a PDB file.
+
+        This method extracts the amino acid sequence from the PDB file and creates
+        a ProteinSequence object with the associated structure.
+
+        Args:
+            pdb_file (str): Path to the PDB file.
+            chain (str): Chain identifier to extract sequence from. Defaults to 'A'.
+            id (Optional[str]): Identifier for the sequence. If None, uses the PDB filename.
+
+        Returns:
+            ProteinSequence: A new ProteinSequence object with the extracted sequence and structure.
+
+        Raises:
+            FileNotFoundError: If the PDB file does not exist.
+            ValueError: If the specified chain is not found in the PDB file.
+            
+        Example:
+            >>> seq = ProteinSequence.from_pdb("1abc.pdb", chain='A', id='my_protein')
+            >>> print(seq)
+            'MAEGEITTFTALTEKFNLPPGNYKKPKLLYCSNG...'
+            >>> print(seq.structure)
+            ProteinStructure(pdb_file='1abc.pdb', chain='A')
+        """
+        # Create structure object (this validates file existence)
+        structure = ProteinStructure(pdb_file=pdb_file, chain=chain)
+        
+        # Extract sequence from structure
+        sequence = structure.get_sequence()
+        
+        # Use PDB filename as ID if none provided
+        if id is None:
+            id = os.path.splitext(os.path.basename(pdb_file))[0]
+        
+        # Create sequence object with structure
+        return cls(sequence, id=id, structure=structure)
     
     def align(self, other: 'ProteinSequence') -> 'ProteinSequence':
         """

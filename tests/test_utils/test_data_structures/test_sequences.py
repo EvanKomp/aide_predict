@@ -215,6 +215,24 @@ END
         assert str(sliced) == "ACDEF"
         assert isinstance(sliced, ProteinSequence)
 
+    def test_from_pdb(self, temp_pdb_file):
+        # Test successful creation
+        seq = ProteinSequence.from_pdb(str(temp_pdb_file))
+        assert isinstance(seq, ProteinSequence)
+        assert str(seq) == "ACDEFGHIKLMNPQRSTVWY"  # The sequence in our test PDB
+        assert seq.id == "sample"  # From basename of temp_pdb_file
+        assert seq.structure.pdb_file == str(temp_pdb_file)
+        assert seq.structure.chain == "A"
+        
+        # Test with custom chain and ID
+        seq = ProteinSequence.from_pdb(str(temp_pdb_file), chain="A", id="my_protein")
+        assert seq.id == "my_protein"
+        
+        # Test with invalid PDB file
+        with pytest.raises(FileNotFoundError):
+            ProteinSequence.from_pdb("nonexistent.pdb")
+            
+
     def test_iter_protein_characters(self, sample_sequence):
         chars = list(sample_sequence.iter_protein_characters())
         assert all(isinstance(c, ProteinCharacter) for c in chars)
@@ -614,6 +632,7 @@ ACD-,seq3,0.7,0.6"""
         # Test error with empty DataFrame
         with pytest.raises(IndexError):
             ProteinSequences.from_df(pd.DataFrame())
+
 
 # ProteinSequencesOnFile tests
 class TestProteinSequencesOnFile:

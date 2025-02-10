@@ -16,6 +16,9 @@ from aide_predict import ProteinSequence
 # Create a basic sequence
 seq = ProteinSequence("MKLLVLGLPGAGKGT")
 
+# or get from a pdb (see ProteinStructure below)
+seq = ProteinSequence.from_pdb("path/to/structure.pdb")
+
 # Add identifier and optional structure
 seq = ProteinSequence(
     "MKLLVLGLPGAGKGT",
@@ -66,6 +69,9 @@ sequences = ProteinSequences.from_fasta("sequences.fasta")  # From FASTA file
 sequences = ProteinSequences.from_list(["MKLL...", "MKLT..."])  # From strings
 sequences = ProteinSequences.from_dict({"seq1": "MKLL...", "seq2": "MKLT..."})
 sequences = ProteinSequences.from_dict(my_dataframe["sequence"].to_dict())
+sequences = ProteinSequences.from_df(my_dataframe) # assumes first column is sequences
+sequences = ProteinSequences.from_df(my_dataframe, sequence_col="seq_col", id_col="id_col") # specify columns
+sequences, labels = ProteinSequences.from_df(my_dataframe, label_cols='label') # get a array of labels
 ```
 
 Key attributes:
@@ -163,13 +169,13 @@ mapper = StructureMapper("path/to/structures")
 #       ├── ranked_0.pdb
 #       └── ranking_confidence.json
 
-# Assign structures to sequences
+# Assign structures to ProteinSequences already loaded 
 sequences = mapper.assign_structures(sequences)
 
 # Get available structures
 available_ids = mapper.get_available_structures()
 
-# Get sequences with structures
+# Get ProteinSequences with structures
 sequences = mapper.get_protein_sequences()
 ```
 
