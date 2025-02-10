@@ -147,7 +147,7 @@ pipeline = Pipeline([
 # model fitting
 pipeline.fit(sequences, y_train)
 
-# score new analigned homologs
+# score new unaligned homologs
 new_homologs = ProteinSequences.from_fasta("data/new_homologs.fasta")
 y_pred = pipeline.predict(new_homologs)
 ```
