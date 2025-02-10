@@ -27,3 +27,4 @@ omit =
 
     aide_predict/utils/badass.py
     aide_predict/utils/soloseq.py
+    aide_predict/utils/mmseqs_msa_search.py
