@@ -10,9 +10,8 @@ The following should look and feel like canonical sklearn tasks/code. See the `d
 
 ```python
 from aide_predict.utils.checks import check_model_compatability
-exp = pd.read_csv('exp.csv')
-seqs = ProteinSequences.from_list(exp['sequence'].tolist())
-wt = ProteinSequence("MQYKLILNGKTLKGETTTEAVDAATAEKVFKQYANDNGVDGEWTYDDATKTFTVTELEVLFQGPLDPNSMATYEVLCEVARKLGTDDREVVLFLLNVFIPQPTLAQLIGALRALKEEGRLTFPLLAECLFRAGRRDLLRDLLHLDPRFLERHLAGTMSYFSPYQLTVLHVDGELCARDIRSLIFLSKDTIGSRSTPQTFLHWVYCMENLDLLGPTDVDALMSMLRSLSRVDLQRQVQTLMGLHLSGPSHSQHYRHTPLEHHHHHH", id='WT')
+seqs = ProteinSequences.from_csv('csv_file.csv', seq_col='sequence')
+wt = seqs[0]
 
 check_model_compatibility(
     training_msa=None,
@@ -61,9 +60,7 @@ results = pd.DataFrame({'mutation': mutations, 'seqeunce': library,'prediction':
 ### Compare a couple of zero shot predictors against experimental data
 ```python
 # data preparation
-data = pd.read_csv("data/experimental_data.csv")
-X = ProteinSequences.from_list(data['sequence'])
-y = data['experimental_value']
+X, y = ProteinSequences.from_csv("data/experimental_data.csv", seq_col='sequence', id_col='id', label_cols='experimental_value')
 wt = X['my_id_for_WT']
 msa = ProteinSequences.from_fasta("data/msa.fasta")
 
@@ -83,20 +80,19 @@ for name, model in models.items():
 ### Train a supervised model to predict activity on an experimental combinatorial library, test on sequences with greater mutational depth than training
 ```python
 # data preparation
-data = pd.read_csv("data/experimental_data.csv").set_index('id')
-sequences = ProteinSequences.from_dict(data['sequence'])
+sequences, y = ProteinSequences.from_csv("data/experimental_data.csv", seq_col='sequence', id_col='id', label_cols='experimental_value')
 sequences.aligned
 >>> True
 sequences.fixed_length
 >>> True
 
 wt = sequences['my_id_for_WT']
-data['sequence'] = sequences
-data['mutational_depth'] = data['sequence'].apply(lambda x: len(x.mutated_positions(wt)))
-test = data[data['mutational_depth'] > 5]
-train = data[data['mutational_depth'] <= 5]
-train_X, train_y = train['sequence'], train['experimental_value']
-test_X, test_y = test['sequence'], test['experimental_value']
+mutational_depth = np.array([len(x.mutated_positions(wt)) for x in sequences])
+test_mask = mutational_depth > 5
+train_X = sequences[~test_mask]
+train_y = y[~test_mask]
+test_X = sequences[test_mask]
+test_y = y[test_mask]
 
 # embeddings protein sequences
 # use mean pool embeddings of esm2
@@ -117,10 +113,7 @@ print(f"Train score: {train_score}, Test score: {test_score}")
 ### Train a supervised predictor on a set of homologs, focusing only on positions of known importance, wrap the entire process into an sklearn pipeline including some standard sklearn transormers, and make predictions for a new set of homologs
 ```python
 # data preparation
-data = pd.read_csv("data/experimental_data.csv")
-data.set_index('id', inplace=True)
-sequences = ProteinSequences.from_dict(data['sequence'].to_dict())
-y_train = data['experimental_value']
+sequences, y_train = ProteinSequences.from_csv("data/training_data.csv", seq_col='sequence', id_col='id', label_cols='experimental_value')
 
 wt = sequences['my_id_for_WT']
 wt_important_positions = np.array([20, 21, 22, 33, 45]) # zero indexed, known from analysis elsewhere
