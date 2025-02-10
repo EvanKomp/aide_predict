@@ -12,6 +12,7 @@ import pytest
 from tempfile import NamedTemporaryFile
 import os
 import numpy as np
+import pandas as pd
 from unittest.mock import patch, MagicMock
 
 from aide_predict.utils.data_structures import ProteinCharacter, ProteinSequence, ProteinSequences, ProteinSequencesOnFile
@@ -497,6 +498,122 @@ class TestProteinSequences:
         sampled = sample_sequences.sample(2)
         assert len(sampled) == 2
         assert sample_sequences[0] not in sampled
+
+    def test_from_csv(self, tmp_path):
+        # Create a test CSV file
+        csv_path = tmp_path / "test.csv"
+        csv_content = """sequence,id,activity,solubility
+ACDE,seq1,0.5,0.8
+ACDF,seq2,0.6,0.7
+ACD-,seq3,0.7,0.6"""
+        
+        with open(csv_path, 'w') as f:
+            f.write(csv_content)
+
+        # Test default behavior (first column)
+        sequences = ProteinSequences.from_csv(csv_path, seq_col="sequence")
+        assert len(sequences) == 3
+        assert str(sequences[0]) == "ACDE"
+
+        # Test with ID column
+        sequences = ProteinSequences.from_csv(csv_path, seq_col="sequence", id_col="id")
+        assert len(sequences) == 3
+        assert sequences[0].id == "seq1"
+        assert str(sequences["seq2"]) == "ACDF"
+
+        # Test with single label column
+        sequences, labels = ProteinSequences.from_csv(
+            csv_path, 
+            seq_col="sequence",
+            id_col="id",
+            label_cols="activity"
+        )
+        assert isinstance(labels, np.ndarray)
+        assert labels.shape == (3, 1)
+        assert labels[0, 0] == 0.5
+
+        # Test with multiple label columns
+        sequences, labels = ProteinSequences.from_csv(
+            csv_path,
+            seq_col="sequence",
+            id_col="id",
+            label_cols=["activity", "solubility"]
+        )
+        assert isinstance(labels, np.ndarray)
+        assert labels.shape == (3, 2)
+        assert labels[0, 0] == 0.5
+        assert labels[0, 1] == 0.8
+
+        # Test pandas kwargs
+        sequences = ProteinSequences.from_csv(csv_path, sep=",", skiprows=2, header=None)
+        assert len(sequences) == 2
+
+        # Test error with missing columns
+        with pytest.raises(ValueError):
+            ProteinSequences.from_csv(csv_path, seq_col="nonexistent")
+        
+        with pytest.raises(ValueError):
+            ProteinSequences.from_csv(csv_path, seq_col="sequence", id_col="nonexistent")
+        
+        with pytest.raises(ValueError):
+            ProteinSequences.from_csv(csv_path, seq_col="sequence", label_cols="nonexistent")
+
+    def test_from_df(self):
+        # Create test DataFrame
+        df = pd.DataFrame({
+            'sequence': ['ACDE', 'ACDF', 'ACD-'],
+            'id': ['seq1', 'seq2', 'seq3'],
+            'activity': [0.5, 0.6, 0.7],
+            'solubility': [0.8, 0.7, 0.6]
+        })
+
+        # Test default behavior (first column)
+        sequences = ProteinSequences.from_df(df, seq_col="sequence")
+        assert len(sequences) == 3
+        assert str(sequences[0]) == "ACDE"
+
+        # Test with ID column
+        sequences = ProteinSequences.from_df(df, seq_col="sequence", id_col="id")
+        assert len(sequences) == 3
+        assert sequences[0].id == "seq1"
+        assert str(sequences["seq2"]) == "ACDF"
+
+        # Test with single label column
+        sequences, labels = ProteinSequences.from_df(
+            df, 
+            seq_col="sequence",
+            id_col="id",
+            label_cols="activity"
+        )
+        assert isinstance(labels, np.ndarray)
+        assert labels.shape == (3, 1)
+        assert labels[0, 0] == 0.5
+
+        # Test with multiple label columns
+        sequences, labels = ProteinSequences.from_df(
+            df,
+            seq_col="sequence",
+            id_col="id",
+            label_cols=["activity", "solubility"]
+        )
+        assert isinstance(labels, np.ndarray)
+        assert labels.shape == (3, 2)
+        assert labels[0, 0] == 0.5
+        assert labels[0, 1] == 0.8
+
+        # Test error with missing columns
+        with pytest.raises(ValueError):
+            ProteinSequences.from_df(df, seq_col="nonexistent")
+        
+        with pytest.raises(ValueError):
+            ProteinSequences.from_df(df, seq_col="sequence", id_col="nonexistent")
+        
+        with pytest.raises(ValueError):
+            ProteinSequences.from_df(df, seq_col="sequence", label_cols="nonexistent")
+
+        # Test error with empty DataFrame
+        with pytest.raises(IndexError):
+            ProteinSequences.from_df(pd.DataFrame())
 
 # ProteinSequencesOnFile tests
 class TestProteinSequencesOnFile:

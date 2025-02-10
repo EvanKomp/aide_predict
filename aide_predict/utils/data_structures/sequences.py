@@ -15,7 +15,7 @@ import numpy as np
 from aide_predict.io.bio_files import read_fasta, write_fasta, read_a3m
 from aide_predict.utils.alignment_calls import sw_global_pairwise, mafft_align
 
-from typing import List, Optional, Union, Iterator, Dict, Iterable, Any
+from typing import List, Optional, Union, Iterator, Dict, Iterable, Any, Tuple
 
 from ..constants import AA_SINGLE, GAP_CHARACTERS, NON_CONONICAL_AA_SINGLE
 from .structures import ProteinStructure
@@ -552,6 +552,98 @@ class ProteinSequences(UserList):
             ProteinSequences: A new ProteinSequences object containing the sequences from the list.
         """
         return cls([ProteinSequence(seq) for seq in sequences])
+    
+    @classmethod
+    def from_csv(cls, filepath: str, id_col: Optional[str] = None, seq_col: Optional[str] = None, 
+                label_cols: Optional[Union[str, List[str]]] = None, **kwargs) -> Union['ProteinSequences', Tuple['ProteinSequences', np.ndarray]]:
+        """
+        Create a ProteinSequences object from a CSV file.
+
+        Args:
+            filepath (str): Path to the CSV file.
+            id_col (Optional[str]): Name of column containing sequence IDs. If None, sequences will be assigned numeric IDs.
+            seq_col (Optional[str]): Name of column containing sequences. If None, uses first column.
+            label_cols (Optional[Union[str, List[str]]]): Name(s) of columns containing labels to return.
+            **kwargs: Additional arguments passed to pandas.read_csv().
+
+        Returns:
+            Union[ProteinSequences, Tuple[ProteinSequences, np.ndarray]]: 
+                - If label_cols is None: ProteinSequences object
+                - If label_cols is provided: Tuple of (ProteinSequences, labels array)
+
+        Raises:
+            ValueError: If specified columns are not found in the CSV file.
+            ValueError: If any sequence contains invalid characters.
+        """
+        import pandas as pd
+        df = pd.read_csv(filepath, **kwargs)
+        return cls.from_df(df, id_col=id_col, seq_col=seq_col, label_cols=label_cols)
+
+    @classmethod
+    def from_df(cls, df: 'pd.DataFrame', id_col: Optional[str] = None, seq_col: Optional[str] = None,
+                label_cols: Optional[Union[str, List[str]]] = None) -> Union['ProteinSequences', Tuple['ProteinSequences', np.ndarray]]:
+        """
+        Create a ProteinSequences object from a pandas DataFrame.
+
+        Args:
+            df (pd.DataFrame): Input DataFrame containing sequences.
+            id_col (Optional[str]): Name of column containing sequence IDs. If None, sequences will be assigned numeric IDs.
+            seq_col (Optional[str]): Name of column containing sequences. If None, uses first column.
+            label_cols (Optional[Union[str, List[str]]]): Name(s) of columns containing labels to return.
+
+        Returns:
+            Union[ProteinSequences, Tuple[ProteinSequences, np.ndarray]]: 
+                - If label_cols is None: ProteinSequences object
+                - If label_cols is provided: Tuple of (ProteinSequences, labels array)
+
+        Raises:
+            ValueError: If specified columns are not found in the DataFrame.
+            ValueError: If any sequence contains invalid characters.
+        """
+        # Validate and get sequence column
+        if seq_col is None:
+            seq_col = df.columns[0]
+        if seq_col not in df.columns:
+            raise ValueError(f"Sequence column '{seq_col}' not found in DataFrame. Columns: {df.columns.tolist()}")
+
+        # Get sequences
+        sequences = df[seq_col].values
+
+        # Create ProteinSequence objects
+        protein_sequences = []
+        for i, seq in enumerate(sequences):
+            # Get ID if specified
+            if id_col is not None:
+                if id_col not in df.columns:
+                    raise ValueError(f"ID column '{id_col}' not found in DataFrame. Columns: {df.columns.tolist()}")
+                seq_id = str(df[id_col].iloc[i])
+            else:
+                seq_id = str(i)
+            
+            protein_sequences.append(ProteinSequence(str(seq), id=seq_id))
+
+        # Create ProteinSequences object
+        result = cls(protein_sequences)
+
+        # Handle labels if requested
+        if label_cols is not None:
+            if isinstance(label_cols, str):
+                label_cols = [label_cols]
+            
+            # Validate label columns exist
+            missing_cols = [col for col in label_cols if col not in df.columns]
+            if missing_cols:
+                raise ValueError(f"Label column(s) not found in DataFrame: {missing_cols}")
+            
+            # Extract labels
+            labels = df[label_cols].values
+            if len(label_cols) == 1:
+                labels = labels.reshape(-1, 1)
+            
+            return result, labels
+        
+        return result
+
     
     @property
     def id_mapping(self) -> Dict[str, int]:
