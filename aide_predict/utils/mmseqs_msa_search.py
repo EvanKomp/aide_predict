@@ -54,7 +54,7 @@ def run_mmseqs_search(
     metagenomic_db: Optional[Union[str, Path]] = None,
     mode: str = 'standard',
     threads: int = 4,
-    remove_tmp: bool = True
+    remove_tmp: bool = False
 ) -> List[str]:
     """
     Generate MSAs for protein sequences using MMseqs2.
@@ -84,6 +84,8 @@ def run_mmseqs_search(
         metagenomic_db = Path(metagenomic_db)
 
     # Create output directory
+    if os.path.exists(output_dir):
+        shutil.rmtree(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     
     # Set up parameters based on mode
@@ -178,10 +180,9 @@ def run_mmseqs_search(
         "--db-load-mode", str(db_load_mode),
         "--threads", str(threads),
         "--qsc", "-20.0",
-        "--max-seq-id", "0.95",
+        "--max-seq-id", "1.0",
         "--cov", "0.8",
-        "--filter-min-enable", "256",
-        "--diff", "256"
+        "--filter-min-enable", "100",
     ])
 
     # Create MSA
@@ -251,10 +252,9 @@ def run_mmseqs_search(
             "--db-load-mode", str(db_load_mode),
             "--threads", str(threads),
             "--qsc", "-20.0",
-            "--max-seq-id", "0.95",
+            "--max-seq-id", "1.0",
             "--cov", "0.8",
-            "--filter-min-enable", "256",
-            "--diff", "256"
+            "--filter-min-enable", "100",
         ])
         
         run_mmseqs_command(["result2msa",
@@ -276,37 +276,20 @@ def run_mmseqs_search(
             "--compressed", "0"
         ])
         
-        if remove_tmp:
-            for file in ["env.a3m", "uniref.a3m"]:
-                run_mmseqs_command(["rmdb", tmp_path / file])
     else:
         # Just use UniRef results
         run_mmseqs_command(["mvdb", tmp_path / "uniref.a3m", 
                           tmp_path / "final.a3m"])
-        if remove_tmp:
-            run_mmseqs_command(["rmdb", tmp_path / "uniref.a3m"])
-
+        
+    
     # Extract individual MSAs
-    output_paths = []
-    for i, seq in enumerate(sequences):
-        seq_id = seq.id if seq.id else f"seq_{hash(seq)}"
-        output_path = output_dir / f"{seq_id}.a3m"
+    run_mmseqs_command(["unpackdb", tmp_path / "final.a3m", output_dir / "msas", "--unpack-name-mode", "1", "--unpack-suffix", ".a3m"])
+    output_paths = list((output_dir / "msas").glob("*.a3m"))
         
-        run_mmseqs_command([
-            "extractalignments",
-            tmp_path / "final.a3m",
-            query_db,
-            output_path,
-            "--extract-mode", "1",
-            "--first-seq-index", str(i)
-        ])
-        
-        output_paths.append(str(output_path))
+    
 
     # Cleanup temporary files
     if remove_tmp:
-        for file in ["prof_res", "prof_res_h", "final.a3m"]:
-            run_mmseqs_command(["rmdb", tmp_path / file])
         shutil.rmtree(tmp_path)
 
     return output_paths
