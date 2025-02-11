@@ -74,7 +74,7 @@ Note: ESMFold requires a CUDA-capable GPU and is not compatible with Apple Silic
 ### Independent Environment
 #### EVE Integration
 
-EVE (Evolution Via Energy) requires special handling due to its complex environment requirements:
+EVE requires special handling due to its complex environment requirements:
 
 1. Clone the EVE repository outside your AIDE directory:
 ```bash
