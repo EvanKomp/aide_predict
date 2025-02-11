@@ -1,4 +1,3 @@
-
 ---
 title: Contributing Models to AIDE
 ---
@@ -8,8 +7,6 @@ title: Contributing Models to AIDE
 ## Overview
 
 AIDE is designed to make it easy to wrap new protein prediction models into a scikit-learn compatible interface. This guide walks through the process of contributing a new model.
-
-## Getting Started
 
 ### 1. Setting Up Development Environment
 
