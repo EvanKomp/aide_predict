@@ -69,14 +69,6 @@ For conservation-based variant effect prediction:
 pip install -r requirements-vespa.txt
 ```
 
-#### Structure Prediction with ESMFold
-For structure prediction capabilities:
-```bash
-pip install -r requirements-esmfold.txt
-```
-Note: ESMFold requires a CUDA-capable GPU and is not compatible with Apple Silicon.
-
-
 ### Independent Environment
 #### EVE Integration
 
