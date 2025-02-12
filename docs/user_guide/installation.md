@@ -8,6 +8,12 @@ AIDE is designed with a modular architecture to minimize dependency conflicts wh
 
 ## Quick Install
 
+The package is not currently available on PyPI, please clone the repo:
+
+```bash
+git clone https://github.com/beckham-lab/aide_predict
+```
+
 For basic functionality, simply install AIDE using:
 
 ```bash
@@ -74,7 +80,7 @@ Note: ESMFold requires a CUDA-capable GPU and is not compatible with Apple Silic
 ### Independent Environment
 #### EVE Integration
 
-EVE (Evolution Via Energy) requires special handling due to its complex environment requirements:
+EVE requires special handling due to its complex environment requirements:
 
 1. Clone the EVE repository outside your AIDE directory:
 ```bash

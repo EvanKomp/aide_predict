@@ -125,7 +125,7 @@ class ConservationAnalysis:
             
             # Compute p-values using binomial test for each column
             p_values_ = np.array([
-                stats.binom_test(x, n=n, p=expected_freq, alternative='greater')
+                stats.binomtest(x, n=n, p=expected_freq, alternative='greater').pvalue
                 for x, n in zip(observed, n_trials)
             ])
 

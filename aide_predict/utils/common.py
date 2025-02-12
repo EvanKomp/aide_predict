@@ -33,4 +33,24 @@ class MessageBool:
 
     def __bool__(self):
         return self.value
+    
+def wrap(text, width=80):
+    """
+    Wraps a string at a fixed width.
+
+    Arguments
+    ---------
+    text : str
+        Text to be wrapped
+    width : int
+        Line width
+
+    Returns
+    -------
+    str
+        Wrapped string
+    """
+    return "\n".join(
+        [text[i:i + width] for i in range(0, len(text), width)]
+    )
 

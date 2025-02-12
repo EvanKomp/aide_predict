@@ -29,93 +29,9 @@ The goals of this project are succinctly as follows:
 
 ## API examples:
 
-See a longer list in the API Examples page. The following should look and feel like canonical sklearn tasks/code. See the `demo` folder for more details and executable examples. Also see the [colab notebook](https://colab.research.google.com/drive/1baz4DdYkxaw6pPRTDscwh2o-Xqum5Krp#scrollTo=AV9VXhM6ebgI) to play with some if its capabilities in the cloud. Finally, checkout the notebooks in `showcase` where we conduct two full protein predictions optimization and scoring tasks on real data that are greater than small example sets. 
+AIDE examples look and feel like canonical sklearn tasks/code. Aide is not limited to only combinatorial/mutant data or global wt sequence predictors: it is meant for all protein prediction tasks. In addition to the API docs and user guide you are currently viewing:
 
-### Checking which protein models are available given the data you have
-
-```python
-from aide_predict.utils.checks import check_model_compatability
-exp = pd.read_csv('exp.csv')
-seqs = ProteinSequences.from_list(exp['sequence'].tolist())
-wt = ProteinSequence("MQYKLILNGKTLKGETTTEAVDAATAEKVFKQYANDNGVDGEWTYDDATKTFTVTELEVLFQGPLDPNSMATYEVLCEVARKLGTDDREVVLFLLNVFIPQPTLAQLIGALRALKEEGRLTFPLLAECLFRAGRRDLLRDLLHLDPRFLERHLAGTMSYFSPYQLTVLHVDGELCARDIRSLIFLSKDTIGSRSTPQTFLHWVYCMENLDLLGPTDVDALMSMLRSLSRVDLQRQVQTLMGLHLSGPSHSQHYRHTPLEHHHHHH", id='WT')
-
-check_model_compatibility(
-    training_msa=None,
-    training_sequences=seqs,
-    wt=wt,
-)
->>>{'compatible': ['ESM2Embedding',
-  'ESM2LikelihoodWrapper',
-  'KmerEmbedding',
-  'OneHotProteinEmbedding'],
- 'incompatible': ['EVMutationWrapper',
-  'HMMWrapper',
-  'MSATransformerEmbedding',
-  'MSATransformerLikelihoodWrapper',
-  'OneHotAlignedEmbedding',
-  'SaProtEmbedding',
-  'SaProtLikelihoodWrapper',
-  'VESPAWrapper']}
-```
-
-#### In silico mutagenesis using MSATransformer
-```python
-# data preparation
-wt = ProteinSequence(
-    "LADDRTLLMAGVSHDLRTPLTRIRLATEMMSEQDGYLAESINKDIEECNAIIEQFIDYLR",
-)
-msa = ProteinSequences.from_fasta("data/msa.fasta")
-library = wt.saturation_mutagenesis()
-mutations = library.ids
-print(mutations[0])
->>> 'L1A'
-
-# model fitting
-model = MSATransformerLikelihoodWrapper(
-   wt=wt,
-   marginal_method="masked_marginal"
-)
-model.fit(msa)
-
-# make predictions for each mutated sequence
-predictions = model.predict(library)
-
-results = pd.DataFrame({'mutation': mutations, 'seqeunce': library,'prediction': predictions})
-```
-
-#### Train a supervised model to predict activity on an experimental combinatorial library, test on sequences with greater mutational depth than training
-```python
-# data preparation
-data = pd.read_csv("data/experimental_data.csv").set_index('id')
-sequences = ProteinSequences.from_dict(data['sequence'])
-sequences.aligned
->>> True
-sequences.fixed_length
->>> True
-
-wt = sequences['my_id_for_WT']
-data['sequence'] = sequences
-data['mutational_depth'] = data['sequence'].apply(lambda x: len(x.mutated_positions(wt)))
-test = data[data['mutational_depth'] > 5]
-train = data[data['mutational_depth'] <= 5]
-train_X, train_y = train['sequence'], train['experimental_value']
-test_X, test_y = test['sequence'], test['experimental_value']
-
-# embeddings protein sequences
-# use mean pool embeddings of esm2
-embedder = ESM2Embedding(pool=True)
-train_X = embedder.fit_transform(train_X)
-test_X = embedder.transform(test_X)
-
-# model fitting
-model = RandomForestRegressor()
-model.fit(train_X, train_y)
-
-# model scoring
-train_score = model.score(train_X, train_y)
-test_score = model.score(test_X, test_y)
-print(f"Train score: {train_score}, Test score: {test_score}")
-```
+See also the `demo` folder for some executable examples. Also see the [colab notebook](https://colab.research.google.com/drive/1baz4DdYkxaw6pPRTDscwh2o-Xqum5Krp#scrollTo=AV9VXhM6ebgI) to play with some if its capabilities in the cloud. Finally, checkout the notebooks in `showcase` where we conduct two full protein predictions optimization and scoring tasks on real data that are greater than small example sets. 
 
 ## Available Tools
 
@@ -132,11 +48,12 @@ You can always check which modules are installed/available to you by running `ge
    - Requires MSA for fitting
    - Can handle aligned sequences during inference
 
-2. [EVMutation](https://academic.oup.com/bioinformatics/article/35/9/1582/5124274)
+2. [EVMutation*](https://academic.oup.com/bioinformatics/article/35/9/1582/5124274)
    - Computes pairwise couplings between AAs in an MSA for select positions well represented in the MSA, variants are scored by the change in coupling energy.
    - Requires MSA for fitting
    - Requires wild-type sequence for inference
    - Requires fixed-length sequences
+   - Requires additional dependencies (see `requirements-evmutation.txt`)
 
 3. [ESM2 Likelihood Wrapper*](https://www.biorxiv.org/content/10.1101/2022.07.20.500902v1)
    - Pretrained PLM (BERT style) model for protein sequences, scores variants according to masked, mutant, or wild type marginal likelihoods. Mutant marginal computes likelihoods in the context of the mutant sequence, while masked and wild type marginal compute likelihoods in the context of the wild type sequence. These methods are apprximations of the joint likelihood.
@@ -203,6 +120,9 @@ You can always check which modules are installed/available to you by running `ge
    - Requires additional dependencies (see `requirements-fair-esm.txt`)
 
 Each model in this package is implemented as a subclass of `ProteinModelWrapper`, which provides a consistent interface for all models. The specific behaviors (e.g., requiring MSA, fixed-length sequences, etc.) are implemented using mixins, making it easy to understand and extend the functionality of each model.
+
+## Helper tools
+The tools within the API often require somewhat expensive input information such as MSA and structures. We provide high level interfaces to predict structures and compute MSAs, see the user guide.
 
 ## Installation
 ```
