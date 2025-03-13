@@ -759,7 +759,7 @@ class ProteinSequences(UserList):
         msa_processor = MSAProcessing(**kwargs)
         return msa_processor.process(self, focus_seq_id=focus_seq_id)
     
-    def sample(self, n: int, replace: bool = False) -> 'ProteinSequences':
+    def sample(self, n: int, replace: bool = False, keep_first: bool=False) -> 'ProteinSequences':
         """
         Sample n sequences from the ProteinSequences object.
 
@@ -779,8 +779,13 @@ class ProteinSequences(UserList):
         weights = self.weights if hasattr(self, 'weights') else None
         if weights is None:
             weights = np.ones(len(self))
+
+        if keep_first:
+            n = n - 1
         
         sampled_indices = np.random.choice(len(self), size=n, replace=replace, p=weights/np.sum(weights))
+        if keep_first:
+            sampled_indices = np.insert(sampled_indices, 0, 0)
         sampled_sequences = [self[i] for i in sampled_indices]
         
         new_sequences = ProteinSequences(sampled_sequences)
