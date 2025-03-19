@@ -379,14 +379,34 @@ class EVEWrapper(RequiresWTToFunctionMixin, RequiresFixedLengthMixin, RequiresWT
         Raises:
             RuntimeError: If computation of evolutionary indices fails.
         """
-        # Create mutations file
-        mutations = []
-        for seq in X:
-            mutations.append(':'.join(self.wt.get_mutations(seq)))
-
-        # get a list of sets so that we can map back scores later
-        mutation_sets = [frozenset(m.split(':')) for m in mutations]
+        # Identify wild-type sequences in the input
+        wt_indices = []
+        non_wt_indices = []
+        non_wt_sequences = []
         
+        for i, seq in enumerate(X):
+            if str(seq).upper() == str(self.wt).upper():
+                wt_indices.append(i)
+            else:
+                non_wt_indices.append(i)
+                non_wt_sequences.append(seq)
+        
+        # If all sequences are wild-type, return zeros
+        if len(non_wt_sequences) == 0:
+            return np.zeros((len(X), 1))
+        
+        # Create mutations file only for non-wild-type sequences
+        non_wt_X = ProteinSequences(non_wt_sequences)
+        mutations = []
+        for seq in non_wt_X:
+            mut_list = self.wt.get_mutations(seq)
+            mutations.append(':'.join(mut_list))
+            if mutations[-1] == '':
+                print(mut_list)
+                raise ValueError(f"Sequence {seq.id} is equal to WT but should have been filtered out for eve call")
+            
+
+        # Save mutations to file
         mutations_df = pd.DataFrame({"mutations": mutations})
         mutations_file = os.path.join(self.metadata_folder, "mutations.csv")
         mutations_df.to_csv(mutations_file, index=False)
@@ -413,7 +433,7 @@ class EVEWrapper(RequiresWTToFunctionMixin, RequiresFixedLengthMixin, RequiresWT
             "--mutations_file", mutations_file,
             "--output_folder", results_folder,
             "--num_samples", str(self.num_samples),
-            "--batch_size", str(self.inference_batch_size)  # Note: using inference batch size here
+            "--batch_size", str(self.inference_batch_size)
         ]
 
         self._run_eve_script(EVE_SCRIPT_2, args)
@@ -423,21 +443,33 @@ class EVEWrapper(RequiresWTToFunctionMixin, RequiresFixedLengthMixin, RequiresWT
             results_folder,
             f"{self.model_name_}_{self.num_samples}_samples.csv"
         )
+        
+        if not os.path.exists(results_file):
+            raise RuntimeError(f"EVE did not generate results file: {results_file}")
+            
         results = pd.read_csv(results_file).drop_duplicates()
         
-        # Organize results back to correct order
-        # column "mutations" contain colon seperated list of mutations
-        # convert these to sets so that we can map back to the original order
-        sequence_scores = []
-        results['mutation_set'] = results['mutations'].apply(lambda x: frozenset(x.split(':')))
-        # Create a mapping from mutation sets to scores
-        score_map = dict(zip(results['mutation_set'], results['evol_indices']))
+        # Create a mapping from mutation lists to scores
+        result_dict = {}
+        for _, row in results.iterrows():
+            mutation_set = frozenset(row['mutations'].split(':'))
+            result_dict[mutation_set] = row['evol_indices']
         
-        # Map back to original order
-        sequence_scores = [score_map.get(mut_set, np.nan) for mut_set in mutation_sets]
+        # Reconstruct scores in original order
+        final_scores = np.zeros((len(X), 1))
         
-        # negative scores are better
-        return -np.array(sequence_scores).reshape(-1, 1)
+        # For wild-type sequences, score is 0 (reference point)
+        # For non-wild-type sequences, look up score in results
+        for original_idx, seq_idx in enumerate(non_wt_indices):
+            mutation_set = frozenset(self.wt.get_mutations(X[seq_idx]))
+            if mutation_set in result_dict:
+                # EVE scores are better when more negative, so we negate them
+                final_scores[seq_idx] = -result_dict[mutation_set]  
+            else:
+                logger.warning(f"No score found for sequence at index {seq_idx} with mutations {mutation_set}")
+                final_scores[seq_idx] = np.nan
+        
+        return final_scores
 
     def get_feature_names_out(self, input_features: Optional[List[str]] = None) -> List[str]:
         """Get output feature names."""
