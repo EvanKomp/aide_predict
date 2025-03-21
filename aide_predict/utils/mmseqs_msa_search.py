@@ -31,6 +31,7 @@ except Exception as e:
 def run_mmseqs_command(
     params: List[Union[str, Path]], 
     capture_stderr: bool = False,
+    dry_run: bool = False
 ) -> None:
     """Run an MMseqs2 command with logging."""
     params_str = " ".join(str(p) for p in params)
@@ -42,10 +43,13 @@ def run_mmseqs_command(
         "text": True,
         "check": True
     }
-
-    result = subprocess.run([MMSEQS] + params, **subprocess_kwargs)
-    if result.stdout:
-        logger.info(result.stdout)
+    if not dry_run:
+        result = subprocess.run([MMSEQS] + params, **subprocess_kwargs)
+        if result.stdout:
+            logger.info(result.stdout)
+    else:
+        logger.info("Dry run, skipping command")
+        
 
 def run_mmseqs_search(
     sequences: ProteinSequences,
@@ -54,7 +58,8 @@ def run_mmseqs_search(
     metagenomic_db: Optional[Union[str, Path]] = None,
     mode: str = 'standard',
     threads: int = 4,
-    remove_tmp: bool = False
+    remove_tmp: bool = False,
+    dry_run: bool = False
 ) -> List[str]:
     """
     Generate MSAs for protein sequences using MMseqs2.
@@ -126,18 +131,18 @@ def run_mmseqs_search(
     query_fasta = tmp_path / "query.fasta"
     sequences.to_fasta(query_fasta)
     query_db = tmp_path / "querydb"
-    run_mmseqs_command(["createdb", query_fasta, query_db])
+    run_mmseqs_command(["createdb", query_fasta, query_db], dry_run=dry_run)
 
     # Initial search and profile construction
     run_mmseqs_command(["search", query_db, uniref_db, 
                       tmp_path / "res", tmp_path / "tmp",
-                      "--threads", str(threads)] + search_params)
+                      "--threads", str(threads)] + search_params, dry_run=dry_run)
     
     # Move and link profile data following original protocol
     run_mmseqs_command(["mvdb", tmp_path / "tmp/latest/profile_1", 
-                      tmp_path / "prof_res"])
+                      tmp_path / "prof_res"], dry_run=dry_run)
     run_mmseqs_command(["lndb", query_db / "_h", 
-                      tmp_path / "prof_res_h"])
+                      tmp_path / "prof_res_h"], dry_run=dry_run)
 
     # Expansion step using proper database paths
     run_mmseqs_command(["expandaln", 
@@ -154,7 +159,7 @@ def run_mmseqs_search(
         "--max-seq-id", "0.95",
         "--cov", "0.5",
         "--cov-mode", "2"
-    ])
+    ], dry_run=dry_run)
     
     # Realignment
     run_mmseqs_command(["align", 
@@ -169,7 +174,7 @@ def run_mmseqs_search(
         "--max-rejected", "10000",
         "--alt-ali", "10",
         "-a"
-    ])
+    ], dry_run=dry_run)
     
     # Filter results
     run_mmseqs_command(["filterresult",
@@ -181,9 +186,9 @@ def run_mmseqs_search(
         "--threads", str(threads),
         "--qsc", "-20.0",
         "--max-seq-id", "1.0",
-        "--cov", "0.8",
+        "--cov", "0.5",
         "--filter-min-enable", "100",
-    ])
+    ], dry_run=dry_run)
 
     # Create MSA
     run_mmseqs_command(["result2msa",
@@ -194,7 +199,7 @@ def run_mmseqs_search(
         "--msa-format-mode", "6",
         "--db-load-mode", str(db_load_mode),
         "--threads", str(threads)
-    ])
+    ], dry_run=dry_run)
 
     # Environmental search if requested
     if metagenomic_db:
@@ -217,7 +222,7 @@ def run_mmseqs_search(
             tmp_path / "res_env",
             tmp_path / "tmp_env",
             "--threads", str(threads)
-        ] + search_params)
+        ] + search_params, dry_run=dry_run)
         
         run_mmseqs_command(["expandaln",
             tmp_path / "prof_res",
@@ -228,7 +233,7 @@ def run_mmseqs_search(
             "--db-load-mode", str(db_load_mode),
             "--threads", str(threads),
             "-e", "inf"
-        ])
+        ], dry_run=dry_run)
         
         run_mmseqs_command(["align",
             tmp_path / "tmp_env/latest/profile_1",
@@ -242,7 +247,7 @@ def run_mmseqs_search(
             "--max-rejected", "10000",
             "--alt-ali", "10",
             "-a"
-        ])
+        ], dry_run=dry_run)
         
         run_mmseqs_command(["filterresult",
             query_db,
@@ -253,9 +258,9 @@ def run_mmseqs_search(
             "--threads", str(threads),
             "--qsc", "-20.0",
             "--max-seq-id", "1.0",
-            "--cov", "0.8",
+            "--cov", "0.5",
             "--filter-min-enable", "100",
-        ])
+        ], dry_run=dry_run)
         
         run_mmseqs_command(["result2msa",
             query_db,
@@ -265,7 +270,7 @@ def run_mmseqs_search(
             "--msa-format-mode", "6",
             "--db-load-mode", str(db_load_mode),
             "--threads", str(threads)
-        ])
+        ], dry_run=dry_run)
 
         # Merge UniRef and metagenomic results
         run_mmseqs_command(["mergedbs",
@@ -274,16 +279,16 @@ def run_mmseqs_search(
             tmp_path / "uniref.a3m",
             tmp_path / "env.a3m",
             "--compressed", "0"
-        ])
+        ], dry_run=dry_run)
         
     else:
         # Just use UniRef results
         run_mmseqs_command(["mvdb", tmp_path / "uniref.a3m", 
-                          tmp_path / "final.a3m"])
+                          tmp_path / "final.a3m"], dry_run=dry_run)
         
     
     # Extract individual MSAs
-    run_mmseqs_command(["unpackdb", tmp_path / "final.a3m", output_dir / "msas", "--unpack-name-mode", "1", "--unpack-suffix", ".a3m"])
+    run_mmseqs_command(["unpackdb", tmp_path / "final.a3m", output_dir / "msas", "--unpack-name-mode", "1", "--unpack-suffix", ".a3m"], dry_run=dry_run)
     output_paths = list((output_dir / "msas").glob("*.a3m"))
         
     
@@ -306,6 +311,7 @@ def main():
                        default='standard', help='Search sensitivity')
     parser.add_argument('--threads', type=int, default=4, help='CPU threads')
     parser.add_argument('--keep-tmp', action='store_true', help='Keep temporary files')
+    parser.add_argument('--dry-run', action='store_true', help='Print commands without running')
     args = parser.parse_args()
     
     # Set up logging
@@ -324,7 +330,8 @@ def main():
         metagenomic_db=args.env_db,
         mode=args.mode,
         threads=args.threads,
-        remove_tmp=not args.keep_tmp
+        remove_tmp=not args.keep_tmp,
+        dry_run=args.dry_run
     )
     
     print(f"Generated {len(msa_paths)} MSAs in {args.output_dir}")
