@@ -300,3 +300,81 @@ class MSAProcessing:
         return ProteinSequences(sequences)
     
 
+    def compute_conservation(self, msa, normalize=True):
+        """
+        Compute the conservation score for each column in the MSA.
+        
+        This method calculates the entropy-based conservation for each position in the alignment,
+        with an option to normalize values between 0 (variable) and 1 (conserved).
+        
+        Parameters
+        ----------
+        msa : ProteinSequences
+            The multiple sequence alignment to analyze.
+        normalize : bool, optional (default=True)
+            Whether to normalize entropy scores to range from 0 (variable) to 1 (conserved).
+            
+        Returns
+        -------
+        numpy.ndarray
+            Vector of length L with conservation scores for each column.
+        
+        Notes
+        -----
+        - If sequence weights are available in the MSA, they will be used to calculate
+        weighted frequencies for more accurate conservation measurement.
+        - Conservation is calculated using the Shannon entropy of the amino acid distribution
+        at each position, with an option to normalize to the [0,1] range.
+        """
+        import numpy as np
+        from collections import Counter
+        
+        logger.debug(f"Computing conservation scores for MSA with {len(msa)} sequences, {msa.width} positions")
+        
+        # Get alignment as array for easier manipulation
+        msa_array = msa.as_array()
+        
+        # Determine if we have sequence weights to use
+        if hasattr(msa, 'weights') and msa.weights is not None:
+            weights = msa.weights
+            logger.debug("Using pre-computed sequence weights for conservation calculation")
+        else:
+            # Use uniform weights if none are available
+            weights = np.ones(len(msa)) / len(msa)
+            logger.debug("Using uniform sequence weights for conservation calculation")
+        
+        # Initialize conservation scores
+        conservation = np.zeros(msa.width)
+        
+        # Calculate conservation for each column
+        for i in range(msa.width):
+            # Extract column
+            col = msa_array[:, i]
+            
+            # Calculate weighted frequencies
+            aa_freqs = {}
+            for seq_idx, aa in enumerate(col):
+                if aa not in aa_freqs:
+                    aa_freqs[aa] = 0
+                aa_freqs[aa] += weights[seq_idx]
+            
+            # Normalize frequencies to sum to 1
+            total_weight = sum(aa_freqs.values())
+            for aa in aa_freqs:
+                aa_freqs[aa] /= total_weight
+            
+            # Convert to array for entropy calculation
+            freq_array = np.array(list(aa_freqs.values()))
+            
+            # Calculate entropy
+            X = freq_array[freq_array > 0]
+            H = -np.sum(X * np.log2(X))
+            
+            # Normalize if requested
+            if normalize:
+                conservation[i] = 1 - (H / np.log2(len(freq_array)))
+            else:
+                conservation[i] = H
+        
+        logger.info(f"Conservation calculation complete: min={conservation.min():.4f}, max={conservation.max():.4f}, mean={conservation.mean():.4f}")
+        return conservation
