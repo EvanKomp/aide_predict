@@ -300,7 +300,7 @@ class MSAProcessing:
         return ProteinSequences(sequences)
     
 
-    def compute_conservation(self, msa, normalize=True):
+    def compute_conservation(self, msa, normalize=True, gap_treatment='exclude', gap_characters=GAP_CHARACTERS):
         """
         Compute the conservation score for each column in the MSA.
         
@@ -313,6 +313,13 @@ class MSAProcessing:
             The multiple sequence alignment to analyze.
         normalize : bool, optional (default=True)
             Whether to normalize entropy scores to range from 0 (variable) to 1 (conserved).
+        gap_treatment : str, optional (default='exclude')
+            How to handle gaps in conservation calculation:
+            - 'exclude': Gaps are excluded from frequency calculation
+            - 'include': Gaps are treated as normal characters
+            - 'penalize': Columns with high gap content are penalized
+        gap_characters : set or list, optional (default=GAP_CHARACTERS)
+            Characters to be considered as gaps.
             
         Returns
         -------
@@ -325,9 +332,11 @@ class MSAProcessing:
         weighted frequencies for more accurate conservation measurement.
         - Conservation is calculated using the Shannon entropy of the amino acid distribution
         at each position, with an option to normalize to the [0,1] range.
+        - Gaps can significantly affect conservation scores. The 'exclude' option removes gaps
+        from consideration, 'include' treats them as valid characters, and 'penalize' 
+        reduces the conservation score based on gap frequency.
         """
         import numpy as np
-        from collections import Counter
         
         logger.debug(f"Computing conservation scores for MSA with {len(msa)} sequences, {msa.width} positions")
         
@@ -351,17 +360,33 @@ class MSAProcessing:
             # Extract column
             col = msa_array[:, i]
             
+            # Track gap frequency for potential penalization
+            gap_weight = 0.0
+            
             # Calculate weighted frequencies
             aa_freqs = {}
+            valid_weight_sum = 0.0
+            
             for seq_idx, aa in enumerate(col):
+                # Handle gaps according to specified treatment
+                if aa in gap_characters:
+                    gap_weight += weights[seq_idx]
+                    if gap_treatment == 'exclude':
+                        continue
+                
                 if aa not in aa_freqs:
                     aa_freqs[aa] = 0
                 aa_freqs[aa] += weights[seq_idx]
+                valid_weight_sum += weights[seq_idx]
             
+            # Skip columns that are 100% gaps
+            if valid_weight_sum == 0:
+                conservation[i] = 0.0
+                continue
+                
             # Normalize frequencies to sum to 1
-            total_weight = sum(aa_freqs.values())
             for aa in aa_freqs:
-                aa_freqs[aa] /= total_weight
+                aa_freqs[aa] /= valid_weight_sum
             
             # Convert to array for entropy calculation
             freq_array = np.array(list(aa_freqs.values()))
@@ -372,9 +397,24 @@ class MSAProcessing:
             
             # Normalize if requested
             if normalize:
-                conservation[i] = 1 - (H / np.log2(len(freq_array)))
+                cons_score = 1 - (H / np.log2(max(1, len(aa_freqs))))
             else:
-                conservation[i] = H
+                cons_score = H
+                
+            # Apply gap penalty if requested
+            if gap_treatment == 'penalize':
+                # Calculate gap fraction (0 to 1)
+                gap_fraction = gap_weight / (gap_weight + valid_weight_sum)
+                # Penalize conservation score based on gap fraction
+                # More gaps = lower conservation score
+                if normalize:
+                    # For normalized scores (higher is more conserved)
+                    cons_score *= (1 - gap_fraction)
+                else:
+                    # For raw entropy scores (lower is more conserved)
+                    cons_score += gap_fraction * np.log2(max(2, len(aa_freqs)))
+            
+            conservation[i] = cons_score
         
         logger.info(f"Conservation calculation complete: min={conservation.min():.4f}, max={conservation.max():.4f}, mean={conservation.mean():.4f}")
         return conservation
