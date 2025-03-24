@@ -215,7 +215,7 @@ class MSAProcessing:
         one_hot = one_hot.reshape(len(msa), -1)
         logger.debug(f"Reshaped one-hot encoding: {one_hot.shape}")
 
-        gap_idx = ohe.encoder._vocab.index('-')
+        gap_idx = ohe._vocab.index('-')
         
         weights = []
         for i in range(0, len(one_hot), self.weight_computation_batch_size):
