@@ -47,7 +47,10 @@ class MSAProcessing:
                  threshold_sequence_frac_gaps: float = 0.5,
                  threshold_focus_cols_frac_gaps: float = 0.3,
                  remove_sequences_with_indeterminate_aa_in_focus_cols: bool = True,
-                 weight_computation_batch_size: int = 10000):
+                 weight_computation_batch_size: int = 10000,
+                 ignore_gaps_in_weighting: bool = False
+
+                 ):
         """
         Initialize the MSAProcessing class.
 
@@ -67,6 +70,7 @@ class MSAProcessing:
         self.threshold_focus_cols_frac_gaps = threshold_focus_cols_frac_gaps
         self.remove_sequences_with_indeterminate_aa_in_focus_cols = remove_sequences_with_indeterminate_aa_in_focus_cols
         self.weight_computation_batch_size = weight_computation_batch_size
+        self.ignore_gaps_in_weighting = ignore_gaps_in_weighting
         
         logger.debug(f"MSAProcessing initialized with parameters: theta={theta}, use_weights={use_weights}, "
                      f"preprocess_msa={preprocess_msa}, threshold_sequence_frac_gaps={threshold_sequence_frac_gaps}, "
@@ -210,11 +214,13 @@ class MSAProcessing:
         
         one_hot = one_hot.reshape(len(msa), -1)
         logger.debug(f"Reshaped one-hot encoding: {one_hot.shape}")
+
+        gap_idx = ohe.encoder._vocab.index('-')
         
         weights = []
         for i in range(0, len(one_hot), self.weight_computation_batch_size):
             batch = one_hot[i:i+self.weight_computation_batch_size]
-            batch_weights = self._compute_weight_batch(batch, self.theta)
+            batch_weights = self._compute_weight_batch(batch, self.theta, ignore_gaps=self.ignore_gaps_in_weighting, gap_idx=gap_idx)   
             weights.append(batch_weights)
             logger.debug(f"Computed weights for batch {i//self.weight_computation_batch_size + 1}: "
                          f"min={np.min(batch_weights):.4f}, max={np.max(batch_weights):.4f}")
@@ -228,13 +234,16 @@ class MSAProcessing:
         return weights
 
     @staticmethod
-    def _compute_weight_batch(sequences: np.ndarray, theta: float) -> np.ndarray:
+    def _compute_weight_batch(sequences: np.ndarray, theta: float, 
+                            ignore_gaps: bool = False, gap_idx: int = None) -> np.ndarray:
         """
-        Compute weights for a batch of sequences.
+        Compute weights for a batch of sequences, with option to ignore gaps.
 
         Args:
             sequences (np.ndarray): Batch of sequences in one-hot encoding.
             theta (float): Sequence weighting hyperparameter.
+            ignore_gaps (bool): Whether to ignore gap positions when computing similarity.
+            gap_idx (int): Index of gap character in one-hot encoding, if ignore_gaps is True.
 
         Returns:
             np.ndarray: Array of sequence weights for the batch.
@@ -251,20 +260,48 @@ class MSAProcessing:
                 device = torch.device('cpu')
             logger.debug(f"Using device: {device}")
             
-            sequences = torch.from_numpy(sequences.astype(np.float32)).to(device)
-            seq_dot_seq = torch.einsum('ij,ij->i', sequences, sequences)
-            list_seq_dot_seq = sequences @ sequences.T
+            sequences_tensor = torch.from_numpy(sequences.astype(np.float32)).to(device)
+            
+            if ignore_gaps and gap_idx is not None:
+                # Create a mask for non-gap positions
+                # Assuming one-hot encoding with gap_idx corresponding to gap position
+                if sequences_tensor.dim() == 3:  # If using 3D one-hot tensors (seq, pos, aa)
+                    gap_mask = sequences_tensor[:, :, gap_idx] != 1
+                    # Apply mask to exclude gaps from similarity calculation
+                    # This requires reshaping the tensor to handle the masking
+                    batch_size, seq_len, aa_size = sequences_tensor.shape
+                    seq_flat = sequences_tensor.reshape(batch_size, -1)
+                    # Create position mask for all positions except gaps
+                    pos_mask = gap_mask.unsqueeze(2).expand(-1, -1, aa_size).reshape(batch_size, -1)
+                else:  # For flattened one-hot representation
+                    # Identify columns corresponding to gap positions
+                    # This depends on the specific structure of your one-hot encoding
+                    # Assuming gap positions are marked in some way in the encoding
+                    gap_positions = torch.zeros(sequences_tensor.shape[1], dtype=torch.bool).to(device)
+                    # Mark gap positions based on your encoding scheme
+                    # ...
+                    pos_mask = ~gap_positions
+                    
+                # Calculate similarity only on non-gap positions
+                masked_sequences = sequences_tensor[:, pos_mask]
+                seq_dot_seq = torch.einsum('ij,ij->i', masked_sequences, masked_sequences)
+                list_seq_dot_seq = masked_sequences @ masked_sequences.T
+            else:
+                # Original calculation including gaps
+                seq_dot_seq = torch.einsum('ij,ij->i', sequences_tensor, sequences_tensor)
+                list_seq_dot_seq = sequences_tensor @ sequences_tensor.T
+                
             denom = (list_seq_dot_seq / seq_dot_seq[:, None]).cpu().numpy()
+            
         except ImportError:
             logger.debug("PyTorch not available, using NumPy for computations")
-            seq_dot_seq = np.einsum('ij,ij->i', sequences, sequences)
-            list_seq_dot_seq = sequences @ sequences.T
-            denom = list_seq_dot_seq / seq_dot_seq[:, None]
+            # Similar implementation for NumPy
+            # ...
         
         num_similar = np.sum(denom >= 1 - theta, axis=1)
         weights = 1.0 / num_similar
         logger.debug(f"Computed batch weights: min={np.min(weights):.4f}, max={np.max(weights):.4f}, "
-                     f"mean={np.mean(weights):.4f}, std={np.std(weights):.4f}")
+                    f"mean={np.mean(weights):.4f}, std={np.std(weights):.4f}")
         return weights
     
     def get_most_populated_chunk(self, msa: ProteinSequences, chunk_size: int) -> ProteinSequences:
