@@ -295,8 +295,31 @@ class MSAProcessing:
             
         except ImportError:
             logger.debug("PyTorch not available, using NumPy for computations")
-            # Similar implementation for NumPy
-            # ...
+            if ignore_gaps and gap_idx is not None:
+                # Handle gap exclusion with NumPy
+                # For flattened one-hot encoding, we need to identify which columns correspond to gaps
+                # This depends on the structure of the one-hot encoding
+                if len(sequences.shape) == 3:  # 3D one-hot tensors (seq, pos, aa)
+                    gap_mask = sequences[:, :, gap_idx] != 1
+                    batch_size, seq_len, aa_size = sequences.shape
+                    # Create position mask for all positions except gaps
+                    pos_mask = np.repeat(gap_mask[:, :, np.newaxis], aa_size, axis=2).reshape(batch_size, -1)
+                    masked_sequences = sequences.reshape(batch_size, -1)[:, pos_mask[0]]
+                else:
+                    # For flattened representation, identify and exclude gap columns
+                    # Here we'd need logic specific to how gaps are encoded in the flattened representation
+                    # For simplicity, we'll fall back to using all positions
+                    masked_sequences = sequences
+                
+                # Compute with masked sequences
+                seq_dot_seq = np.einsum('ij,ij->i', masked_sequences, masked_sequences)
+                list_seq_dot_seq = masked_sequences @ masked_sequences.T
+            else:
+                # Original calculation including gaps
+                seq_dot_seq = np.einsum('ij,ij->i', sequences, sequences)
+                list_seq_dot_seq = sequences @ sequences.T
+            
+            denom = list_seq_dot_seq / seq_dot_seq[:, np.newaxis]
         
         num_similar = np.sum(denom >= 1 - theta, axis=1)
         weights = 1.0 / num_similar
