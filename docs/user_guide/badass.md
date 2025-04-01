@@ -172,4 +172,4 @@ The visualization includes:
 
 ## References
 
-- BADASS: [Biophysically-inspired Adaptive Directed evolution with Simulated Annealing and Statistical testing](https://www.biorxiv.org/content/10.1101/2024.10.25.620340v1)
+- BADASS: [biphasic annealing for diverse adaptive sequence sampling](https://www.biorxiv.org/content/10.1101/2024.10.25.620340v1)
