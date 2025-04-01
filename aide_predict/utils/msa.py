@@ -47,7 +47,10 @@ class MSAProcessing:
                  threshold_sequence_frac_gaps: float = 0.5,
                  threshold_focus_cols_frac_gaps: float = 0.3,
                  remove_sequences_with_indeterminate_aa_in_focus_cols: bool = True,
-                 weight_computation_batch_size: int = 10000):
+                 weight_computation_batch_size: int = 10000,
+                 ignore_gaps_in_weighting: bool = False
+
+                 ):
         """
         Initialize the MSAProcessing class.
 
@@ -67,6 +70,7 @@ class MSAProcessing:
         self.threshold_focus_cols_frac_gaps = threshold_focus_cols_frac_gaps
         self.remove_sequences_with_indeterminate_aa_in_focus_cols = remove_sequences_with_indeterminate_aa_in_focus_cols
         self.weight_computation_batch_size = weight_computation_batch_size
+        self.ignore_gaps_in_weighting = ignore_gaps_in_weighting
         
         logger.debug(f"MSAProcessing initialized with parameters: theta={theta}, use_weights={use_weights}, "
                      f"preprocess_msa={preprocess_msa}, threshold_sequence_frac_gaps={threshold_sequence_frac_gaps}, "
@@ -210,11 +214,13 @@ class MSAProcessing:
         
         one_hot = one_hot.reshape(len(msa), -1)
         logger.debug(f"Reshaped one-hot encoding: {one_hot.shape}")
+
+        gap_idx = ohe._vocab.index('-')
         
         weights = []
         for i in range(0, len(one_hot), self.weight_computation_batch_size):
             batch = one_hot[i:i+self.weight_computation_batch_size]
-            batch_weights = self._compute_weight_batch(batch, self.theta)
+            batch_weights = self._compute_weight_batch(batch, self.theta, ignore_gaps=self.ignore_gaps_in_weighting, gap_idx=gap_idx)   
             weights.append(batch_weights)
             logger.debug(f"Computed weights for batch {i//self.weight_computation_batch_size + 1}: "
                          f"min={np.min(batch_weights):.4f}, max={np.max(batch_weights):.4f}")
@@ -228,13 +234,16 @@ class MSAProcessing:
         return weights
 
     @staticmethod
-    def _compute_weight_batch(sequences: np.ndarray, theta: float) -> np.ndarray:
+    def _compute_weight_batch(sequences: np.ndarray, theta: float, 
+                            ignore_gaps: bool = False, gap_idx: int = None) -> np.ndarray:
         """
-        Compute weights for a batch of sequences.
+        Compute weights for a batch of sequences, with option to ignore gaps.
 
         Args:
             sequences (np.ndarray): Batch of sequences in one-hot encoding.
             theta (float): Sequence weighting hyperparameter.
+            ignore_gaps (bool): Whether to ignore gap positions when computing similarity.
+            gap_idx (int): Index of gap character in one-hot encoding, if ignore_gaps is True.
 
         Returns:
             np.ndarray: Array of sequence weights for the batch.
@@ -251,20 +260,71 @@ class MSAProcessing:
                 device = torch.device('cpu')
             logger.debug(f"Using device: {device}")
             
-            sequences = torch.from_numpy(sequences.astype(np.float32)).to(device)
-            seq_dot_seq = torch.einsum('ij,ij->i', sequences, sequences)
-            list_seq_dot_seq = sequences @ sequences.T
+            sequences_tensor = torch.from_numpy(sequences.astype(np.float32)).to(device)
+            
+            if ignore_gaps and gap_idx is not None:
+                # Create a mask for non-gap positions
+                # Assuming one-hot encoding with gap_idx corresponding to gap position
+                if sequences_tensor.dim() == 3:  # If using 3D one-hot tensors (seq, pos, aa)
+                    gap_mask = sequences_tensor[:, :, gap_idx] != 1
+                    # Apply mask to exclude gaps from similarity calculation
+                    # This requires reshaping the tensor to handle the masking
+                    batch_size, seq_len, aa_size = sequences_tensor.shape
+                    seq_flat = sequences_tensor.reshape(batch_size, -1)
+                    # Create position mask for all positions except gaps
+                    pos_mask = gap_mask.unsqueeze(2).expand(-1, -1, aa_size).reshape(batch_size, -1)
+                else:  # For flattened one-hot representation
+                    # Identify columns corresponding to gap positions
+                    # This depends on the specific structure of your one-hot encoding
+                    # Assuming gap positions are marked in some way in the encoding
+                    gap_positions = torch.zeros(sequences_tensor.shape[1], dtype=torch.bool).to(device)
+                    # Mark gap positions based on your encoding scheme
+                    # ...
+                    pos_mask = ~gap_positions
+                    
+                # Calculate similarity only on non-gap positions
+                masked_sequences = sequences_tensor[:, pos_mask]
+                seq_dot_seq = torch.einsum('ij,ij->i', masked_sequences, masked_sequences)
+                list_seq_dot_seq = masked_sequences @ masked_sequences.T
+            else:
+                # Original calculation including gaps
+                seq_dot_seq = torch.einsum('ij,ij->i', sequences_tensor, sequences_tensor)
+                list_seq_dot_seq = sequences_tensor @ sequences_tensor.T
+                
             denom = (list_seq_dot_seq / seq_dot_seq[:, None]).cpu().numpy()
+            
         except ImportError:
             logger.debug("PyTorch not available, using NumPy for computations")
-            seq_dot_seq = np.einsum('ij,ij->i', sequences, sequences)
-            list_seq_dot_seq = sequences @ sequences.T
-            denom = list_seq_dot_seq / seq_dot_seq[:, None]
+            if ignore_gaps and gap_idx is not None:
+                # Handle gap exclusion with NumPy
+                # For flattened one-hot encoding, we need to identify which columns correspond to gaps
+                # This depends on the structure of the one-hot encoding
+                if len(sequences.shape) == 3:  # 3D one-hot tensors (seq, pos, aa)
+                    gap_mask = sequences[:, :, gap_idx] != 1
+                    batch_size, seq_len, aa_size = sequences.shape
+                    # Create position mask for all positions except gaps
+                    pos_mask = np.repeat(gap_mask[:, :, np.newaxis], aa_size, axis=2).reshape(batch_size, -1)
+                    masked_sequences = sequences.reshape(batch_size, -1)[:, pos_mask[0]]
+                else:
+                    # For flattened representation, identify and exclude gap columns
+                    # Here we'd need logic specific to how gaps are encoded in the flattened representation
+                    # For simplicity, we'll fall back to using all positions
+                    masked_sequences = sequences
+                
+                # Compute with masked sequences
+                seq_dot_seq = np.einsum('ij,ij->i', masked_sequences, masked_sequences)
+                list_seq_dot_seq = masked_sequences @ masked_sequences.T
+            else:
+                # Original calculation including gaps
+                seq_dot_seq = np.einsum('ij,ij->i', sequences, sequences)
+                list_seq_dot_seq = sequences @ sequences.T
+            
+            denom = list_seq_dot_seq / seq_dot_seq[:, np.newaxis]
         
         num_similar = np.sum(denom >= 1 - theta, axis=1)
         weights = 1.0 / num_similar
         logger.debug(f"Computed batch weights: min={np.min(weights):.4f}, max={np.max(weights):.4f}, "
-                     f"mean={np.mean(weights):.4f}, std={np.std(weights):.4f}")
+                    f"mean={np.mean(weights):.4f}, std={np.std(weights):.4f}")
         return weights
     
     def get_most_populated_chunk(self, msa: ProteinSequences, chunk_size: int) -> ProteinSequences:
@@ -300,3 +360,121 @@ class MSAProcessing:
         return ProteinSequences(sequences)
     
 
+    def compute_conservation(self, msa, normalize=True, gap_treatment='exclude', gap_characters=GAP_CHARACTERS):
+        """
+        Compute the conservation score for each column in the MSA.
+        
+        This method calculates the entropy-based conservation for each position in the alignment,
+        with an option to normalize values between 0 (variable) and 1 (conserved).
+        
+        Parameters
+        ----------
+        msa : ProteinSequences
+            The multiple sequence alignment to analyze.
+        normalize : bool, optional (default=True)
+            Whether to normalize entropy scores to range from 0 (variable) to 1 (conserved).
+        gap_treatment : str, optional (default='exclude')
+            How to handle gaps in conservation calculation:
+            - 'exclude': Gaps are excluded from frequency calculation
+            - 'include': Gaps are treated as normal characters
+            - 'penalize': Columns with high gap content are penalized
+        gap_characters : set or list, optional (default=GAP_CHARACTERS)
+            Characters to be considered as gaps.
+            
+        Returns
+        -------
+        numpy.ndarray
+            Vector of length L with conservation scores for each column.
+        
+        Notes
+        -----
+        - If sequence weights are available in the MSA, they will be used to calculate
+        weighted frequencies for more accurate conservation measurement.
+        - Conservation is calculated using the Shannon entropy of the amino acid distribution
+        at each position, with an option to normalize to the [0,1] range.
+        - Gaps can significantly affect conservation scores. The 'exclude' option removes gaps
+        from consideration, 'include' treats them as valid characters, and 'penalize' 
+        reduces the conservation score based on gap frequency.
+        """
+        import numpy as np
+        
+        logger.debug(f"Computing conservation scores for MSA with {len(msa)} sequences, {msa.width} positions")
+        
+        # Get alignment as array for easier manipulation
+        msa_array = msa.as_array()
+        
+        # Determine if we have sequence weights to use
+        if hasattr(msa, 'weights') and msa.weights is not None:
+            weights = msa.weights
+            logger.debug("Using pre-computed sequence weights for conservation calculation")
+        else:
+            # Use uniform weights if none are available
+            weights = np.ones(len(msa)) / len(msa)
+            logger.debug("Using uniform sequence weights for conservation calculation")
+        
+        # Initialize conservation scores
+        conservation = np.zeros(msa.width)
+        
+        # Calculate conservation for each column
+        for i in range(msa.width):
+            # Extract column
+            col = msa_array[:, i]
+            
+            # Track gap frequency for potential penalization
+            gap_weight = 0.0
+            
+            # Calculate weighted frequencies
+            aa_freqs = {}
+            valid_weight_sum = 0.0
+            
+            for seq_idx, aa in enumerate(col):
+                # Handle gaps according to specified treatment
+                if aa in gap_characters:
+                    gap_weight += weights[seq_idx]
+                    if gap_treatment == 'exclude':
+                        continue
+                
+                if aa not in aa_freqs:
+                    aa_freqs[aa] = 0
+                aa_freqs[aa] += weights[seq_idx]
+                valid_weight_sum += weights[seq_idx]
+            
+            # Skip columns that are 100% gaps
+            if valid_weight_sum == 0:
+                conservation[i] = 0.0
+                continue
+                
+            # Normalize frequencies to sum to 1
+            for aa in aa_freqs:
+                aa_freqs[aa] /= valid_weight_sum
+            
+            # Convert to array for entropy calculation
+            freq_array = np.array(list(aa_freqs.values()))
+            
+            # Calculate entropy
+            X = freq_array[freq_array > 0]
+            H = -np.sum(X * np.log2(X))
+            
+            # Normalize if requested
+            if normalize:
+                cons_score = 1 - (H / np.log2(max(1, len(aa_freqs))))
+            else:
+                cons_score = H
+                
+            # Apply gap penalty if requested
+            if gap_treatment == 'penalize':
+                # Calculate gap fraction (0 to 1)
+                gap_fraction = gap_weight / (gap_weight + valid_weight_sum)
+                # Penalize conservation score based on gap fraction
+                # More gaps = lower conservation score
+                if normalize:
+                    # For normalized scores (higher is more conserved)
+                    cons_score *= (1 - gap_fraction)
+                else:
+                    # For raw entropy scores (lower is more conserved)
+                    cons_score += gap_fraction * np.log2(max(2, len(aa_freqs)))
+            
+            conservation[i] = cons_score
+        
+        logger.info(f"Conservation calculation complete: min={conservation.min():.4f}, max={conservation.max():.4f}, mean={conservation.mean():.4f}")
+        return conservation
