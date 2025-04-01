@@ -30,6 +30,7 @@ User Guide
    user_guide/contributing_models.md
    user_guide/structure_pred.md
    user_guide/msa_search.md
+   user_guide/badass.md
 
 .. toctree::
    :maxdepth: 2
