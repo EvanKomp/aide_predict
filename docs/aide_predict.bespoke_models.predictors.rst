@@ -60,6 +60,14 @@ aide\_predict.bespoke\_models.predictors.saprot module
    :undoc-members:
    :show-inheritance:
 
+aide\_predict.bespoke\_models.predictors.ssemb module
+-----------------------------------------------------
+
+.. automodule:: aide_predict.bespoke_models.predictors.ssemb
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 aide\_predict.bespoke\_models.predictors.vespa module
 -----------------------------------------------------
 

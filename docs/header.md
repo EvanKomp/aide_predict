@@ -85,6 +85,14 @@ You can always check which modules are installed/available to you by running `ge
     - Requires fixed-length sequences
     - Requires independant EVE environment, see Installation.
 
+8. [SSEmb*](https://www.nature.com/articles/s41467-024-53982-z#Sec25)
+   - MSATransformer with attention constrained by 3D structure contacts, combined with Graph Neural network on the structure
+   - Requires MSA for fitting
+   - Requires wild-type sequence during inference
+   - Requires fixed-length sequences
+   - Requires Structure
+   - Requires independant SSEmb environment, see Installation.
+
 ### Embeddings for Downstream ML
 
 1. One Hot Protein Embedding
@@ -159,6 +167,43 @@ from aide_predicts import get_supported_tools
 get_supported_tools()
 ```
 
+### Installation of SSEmb
+
+To access the SSEmb module, first clone the repo (NOT inside of AIDE):
+```
+git clone https://github.com/KULL-Centre/_2023_Blaabjerg_SSEmb
+```
+
+__IMPORTANT__: set the environment variable `SSEMB_REPO` to the path of the cloned repo. This is used by AIDE to import SSEmb modules as it is not installable.
+
+Build a new conda environment:
+
+```
+conda create -n ssemb_env python=3.11 pytorch=2.3 scipy scikit-learn pandas fair-esm==2.0.0 biopython==1.79 openmm==8.0 pdbfixer==1.8 pyyaml matplotlib mpl-scatter-density
+conda activate ssemb_env
+pip install torch_scatter torch_cluster
+```
+__IMPORTANT__: set the environment variable `SSEMB_CONDA_ENV` to the name of the conda environment you just created. This is used by AIDE to activate the SSEmb environment.
+
+Download the model weights. This must be conducted in the root directory of the SSEmb repo:
+
+```
+wget https://zenodo.org/records/12798019/files/weights.tar.gz
+tar -zxf weights.tar.gz 
+```
+
+Confirm AIDE now has access to the SSEmb module:
+```
+from aide_predicts import get_supported_tools
+get_supported_tools()
+```
+
+Its also probably worth running this test script to make sure it does not error:
+
+```
+python tests/test_not_base_models/test_ssemb_pred.py
+```
+
 ## Tests
 Continuous integration only runs base module tests, eg.
 `pytest -v -m "not slow and not optional"`
@@ -185,6 +230,7 @@ The following deserve credit as they are either directly wrapped within AIDE, se
 11. Eddy, S. R. Accelerated Profile HMM Searches. PLOS Computational Biology 7, e1002195 (2011).
 12. Pedregosa, F. et al. Scikit-learn: Machine Learning in Python. MACHINE LEARNING IN PYTHON.
 13. Notin, P. et al. ProteinGym: Large-Scale Benchmarks for Protein Fitness Prediction and Design.
+14. Blaabjerg, L.M., Jonsson, N., Boomsma, W. et al. SSEmb: A joint embedding of protein sequence and structure enables robust variant effect predictions. Nat Commun 15, 9646 (2024). https://doi.org/10.1038/s41467-024-53982-z
 
 ## License
 
