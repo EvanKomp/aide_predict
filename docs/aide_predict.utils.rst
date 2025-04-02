@@ -20,6 +20,14 @@ aide\_predict.utils.alignment\_calls module
    :undoc-members:
    :show-inheritance:
 
+aide\_predict.utils.badass module
+---------------------------------
+
+.. automodule:: aide_predict.utils.badass
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 aide\_predict.utils.checks module
 ---------------------------------
 
@@ -52,18 +60,10 @@ aide\_predict.utils.constants module
    :undoc-members:
    :show-inheritance:
 
-aide\_predict.utils.esmfold module
-----------------------------------
+aide\_predict.utils.mmseqs\_msa\_search module
+----------------------------------------------
 
-.. automodule:: aide_predict.utils.esmfold
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-aide\_predict.utils.mmseqs\_search module
------------------------------------------
-
-.. automodule:: aide_predict.utils.mmseqs_search
+.. automodule:: aide_predict.utils.mmseqs_msa_search
    :members:
    :undoc-members:
    :show-inheritance:
@@ -80,6 +80,14 @@ aide\_predict.utils.plotting module
 -----------------------------------
 
 .. automodule:: aide_predict.utils.plotting
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+aide\_predict.utils.soloseq module
+----------------------------------
+
+.. automodule:: aide_predict.utils.soloseq
    :members:
    :undoc-members:
    :show-inheritance:
