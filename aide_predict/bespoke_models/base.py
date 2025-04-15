@@ -425,6 +425,9 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
                 raise ValueError("The model outputs and WT outputs do not have the same shape.")
             
             outputs -= wt_output
+
+            # convert outputs to list of arrays again
+            outputs = list(outputs)
         return outputs
     
     def predict(self, X: Union[ProteinSequences, List[str]]) -> np.ndarray:
@@ -539,21 +542,6 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         """Whether the model should refit on new sequences when given."""
         return self._should_refit_on_sequences
 
-    # has not been used yet. Consider removing permanently
-    # @staticmethod
-    # def _construct_necessary_metadata(model_directory: str, necessary_metadata: dict) -> None:
-    #     """
-    #     Construct the necessary metadata for a model.
-
-    #     Args:
-    #         model_directory (str): The directory to store the metadata.
-    #         necessary_metadata (dict): Dictionary of necessary metadata.
-    #     """
-    #     if not os.path.exists(model_directory):
-    #         os.makedirs(model_directory)
-    #         logger.info(f"Created model directory: {model_directory}")
-    #     logger.warning("This model class did not implement _construct_necessary_metadata. If the model requires anything other than raw sequences to be fit, this is unexpected.")
-
     @property
     def metadata_folder(self):
         return self._processed_metadata_folder
@@ -574,29 +562,6 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
             os.makedirs(self.metadata_folder)
             logger.info(f"Created metadata folder: {self.metadata_folder}")
 
-    # Has not been used yet. Consider removing permanently
-    # @classmethod
-    # def from_basic_info(
-    #     cls,
-    #     model_directory: str,
-    #     necessary_metadata: dict = {},
-    #     wt: Optional[str] = None,
-    #     **kwargs
-    # ) -> 'ProteinModelWrapper':
-    #     """
-    #     Construct the required metadata for a model from basic information and instantiate.
-        
-    #     Args:
-    #         model_directory (str): The directory to store the metadata in.
-    #         necessary_metadata (dict): A dictionary of necessary metadata to construct.
-    #         wt (Optional[str]): The wild type sequence.
-    #         **kwargs: Additional arguments to pass to the model class.
-
-    #     Returns:
-    #         ProteinModelWrapper: The instantiated model.
-    #     """
-    #     cls._construct_necessary_metadata(model_directory, necessary_metadata)
-    #     return cls(metadata_folder=model_directory, wt=wt, **kwargs)
 
 #############################################
 # MIXINS FOR MODELS
