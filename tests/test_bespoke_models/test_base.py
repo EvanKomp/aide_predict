@@ -350,7 +350,7 @@ class TestProteinModelWrapper:
 
                 tmp.close()
 
-    def test_requires_msa_mixin(self):
+    def test_requires_msa_for_fit_mixin(self):
         class TestModel(RequiresMSAForFitMixin, ProteinModelWrapper):
             def _fit(self, X, y=None):
                 self.fitted_ = True
@@ -365,8 +365,7 @@ class TestProteinModelWrapper:
 
         # now check that it is aligned if not
         model = TestModel(metadata_folder=tempdir)
-        mock_sequences = MagicMock()
-        mock_sequences.aligned = False
+        mock_sequences = ProteinSequences.from_list(["ACDE", "FGH"])
         model._validate_input = MagicMock(return_value=mock_sequences)
         model._enforce_aligned = MagicMock(return_value=mock_sequences)
         model.fit(mock_sequences)

@@ -195,6 +195,9 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         
         if self.requires_wt_msa and processed_wt.msa is None:
             raise ValueError("This model requires an MSA for fitting, but the wild type sequence does not have one.")
+        # Add this check:
+        elif self.requires_wt_msa and not processed_wt.msa_same_width:
+            raise ValueError("Wild type sequence and its MSA have different widths.")
         
         return processed_wt
 
@@ -369,8 +372,13 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
                         for seq in X:
                             if len(seq) == wt_msa.width:
                                 seq.msa = wt_msa
+                            else:
+                                raise ValueError("Some sequences do not have an MSA, and the wild type sequence does not have one either. Cannot fit model.")
                     else:
                         raise ValueError("Some sequences do not have an MSA, and the wild type sequence does not have one either. Cannot fit model.")
+                    
+                if any(not seq.msa_same_width for seq in X):
+                    raise ValueError("Not all sequence MSAs have the same width as the sequence itself.")
             
             self._fit(X, y)
         
@@ -412,9 +420,14 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
                     for seq in X:
                         if len(seq) == wt_msa.width:
                             seq.msa = wt_msa
-
+                        else:
+                            raise ValueError("Some sequences do not have an MSA, and the wild type sequence does not have one either. Cannot fit model.")
                 else:
                     raise ValueError("Some sequences do not have an MSA, and the wild type sequence does not have one either. Cannot fit model.")
+                
+            if any(not seq.msa_same_width for seq in X):
+                raise ValueError("Not all sequence MSAs have the same width as the sequence itself.")
+            
 
         self._partial_fit(X, y)
         return self
@@ -477,8 +490,13 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
                     for seq in X:
                         if len(seq) == wt_msa.width:
                             seq.msa = wt_msa
+                        else:
+                            raise ValueError("Some sequences do not have an MSA, and the wild type sequence does not have one either. Cannot fit model.")
                 else:
                     raise ValueError("Some sequences do not have an MSA, and the wild type sequence does not have one either. Cannot fit model.")
+                
+            if any(not seq.msa_same_width for seq in X):
+                raise ValueError("Not all sequence MSAs have the same width as the sequence itself.")
 
         if not self.can_handle_aligned_sequences and X.has_gaps:
             logger.info("Input sequences have gaps and the model cannot handle them. Removing gaps.")
