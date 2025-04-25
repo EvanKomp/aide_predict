@@ -14,7 +14,7 @@ import tqdm
 
 import numpy as np
 
-from aide_predict.bespoke_models.base import ProteinModelWrapper, PositionSpecificMixin, CanHandleAlignedSequencesMixin, CacheMixin
+from aide_predict.bespoke_models.base import ProteinModelWrapper, PositionSpecificMixin, CanHandleAlignedSequencesMixin, CacheMixin, ExpectsNoFitMixin
 from aide_predict.bespoke_models import model_device_context
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
 from aide_predict.utils.common import MessageBool
@@ -27,7 +27,7 @@ try:
 except ImportError:
     AVAILABLE = MessageBool(False, "ESM2 model is not available. Please install the transformers library.")
 
-class ESM2Embedding(CacheMixin, PositionSpecificMixin, CanHandleAlignedSequencesMixin, ProteinModelWrapper):
+class ESM2Embedding(CacheMixin, ExpectsNoFitMixin, PositionSpecificMixin, CanHandleAlignedSequencesMixin, ProteinModelWrapper):
     """
     A protein sequence embedder that uses the ESM2 model to generate embeddings.
     
@@ -203,8 +203,8 @@ class ESM2Embedding(CacheMixin, PositionSpecificMixin, CanHandleAlignedSequences
                     # is on
                     pass
                 
-                if self.pool is not None:
-                    if self.pool == 'mean':
+                if self.pool:
+                    if self.pool == 'mean' or self.pool is True:
                         embeddings = [emb.mean(axis=0) for emb in embeddings]
                     elif self.pool == 'max':
                         embeddings = [emb.max(axis=0) for emb in embeddings]

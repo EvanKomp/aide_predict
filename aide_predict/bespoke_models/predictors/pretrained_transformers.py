@@ -20,7 +20,7 @@ from contextlib import contextmanager
 import os
 
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
-from aide_predict.bespoke_models.base import ProteinModelWrapper, PositionSpecificMixin, RequiresWTDuringInferenceMixin, CanRegressMixin
+from aide_predict.bespoke_models.base import ProteinModelWrapper, PositionSpecificMixin, RequiresWTDuringInferenceMixin, CanRegressMixin, ExpectsNoFitMixin
 
 class MarginalMethod(Enum):
     MASKED = "masked_marginal"
@@ -77,7 +77,7 @@ def model_device_context(model_instance: Any, load_func: Callable[[], None], cle
     with manager.model_on_device(load_func, cleanup_func):
         yield
 
-class LikelihoodTransformerBase(PositionSpecificMixin, CanRegressMixin, RequiresWTDuringInferenceMixin, ProteinModelWrapper, ABC):
+class LikelihoodTransformerBase(PositionSpecificMixin, ExpectsNoFitMixin, CanRegressMixin, RequiresWTDuringInferenceMixin, ProteinModelWrapper, ABC):
     """
     Base class for likelihood transformer models.
 
@@ -97,7 +97,9 @@ class LikelihoodTransformerBase(PositionSpecificMixin, CanRegressMixin, Requires
                  pool: bool = True,
                  batch_size: int = 2,
                  device: str = 'cpu',
-                 wt: Optional[Union[str, ProteinSequence]] = None):
+                 wt: Optional[Union[str, ProteinSequence]] = None,
+                 **kwargs
+                 ):
         """
         Initialize the LikelihoodTransformerBase.
 
@@ -111,7 +113,7 @@ class LikelihoodTransformerBase(PositionSpecificMixin, CanRegressMixin, Requires
             device (str): Device to use for computations ('cpu' or 'cuda').
             wt (Optional[Union[str, ProteinSequence]]): Wild type sequence.
         """
-        super().__init__(metadata_folder=metadata_folder, wt=wt, positions=positions, pool=pool, flatten=flatten)
+        super().__init__(metadata_folder=metadata_folder, wt=wt, positions=positions, pool=pool, flatten=flatten, **kwargs)
         self.marginal_method = marginal_method
         self.batch_size = batch_size
         self.device = device

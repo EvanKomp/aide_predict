@@ -170,38 +170,97 @@ class TestProteinModelWrapper:
 
     def test_position_specific_mixin(self):
         class TestModel(PositionSpecificMixin, ProteinModelWrapper):
-            def __init__(self, pool=False, flatten=False, *args, **kwargs):
-                super().__init__(pool=pool, flatten=flatten, positions=[1,2], *args, **kwargs)
+            def __init__(self, *args, **kwargs):
+                super().__init__(*args, **kwargs)
+            
+            def _fit(self, X, y=None):
+                # Mock implementation
+                self.fitted_ = True
+                return self
+                
+            def _transform(self, X):
+                # Mock implementation returning a test array
+                # In real implementation, this would process sequences
+                # Return a (samples, positions, features) shape array for testing
+                return np.ones((len(X), 2, 3))
+                
         tempdir = tempfile.mkdtemp()
-        model = TestModel(metadata_folder=tempdir)
+        
+        # Test initialization and property
+        model = TestModel(metadata_folder=tempdir, positions=[1, 2], pool=False, flatten=False)
         assert model.per_position_capable
-
-        with patch.object(ProteinModelWrapper, 'transform') as mock_transform:
-            mock_transform.return_value = np.array([[1, 2]])
-            result = model.transform(["ACDE"])
-            np.testing.assert_array_equal(result, np.array([[1, 2]]))
-
-        with patch.object(ProteinModelWrapper, 'transform') as mock_transform:
-            mock_transform.return_value = np.array([[1, 2, 3]])
-            with pytest.raises(ValueError):
-                model.transform(["ACDE"])
-
-        model.fitted_ = True  # Mock fitted state
+        assert model.positions == [1, 2]
+        assert not model.pool
+        assert not model.flatten
+        
+        # Fit the model to allow transform to work
+        model.fit([])
+        
+        # Test case 1: Basic transform with no pooling or flattening
+        seqs = ProteinSequences([ProteinSequence("ACDE"), ProteinSequence("FGHI")])
+        result = model.transform(seqs)
+        assert result.shape == (2, 2, 3)  # (samples, positions, features)
+        
+        # Test case 2: Transform with flattening
+        model_flat = TestModel(metadata_folder=tempdir, positions=[1, 2], 
+                            pool=False, flatten=True)
+        model_flat.fit([])
+        result = model_flat.transform(seqs)
+        assert result.shape == (2, 6)  # (samples, positions*features)
+        
+        # Test case 3: Transform with pooling
+        model_pool = TestModel(metadata_folder=tempdir, positions=[1, 2], 
+                            pool=True, flatten=False)
+        model_pool.fit([])
+        result = model_pool.transform(seqs)
+        assert result.shape == (2, 3)  # (samples, features) - pooled across positions
+        
+        # Test case 4: Pooling with specific function
+        model_max_pool = TestModel(metadata_folder=tempdir, positions=[1, 2], 
+                                pool='max', flatten=False)
+        model_max_pool.fit([])
+        result = model_max_pool.transform(seqs)
+        assert result.shape == (2, 3)  # (samples, features) - max-pooled
+        
+        # Test feature names - no pooling, no flattening
         feature_names = model.get_feature_names_out()
-        # we passed flatten = False, so even though there is only one output above it still has dim
-        assert feature_names == ['TestModel_1', 'TestModel_2']
-
-        # retry with flatten on 
-        model = TestModel(metadata_folder=tempdir, flatten=True)
-        model.fitted_ = True  # Mock fitted state
-        feature_names = model.get_feature_names_out()
-        assert feature_names == ['TestModel_1_dim0', "TestModel_2_dim0"]
-
-        with patch.object(ProteinModelWrapper, 'transform') as mock_transform:
-            # we passed flatten, so the base class should handle this
-            mock_transform.return_value = np.ones((2, 2, 3))
-            result = model.transform(["ACDE", "FGHI"])
-            assert result.shape == (2, 6)
+        assert feature_names == ['TestModel_pos1', 'TestModel_pos2']
+        
+        # Test feature names - flattened
+        model_flat.output_dim_ = 3  # Mock embedding dimension
+        feature_names = model_flat.get_feature_names_out()
+        assert feature_names == ['TestModel_pos1_dim0', 'TestModel_pos1_dim1', 'TestModel_pos1_dim2',
+                            'TestModel_pos2_dim0', 'TestModel_pos2_dim1', 'TestModel_pos2_dim2']
+        
+        # Test feature names - pooled
+        model_pool.embedding_dim_ = 3  # Mock embedding dimension
+        feature_names = model_pool.get_feature_names_out()
+        assert feature_names == ['TestModel_emb0', 'TestModel_emb1', 'TestModel_emb2']
+        
+        # Test validation of dimensions - should raise error when dimensions don't match
+        class WrongDimModel(TestModel):
+            def _transform(self, X):
+                # Return wrong number of dimensions
+                return np.ones((len(X), 3, 3))  # 3 positions instead of 2
+                
+        wrong_model = WrongDimModel(metadata_folder=tempdir, positions=[1, 2], pool=False, flatten=False)
+        wrong_model.fit([])
+        
+        with pytest.raises(ValueError, match="output second dimension"):
+            wrong_model.transform(seqs)
+        
+        # Test with ragged array output
+        class RaggedModel(TestModel):
+            def _transform(self, X):
+                # Return a list of arrays with different shapes
+                return [np.ones((3, 4)), np.ones((2, 5))]
+                
+        ragged_model = RaggedModel(metadata_folder=tempdir, positions=[1, 2], pool=False, flatten=True)
+        ragged_model.fit([])
+        
+        with pytest.warns(UserWarning, match="ragged array"):
+            result = ragged_model.transform(seqs)
+        assert isinstance(result, list)
 
 
     def test_wt_with_gaps(self):
@@ -215,47 +274,97 @@ class TestProteinModelWrapper:
             TestModel()
 
     def test_cache_mixin(self):
+        # Define test model with CacheMixin using new hook-based approach
         class TestModel(CacheMixin, ProteinModelWrapper):
+            def __init__(self, **kwargs):
+                super().__init__(**kwargs)
+                self.fitted_ = True  # Mock fitted state
+                
+            def _fit(self, X, y=None):
+                self.fitted_ = True
+                return self
+                
             def _transform(self, X):
+                if X is None:  # Handle case where all sequences are cached
+                    return None
                 return np.array([len(seq) for seq in X]).reshape(-1, 1)
-
-        model = TestModel(use_cache=True)
-        model.fitted_ = True  # Mock fitted state
         
-        # First transformation
-        result1 = model.transform(["ACDE", "FGH"])
+        # Create model with cache enabled
+        model = TestModel(use_cache=True)
+        
+        # Create protein sequences for testing
+        sequences = ProteinSequences([
+            ProteinSequence("ACDE", id="seq1"),
+            ProteinSequence("FGH", id="seq2")
+        ])
+        
+        # First transformation - should populate cache
+        result1 = model.transform(sequences)
         np.testing.assert_array_equal(result1, np.array([[4], [3]]))
         
-        # Second transformation (should use cache)
-        result2 = model.transform(["ACDE", "FGH"])
+        # Second transformation - should use cache
+        result2 = model.transform(sequences)
         np.testing.assert_array_equal(result2, np.array([[4], [3]]))
-
-        # third this time, also use cache, cache already open
-        result3 = model.transform(["ACDE", "FGH"])
+        
+        # Third transformation - should still use cache
+        result3 = model.transform(sequences)
+        np.testing.assert_array_equal(result3, np.array([[4], [3]]))
         
         # Check that cache was used
-        # model._db_file should have two entries
         import sqlite3
         con = sqlite3.connect(model._db_file)
         assert con.execute("SELECT COUNT(*) FROM cache").fetchone()[0] == 2
+        
+        # Test partial cache usage by adding a new sequence
+        extended_sequences = ProteinSequences([
+            ProteinSequence("ACDE", id="seq1"),
+            ProteinSequence("FGH", id="seq2"),
+            ProteinSequence("WXYZ", id="seq3")
+        ])
+        
+        # Should use cache for first two sequences and process the third
+        result4 = model.transform(extended_sequences)
+        np.testing.assert_array_equal(result4, np.array([[4], [3], [4]]))
+        
+        # Now all three should be cached
+        con = sqlite3.connect(model._db_file)
+        assert con.execute("SELECT COUNT(*) FROM cache").fetchone()[0] == 3
 
-        # test that results remain the same when shapes are multidimensional
+        # Test with multi-dimensional outputs
         outs = np.random.random((1, 2, 3))
         class TestModel2(CacheMixin, ProteinModelWrapper):
+            def __init__(self, **kwargs):
+                super().__init__(**kwargs)
+                self.fitted_ = True
+                
+            def _fit(self, X, y=None):
+                self.fitted_ = True
+                return self
+                
             def _transform(self, X):
+                if X is None:  # Handle case where all sequences are cached
+                    return None
                 return np.vstack([outs for _ in range(len(X))])
             
-        model = TestModel2(use_cache=True)
-        model.fitted_ = True  # Mock fitted state
-        result1 = model.transform(["ACDE", "FGH"])
+        # Create new model and test sequences
+        model2 = TestModel2(use_cache=True)
+        
+        # First transformation - should populate cache
+        result1 = model2.transform(sequences)
         np.testing.assert_array_equal(result1, np.vstack([outs, outs]))
-
-        result2 = model.transform(["ACDE", "FGH"])
+        
+        # Second transformation - should use cache
+        result2 = model2.transform(sequences)
         np.testing.assert_array_equal(result2, np.vstack([outs, outs]))
-
-        # check cache
-        con = sqlite3.connect(model._db_file)
+        
+        # Check cache
+        con = sqlite3.connect(model2._db_file)
         assert con.execute("SELECT COUNT(*) FROM cache").fetchone()[0] == 2
+        
+        # Test cache with mixed results (some cached, some new)
+        mixed_results = model2.transform(extended_sequences)
+        expected_shape = (3,) + outs.shape[1:]
+        assert mixed_results.shape == expected_shape
 
     def test_can_handle_aligned_sequences(self):
         class TestModel(CanHandleAlignedSequencesMixin, ProteinModelWrapper):

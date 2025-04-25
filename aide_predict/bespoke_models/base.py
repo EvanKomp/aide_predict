@@ -146,28 +146,83 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
     _should_refit_on_sequences: bool = False
     _available: bool = MessageBool(True, "This model is available for use.")
 
-    def __init__(self, metadata_folder: str=None, wt: Optional[Union[str, ProteinSequence]] = None):
+    # Mixin registration for processing hooks
+    _mixin_init_handlers = []
+    _pre_fit_hooks = []
+    _post_fit_hooks = []
+    _pre_transform_hooks = []
+    _post_transform_hooks = []
+
+    def __init_subclass__(cls, **kwargs):
         """
-        Initialize the ProteinModelWrapper.
+        Initialize the subclass and register mixin hooks.
+        
+        This method is called when a subclass is created. It collects and registers
+        all hooks from mixins in the inheritance chain.
+        """
+        super().__init_subclass__(**kwargs)
+        
+        # Reset hooks for this subclass
+        cls._mixin_init_handlers = []
+        cls._pre_fit_hooks = []
+        cls._post_fit_hooks = []
+        cls._pre_transform_hooks = []
+        cls._post_transform_hooks = []
+        
+        # Collect hooks from all mixin bases
+        for base in cls.__mro__[1:]:  # Skip self, look at all parents
+            # Init handlers
+            if hasattr(base, '_init_handler') and callable(base._init_handler):
+                cls._mixin_init_handlers.append(base._init_handler)
+            
+            # Fit hooks
+            if hasattr(base, '_pre_fit_hook') and callable(base._pre_fit_hook):
+                cls._pre_fit_hooks.append(base._pre_fit_hook)
+            if hasattr(base, '_post_fit_hook') and callable(base._post_fit_hook):
+                cls._post_fit_hooks.append(base._post_fit_hook)
+            
+            # Transform hooks
+            if hasattr(base, '_pre_transform_hook') and callable(base._pre_transform_hook):
+                cls._pre_transform_hooks.append(base._pre_transform_hook)
+            if hasattr(base, '_post_transform_hook') and callable(base._post_transform_hook):
+                cls._post_transform_hooks.append(base._post_transform_hook)
+            
+            # Stop at ProteinModelWrapper (don't include its parents)
+            if base is ProteinModelWrapper:
+                break
+
+    def __init__(self, metadata_folder: str=None, wt: Optional[Union[str, ProteinSequence]] = None, **kwargs):
+        """
+        Initialize the ProteinModelWrapper with core attributes and process mixin initializations.
 
         Args:
             metadata_folder (str): The folder where the metadata is stored.
             wt (Optional[Union[str, ProteinSequence]]): The wild type sequence if present.
+            **kwargs: Additional keyword arguments handled by mixins.
 
         Raises:
-            ValueError: If the wild type sequence contains gaps.
+            ValueError: If the wild type sequence contains gaps or if the model is not available.
         """
         if not self._available:
             raise ValueError(self._available.message)
         
-        # generate a folder if metadata is None
+        # Process core attributes
         self._metadata_folder = metadata_folder
         self._processed_metadata_folder = self._process_metadata_folder(metadata_folder)
         self._ensure_metadata_folder()
-
         self._wt = wt
         self._processed_wt = self._process_wt(wt)
-
+        
+        # Process mixin initializations - let each mixin extract its own parameters
+        mixin_kwargs = kwargs.copy()
+        for handler in self._mixin_init_handlers:
+            handler(self, **mixin_kwargs)
+        
+        # Store any remaining kwargs as object attributes
+        for key, value in mixin_kwargs.items():
+            setattr(self, key, value)
+        
+        # Final validations
         if self._processed_wt is None and self.requires_wt_to_function:
             raise ValueError("This model requires a wild type sequence to function.")
 
@@ -311,40 +366,49 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         else:
             return self
     
-    def fit(self, X: Union[ProteinSequences, List[str]], y: Optional[np.ndarray] = None, force: bool=False) -> 'ProteinModelWrapper':
+    def fit(self, X: Union[ProteinSequences, List[str]] = None, y: Optional[np.ndarray] = None, force: bool=False) -> 'ProteinModelWrapper':
         """
-        Fit the model.
+        Fit the model with pre-processing and post-processing from mixins.
         
         Args:
             X (Union[ProteinSequences, List[str]]): Input sequences.
             y (Optional[np.ndarray]): Target values.
+            force (bool): Whether to force refitting if already fitted.
 
         Returns:
             ProteinModelWrapper: The fitted model.
         """
         empty_X = X is None or (hasattr(X, '__len__') and len(X) == 0)
+        
+        # Handle no-fit models
         if self.expects_no_fit:
             if empty_X:
                 pass
             else:
                 warnings.warn(f"This model expects no fit, but received input. Ignoring input: {X}")
-
             self._fit(None, None)
-
-        else:
-            try:
-                check_is_fitted(self)
-                if not force and not self.should_refit_on_sequences:
-                    logger.warning("Model is already fitted. Skipping")
-                    return self
-                else:
-                    pass
-            except NotFittedError:
-                pass
-
-            logger.info(f"Fitting {self.__class__.__name__}")
-            X = self._validate_input(X)
+            return self
             
+        # Normal fitting path
+        try:
+            check_is_fitted(self)
+            if not force and not self.should_refit_on_sequences:
+                logger.warning("Model is already fitted. Skipping")
+                return self
+        except NotFittedError:
+            pass
+
+        logger.info(f"Fitting {self.__class__.__name__}")
+        
+        # Validate input
+        X = self._validate_input(X) if not empty_X else X
+        
+        # Run pre-fit hooks from mixins
+        for hook in self._pre_fit_hooks:
+            X, y = hook(self, X, y)
+        
+        # Handle MSA requirements, structure checks, etc.
+        if not empty_X:
             if self.requires_msa_for_fit:
                 if empty_X:
                     if self.wt is not None and self.wt.has_msa:
@@ -379,8 +443,13 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
                     
                 if any(not seq.msa_same_width for seq in X):
                     raise ValueError("Not all sequence MSAs have the same width as the sequence itself.")
-            
-            self._fit(X, y)
+        
+        # Call the actual fit implementation
+        self._fit(X, y)
+        
+        # Run post-fit hooks from mixins
+        for hook in self._post_fit_hooks:
+            hook(self, X, y)
         
         return self
     
@@ -457,7 +526,7 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         
     def transform(self, X: Union[ProteinSequences, List[str]]) -> np.ndarray:
         """
-        Transform the sequences.
+        Transform sequences with pre-processing and post-processing from mixins.
 
         Args:
             X (Union[ProteinSequences, List[str]]): Input sequences.
@@ -466,68 +535,89 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
             np.ndarray: Transformed sequences.
         """
         logger.info(f"Transforming input using {self.__class__.__name__}")
+        
+        # Ensure model is fitted
         check_is_fitted(self)
+
+        # Store original input for post hooks
+        original_X = X
+        
+        # Validate input
         X = self._validate_input(X)
 
-        if self.requires_fixed_length:
-            self._assert_fixed_length(X)
+        # Run pre-transform hooks from mixins
+        for hook in self._pre_transform_hooks:
+            X = hook(self, X)
 
-        if self.requires_structure:
-            if any(seq.structure is None for seq in X) and self.wt is None:
-                raise ValueError("This model requires structure information, at least one of the sequences does not have it, and there is no avialable WT structure.")
-            elif any(seq.structure is None for seq in X):
-                if X.fixed_length and len(self.wt) == X.width:
-                    pass
-                else:
-                    raise ValueError("This model requires structure information, at least one of the sequences does not have it, and the WT structure size does not match the sequence lengths.")
-                
+         # If X is None after hooks, it indicates all results are cached
+        # Skip to post-processing hooks with None result
+        if X is None:
+            outputs = None
+        else:
+            # Standard validations
+            if self.requires_fixed_length:
+                self._assert_fixed_length(X)
 
-        if self.requires_msa_per_sequence:
-            if any(not seq.has_msa for seq in X):
-                if self.wt is not None and self.wt.has_msa:
-                    warnings.warn("Some sequences do not have an MSA, but the wild type sequence does. Attempting to use the wild type sequence MSA.")
-                    wt_msa = self.wt.msa
-                    for seq in X:
-                        if len(seq) == wt_msa.width:
-                            seq.msa = wt_msa
-                        else:
-                            raise ValueError("Some sequences do not have an MSA, and the wild type sequence does not have one either. Cannot fit model.")
-                else:
-                    raise ValueError("Some sequences do not have an MSA, and the wild type sequence does not have one either. Cannot fit model.")
-                
-            if any(not seq.msa_same_width for seq in X):
-                raise ValueError("Not all sequence MSAs have the same width as the sequence itself.")
+            if self.requires_structure:
+                if any(seq.structure is None for seq in X) and self.wt is None:
+                    raise ValueError("This model requires structure information, at least one of the sequences does not have it, and there is no available WT structure.")
+                elif any(seq.structure is None for seq in X):
+                    if X.fixed_length and len(self.wt) == X.width:
+                        pass
+                    else:
+                        raise ValueError("This model requires structure information, at least one of the sequences does not have it, and the WT structure size does not match the sequence lengths.")
 
-        if not self.can_handle_aligned_sequences and X.has_gaps:
-            logger.info("Input sequences have gaps and the model cannot handle them. Removing gaps.")
-            X = X.with_no_gaps()
-        
-        outputs = self._transform(X)
-        if not self.requires_wt_during_inference and self.wt is not None:
-            wt_output = self._transform(ProteinSequences([self.wt]))
-            # make the outputs arrays so that we can subtract
-            if not isinstance(outputs, np.ndarray):
-                try:
-                    outputs = np.array(outputs)
-                except:
-                    raise ValueError("The model outputs could not be converted to a numpy array, likely because of difference in protein length and no pooling.")
-                
-            if not isinstance(wt_output, np.ndarray):
-                try:
-                    wt_output = np.array(wt_output)
-                    if wt_output.ndim == 1:
-                        wt_output = wt_output.reshape(-1, 1)
-                except:
-                    raise ValueError("The model outputs could not be converted to a numpy array, likely because of difference in protein length and no pooling.")
-                
-            # take the difference
-            if wt_output.shape[1:] != outputs.shape[1:]:
-                raise ValueError("The model outputs and WT outputs do not have the same shape.")
+            if self.requires_msa_per_sequence:
+                if any(not seq.has_msa for seq in X):
+                    if self.wt is not None and self.wt.has_msa:
+                        warnings.warn("Some sequences do not have an MSA, but the wild type sequence does. Attempting to use the wild type sequence MSA.")
+                        wt_msa = self.wt.msa
+                        for seq in X:
+                            if len(seq) == wt_msa.width:
+                                seq.msa = wt_msa
+                            else:
+                                raise ValueError("Some sequences do not have an MSA, and the wild type sequence does not have one either. Cannot transform.")
+                    else:
+                        raise ValueError("Some sequences do not have an MSA, and the wild type sequence does not have one either. Cannot transform.")
+                    
+                if any(not seq.msa_same_width for seq in X):
+                    raise ValueError("Not all sequence MSAs have the same width as the sequence itself.")
+
+            if not self.can_handle_aligned_sequences and X.has_gaps:
+                logger.info("Input sequences have gaps and the model cannot handle them. Removing gaps.")
+                X = X.with_no_gaps()
             
-            outputs -= wt_output
-
-            # convert outputs to list of arrays again
-            outputs = list(outputs)
+            # Call the actual transform implementation
+            outputs = self._transform(X)
+            
+            # Handle wildtype normalization if needed
+            if not self.requires_wt_during_inference and self.wt is not None:
+                wt_output = self._transform(ProteinSequences([self.wt]))
+                # make the outputs arrays so that we can subtract
+                if not isinstance(outputs, np.ndarray):
+                    try:
+                        outputs = np.array(outputs)
+                    except:
+                        raise ValueError("The model outputs could not be converted to a numpy array, likely because of difference in protein length and no pooling.")
+                    
+                if not isinstance(wt_output, np.ndarray):
+                    try:
+                        wt_output = np.array(wt_output)
+                        if wt_output.ndim == 1:
+                            wt_output = wt_output.reshape(-1, 1)
+                    except:
+                        raise ValueError("The model outputs could not be converted to a numpy array, likely because of difference in protein length and no pooling.")
+                    
+                # take the difference
+                if wt_output.shape[1:] != outputs.shape[1:]:
+                    raise ValueError("The model outputs and WT outputs do not have the same shape.")
+                
+                outputs -= wt_output
+        
+        # Run post-transform hooks from mixins
+        for hook in self._post_transform_hooks:
+            outputs = hook(self, outputs, original_X)
+        
         return outputs
     
     def predict(self, X: Union[ProteinSequences, List[str]]) -> np.ndarray:
@@ -768,35 +858,27 @@ class PositionSpecificMixin:
     """
     Mixin for protein models that can output per position scores.
     
-    This mixin:
-    1. Overrides the per_position_capable attribute to be True.
-    2. Checks that positions, pool, and flatten are attributes.
-    3. Wraps the predict and transform methods to check that if positions were passed and not pooling, the output is the same length as the positions.
-    4. Flattens the output if flatten is True.
-
-    Note that you are responsible for selecting positions and pooling. This mixing only provides checks that
-    the output is consistent with the specified positions. You DO NOT need to implement flattening, as this mixin
-    will handle it for you.
-
+    This mixin adds functionality for handling position-specific outputs from protein models.
+    It allows selecting specific positions to analyze, pooling across positions, and 
+    flattening multi-dimensional outputs.
+    
     Attributes:
-        positions (Optional[List[int]]): The positions to output scores for.
-        pool (bool): Whether to pool the scores across positions.
+        positions (Optional[List[int]]): The positions to output scores for. If None, all positions are used.
+        pool (Union[bool, str, Callable]): Whether/how to pool scores across positions:
+            - If True: Uses mean pooling
+            - If string: Uses named numpy function (e.g. 'mean', 'max')
+            - If callable: Uses the provided function for pooling
+            - If False: No pooling is performed
         flatten (bool): Whether to flatten dimensions beyond the second dimension.
     """
     _per_position_capable: bool = True
 
-    def __init__(self, positions: bool=None, pool: bool=True, flatten: bool=True, *args, **kwargs):
-        """
-        Initialize the PositionSpecificMixin.
-
-        Raises:
-            ValueError: If the model does not have a positions, pool, or flatten attribute.
-        """
+    def _init_handler(self, positions=None, pool=True, flatten=True, **kwargs):
+        """Initialize position-specific attributes from kwargs."""
         self.positions = positions
         self.pool = pool
         self.flatten = flatten
-        super().__init__(*args, **kwargs)
-
+        
     def _is_ragged_array(self, arr):
         """Check if the input is a ragged array (list of arrays with different shapes)."""
         if not isinstance(arr, list):
@@ -806,65 +888,93 @@ class PositionSpecificMixin:
         first_shape = arr[0].shape
         return any(a.shape != first_shape for a in arr[1:])
 
-    def transform(self, X: Union[ProteinSequences, List[str]]) -> np.ndarray:
+    def _post_transform_hook(self, result, X):
         """
-        Transform the sequences, ensuring correct output dimensions for position-specific models.
-        If flatten is True, flatten dimensions beyond the second dimension.
-
-        Args:
-            X (Union[ProteinSequences, List[str]]): Input sequences.
-
-        Returns:
-            np.ndarray: Transformed sequences.
-
-        Raises:
-            ValueError: If the output dimensions do not match the specified positions.
-        """
-        result = super().transform(X)
-
-        # we need to determine if the output is a clean numpy array or a set of arrays of different sizes
-        if self._is_ragged_array(result):
-            warnings.warn("The output is a ragged array of embeddings of different sizes, cannot output as an array. Ignoring flatten.")
-            return result
-        else:
-            if type(result) is list:
-                if all(a.shape[0] == 1 for a in result):
-                    result = np.vstack(result)
-                else:
-                    result = np.array(result)
+        Process the model output to handle position selection, pooling, and flattening.
         
+        Args:
+            result: The raw output from _transform
+            X: The input sequences
+            
+        Returns:
+            np.ndarray: Processed output with correct dimensions
+        """
+        # Handle ragged arrays (different shapes)
+        if self._is_ragged_array(result):
+            warnings.warn("The output is a ragged array of embeddings with different sizes. Cannot apply flatten or pool operations uniformly.")
+            return result
+            
+        # Convert list of arrays to a single array if possible
+        if isinstance(result, list):
+            if all(a.shape[0] == 1 for a in result):
+                result = np.vstack(result)
+            else:
+                try:
+                    result = np.array(result)
+                except ValueError:
+                    # If we can't convert to a single array, return as is
+                    return result
+        
+        # Validate dimensions for position-specific output
         if self.positions is not None and not self.pool:
             dims = len(self.positions)
             if not self.flatten and result.shape[1] != dims:
                 raise ValueError(f"The output second dimension must have the same length as number of positions. Expected {dims}, got {result.shape[1]}.")
         
+        # Apply pooling if specified
+        if self.pool and result.ndim > 2:
+            # Pooling across the position dimension (dim=1)
+            if callable(self.pool):
+                # Custom pooling function
+                result = self.pool(result, axis=1)
+            elif isinstance(self.pool, str):
+                # Named numpy function
+                pool_func = getattr(np, self.pool)
+                result = pool_func(result, axis=1)
+            else:
+                # Default to mean pooling
+                result = np.mean(result, axis=1)
+        
+        # Flatten output if requested
         if self.flatten and result.ndim > 2:
             result = result.reshape(result.shape[0], -1)
         
         return result
-    
-    def get_feature_names_out(self, input_features: Optional[List[str]] = None) -> List[str]:
+        
+    def get_feature_names_out(self, input_features=None):
         """
         Get output feature names for transformation, considering position-specific output and flattening.
+        
+        This method overrides the base implementation to provide more descriptive feature names
+        that include position information when relevant.
 
         Args:
-            input_features (Optional[List[str]]): Input feature names.
+            input_features (Optional[List[str]]): Input feature names (unused).
 
         Returns:
             List[str]: Output feature names.
         """
         check_is_fitted(self)
-        header = f"{self.__class__.__name__}"
+        header = self.__class__.__name__
         
-        if self.positions is not None and not self.pool:
-            base_names = [f"{header}_{pos}" for pos in self.positions]
-            if self.flatten:
-                # Since we don't know the exact shape of the output at this point,
-                # we'll use a placeholder for additional dimensions
-                return [f"{name}_dim{i}" for name in base_names for i in range(getattr(self, 'output_dim', 1))]
-            return base_names
+        # If we don't have position-specific output, return simple name
+        if self.positions is None or self.pool:
+            if hasattr(self, 'embedding_dim_') and self.pool:
+                return [f"{header}_emb{i}" for i in range(self.embedding_dim_)]
+            return [header]
+            
+        # Handle position-specific naming
+        base_names = [f"{header}_pos{pos}" for pos in self.positions]
         
-        return [header]
+        if self.flatten and hasattr(self, 'embedding_dim_'):
+            # For flattened embeddings with known dimension
+            return [f"{name}_emb{i}" for name in base_names for i in range(self.embedding_dim_)]
+        elif self.flatten:
+            # For flattened output with unknown dimension
+            return [f"{name}_dim{i}" for name in base_names for i in range(getattr(self, 'output_dim_', 1))]
+        
+        # For non-flattened position-specific output
+        return base_names
     
 class CanHandleAlignedSequencesMixin:
     """
@@ -878,19 +988,26 @@ class CanHandleAlignedSequencesMixin:
 class CacheMixin:
     """
     Mixin to provide per-protein caching functionality for ProteinModelWrapper subclasses.
-    Uses SQLite for metadata indexing and HDF5 for efficient embedding storage.
-    Optimized for batch operations and improved file handling.
+    
+    This mixin adds efficient caching of model outputs to avoid redundant computations. 
+    It uses SQLite for metadata indexing and HDF5 for efficient embedding storage,
+    optimized for batch operations and improved file handling.
+    
+    Attributes:
+        use_cache (bool): Whether to enable caching. Default is True.
     """
-    def __init__(self, *args, use_cache: bool=True, **kwargs):
-        super().__init__(*args, **kwargs)
+    
+    def _init_handler(self, use_cache=True, **kwargs):
+        """Initialize cache-related attributes and setup cache infrastructure."""
         self.use_cache = use_cache
-        self._cache_dir = os.path.join(self.metadata_folder, 'cache')
-        self._db_file = os.path.join(self._cache_dir, 'cache.db')
-        self._hdf5_file = os.path.join(self._cache_dir, 'embeddings.h5')
-        self._ensure_cache_dir()
-        self._init_db()
-        self._hdf5 = None
-
+        if hasattr(self, 'metadata_folder'):
+            self._cache_dir = os.path.join(self.metadata_folder, 'cache')
+            self._db_file = os.path.join(self._cache_dir, 'cache.db')
+            self._hdf5_file = os.path.join(self._cache_dir, 'embeddings.h5')
+            self._ensure_cache_dir()
+            self._init_db()
+            self._hdf5 = None
+    
     def _ensure_cache_dir(self):
         """Ensure the cache directory exists."""
         os.makedirs(self._cache_dir, exist_ok=True)
@@ -926,7 +1043,7 @@ class CacheMixin:
 
     def _safely_close_hdf5(self):
         """Safely close the HDF5 file if it's open."""
-        if self._hdf5 is not None:
+        if hasattr(self, '_hdf5') and self._hdf5 is not None:
             self._hdf5.close()
             self._hdf5 = None
 
@@ -956,7 +1073,7 @@ class CacheMixin:
                     if ph in f:
                         results[ph] = f[ph][:]
         except OSError as e:
-            print(f"Error reading HDF5 file: {e}")
+            logger.error(f"Error reading HDF5 file: {e}")
             self._safely_close_hdf5()
         return results
 
@@ -988,48 +1105,122 @@ class CacheMixin:
     def get_fitted_attributes(self) -> List[str]:
         """Get a list of attributes that are set during fitting."""
         return [attr for attr in dir(self) if attr.endswith('_') and not attr.startswith('_')]
-
-    def transform(self, X: Union[ProteinSequences, List[str]]) -> np.ndarray:
-        """Override transform to use cache when possible on a per-protein basis."""
+    
+    def _pre_transform_hook(self, X):
+        """
+        Pre-transform hook that checks the cache before proceeding with transformation.
+        If all sequences are cached, this hook short-circuits the transform process.
+        
+        Args:
+            model: The model instance
+            X: The input sequences
+            
+        Returns:
+            X or None: The input sequences if transformation is needed, None if all cached
+        """
         if not self.use_cache:
-            return super().transform(X)
-
+            return X
+            
         try:
             check_is_fitted(self)
         except:
-            return super().transform(X)
+            return X
 
-        X = self._validate_input(X)
-        current_model_state = self._get_model_state_hash()
+        # Store data for potential use in post-transform
+        self._cache_data = {
+            'X': X,
+            'model_state': self._get_model_state_hash(),
+            'protein_hashes': self._get_protein_hashes(X)
+        }
+        
+        # Check which sequences are cached
+        cache_status = self._batch_is_cached(
+            self._cache_data['protein_hashes'], 
+            self._cache_data['model_state']
+        )
+        
+        self._cache_data['cached_hashes'] = [ph for ph, status in cache_status.items() if status]
+        self._cache_data['uncached_hashes'] = [ph for ph, status in cache_status.items() if not status]
+        self._cache_data['cached_results'] = self._batch_get_cached_results(self._cache_data['cached_hashes'])
+        
+        logger.info(f"Found {len(self._cache_data['cached_results'])} cached results, "
+                   f"running on {len(self._cache_data['uncached_hashes'])} uncached sequences.")
+        
+        # If everything is cached, return None to short-circuit transform
+        if len(self._cache_data['uncached_hashes']) == 0:
+            self._cache_data['all_cached'] = True
+            # Transform will be skipped, post_transform will handle returning cached results
+            return None
+        else:
+            # Only transform the uncached sequences
+            self._cache_data['all_cached'] = False
+            proteins_to_transform = ProteinSequences([
+                X[i] for i, ph in enumerate(self._cache_data['protein_hashes']) 
+                if ph in self._cache_data['uncached_hashes']
+            ])
+            return proteins_to_transform
 
-        protein_hashes = self._get_protein_hashes(X)
-        cache_status = self._batch_is_cached(protein_hashes, current_model_state)
-
-        cached_hashes = [ph for ph, status in cache_status.items() if status]
-        uncached_hashes = [ph for ph, status in cache_status.items() if not status]
-
-        cached_results = self._batch_get_cached_results(cached_hashes)
-
-        logger.info(f"Found {len(cached_results)} cached results, running on {len(uncached_hashes)} uncached sequences.")
-
-        if uncached_hashes:
-            proteins_to_transform = ProteinSequences([X[i] for i, ph in enumerate(protein_hashes) if ph in uncached_hashes])
-            new_results = super().transform(proteins_to_transform)
+    def _post_transform_hook(self, result, X):
+        """
+        Post-transform hook that handles caching of new results and combining with cached results.
+        
+        Args:
+            model: The model instance
+            result: The raw output from _transform (or None if all cached)
+            X: The input sequences that were transformed (or None if all cached)
             
-            new_results_dict = {
-                ph: (np.asarray(result)[np.newaxis, :] if np.asarray(result).shape[0] != 1 else np.asarray(result))
-                for ph, result in zip(uncached_hashes, new_results)
-            }
-            protein_lengths = {ph: len(X[i]) for i, ph in enumerate(protein_hashes) if ph in uncached_hashes}
-            self._batch_cache_results(new_results_dict, current_model_state, protein_lengths)
+        Returns:
+            np.ndarray: Combined results from cache and new transformations
+        """
+        if not self.use_cache or not hasattr(self, '_cache_data'):
+            return result
             
-            cached_results.update(new_results_dict)
-
+        # If everything was cached, just return the cached results
+        if self._cache_data['all_cached']:
+            # Reorder results to match original input order
+            all_results = [self._cache_data['cached_results'][ph] for ph in self._cache_data['protein_hashes']]
+            
+            self._safely_close_hdf5()
+            
+            if len(set([o.shape for o in all_results])) == 1:
+                return np.vstack(all_results)
+            else:
+                return all_results
+                
+        # Otherwise, combine new results with cached ones
+        new_results_dict = {}
+        for i, (ph, result_item) in enumerate(zip(self._cache_data['uncached_hashes'], result)):
+            # Ensure consistent shape for storage
+            result_array = np.asarray(result_item)
+            if result_array.shape[0] != 1:
+                result_array = result_array[np.newaxis, :]
+            new_results_dict[ph] = result_array
+            
+        # Cache the new results
+        protein_lengths = {
+            ph: len(self._cache_data['X'][i]) 
+            for i, ph in enumerate(self._cache_data['protein_hashes']) 
+            if ph in self._cache_data['uncached_hashes']
+        }
+        self._batch_cache_results(
+            new_results_dict, 
+            self._cache_data['model_state'], 
+            protein_lengths
+        )
+        
+        # Combine cached and new results
+        combined_results = dict(self._cache_data['cached_results'])
+        combined_results.update(new_results_dict)
+        
         # Reorder results to match original input order
-        all_results = [cached_results[ph] for ph in protein_hashes]
-
+        all_results = [combined_results[ph] for ph in self._cache_data['protein_hashes']]
+        
         self._safely_close_hdf5()
-
+        
+        # Clean up
+        del self._cache_data
+        
+        # Return appropriately formatted results
         if len(set([o.shape for o in all_results])) == 1:
             return np.vstack(all_results)
         else:
