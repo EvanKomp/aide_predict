@@ -193,7 +193,7 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         if self.requires_structure and processed_wt.structure is None:
             raise ValueError("This model acts on structure but a wild type structure was not given.")
         
-        if self.requires_msa_for_fit and processed_wt.msa is None:
+        if self.requires_wt_msa and processed_wt.msa is None:
             raise ValueError("This model requires an MSA for fitting, but the wild type sequence does not have one.")
         
         return processed_wt
@@ -319,10 +319,9 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         Returns:
             ProteinModelWrapper: The fitted model.
         """
+        empty_X = X is None or (hasattr(X, '__len__') and len(X) == 0)
         if self.expects_no_fit:
-            if X is None:
-                pass
-            elif hasattr(X, '__len__') and len(X) == 0:
+            if empty_X:
                 pass
             else:
                 warnings.warn(f"This model expects no fit, but received input. Ignoring input: {X}")
@@ -344,6 +343,13 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
             X = self._validate_input(X)
             
             if self.requires_msa_for_fit:
+                if empty_X:
+                    if self.wt is not None and self.wt.has_msa:
+                        warnings.warn("No input sequences provided, but the wild type sequence has an MSA. Attempting to use the wild type sequence MSA.")
+                        X = self.wt.msa
+                    else:
+                        raise ValueError("No input sequences provided and the wild type sequence does not have an MSA. Cannot fit model.")
+
                 X = self._enforce_aligned(X)
 
             if self.requires_structure:
