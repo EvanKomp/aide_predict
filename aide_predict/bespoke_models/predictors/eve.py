@@ -25,7 +25,7 @@ from aide_predict.bespoke_models.base import (
     ProteinModelWrapper, 
     RequiresWTToFunctionMixin,
     RequiresFixedLengthMixin, 
-    RequiresMSAMixin,
+    RequiresMSAForFitMixin,
     AcceptsLowerCaseMixin,
     RequiresWTDuringInferenceMixin,
     CanRegressMixin
@@ -59,13 +59,15 @@ if EVE_ENV is None or EVE_REPO is None:
 else:
     AVAILABLE = MessageBool(True, "EVE model is available")
 
-class EVEWrapper(RequiresWTToFunctionMixin, RequiresFixedLengthMixin, RequiresWTDuringInferenceMixin, RequiresMSAMixin, AcceptsLowerCaseMixin, CanRegressMixin, ProteinModelWrapper):
+class EVEWrapper(RequiresWTToFunctionMixin, RequiresFixedLengthMixin, RequiresWTDuringInferenceMixin, RequiresMSAForFitMixin, AcceptsLowerCaseMixin, CanRegressMixin, ProteinModelWrapper):
     """
     Wrapper for EVE (Evolutionary Variational Autoencoder) model.
     
     This wrapper provides an interface to train and use EVE models within the AIDE framework.
     EVE is run in a separate conda environment specified by EVE_CONDA_ENV environment variable.
     The EVE repository location must be specified in EVE_REPO environment variable.
+
+    NOTE: SHould this refit on sequences?
 
     Attributes:
         _available (MessageBool): Indicates whether EVE is available based on environment setup.

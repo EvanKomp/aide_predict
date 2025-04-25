@@ -16,7 +16,7 @@ from aide_predict.utils.data_structures import (
     ProteinSequence, ProteinSequences,
 )
 from aide_predict.bespoke_models.base import (
-    ProteinModelWrapper, RequiresMSAMixin, RequiresFixedLengthMixin,
+    ProteinModelWrapper, RequiresMSAForFitMixin, RequiresFixedLengthMixin,
     CanRegressMixin, RequiresWTDuringInferenceMixin, PositionSpecificMixin,
     RequiresWTToFunctionMixin, CacheMixin, CanHandleAlignedSequencesMixin,
     ShouldRefitOnSequencesMixin, RequiresStructureMixin, is_jsonable
@@ -156,7 +156,7 @@ class TestProteinModelWrapper:
         assert feature_names == ['ProteinModelWrapper']
 
     @pytest.mark.parametrize("mixin_class,attribute,expected", [
-        (RequiresMSAMixin, 'requires_msa_for_fit', True),
+        (RequiresMSAForFitMixin, 'requires_msa_for_fit', True),
         (RequiresFixedLengthMixin, 'requires_fixed_length', True),
         (CanRegressMixin, 'can_regress', True),
         (RequiresWTDuringInferenceMixin, 'requires_wt_during_inference', True),
@@ -318,10 +318,10 @@ class TestProteinModelWrapper:
         assert model.requires_structure
 
         mock_sequences = ProteinSequences.from_list(["ACDE", "FGHI"])
-        model.fit(mock_sequences)
 
         # Test with sequences that do not have structure
         with pytest.raises(ValueError, match="This model requires structure information"):
+            model.fit(mock_sequences)
             model.transform(mock_sequences)
 
         # Test with sequences that have structure
@@ -332,6 +332,8 @@ class TestProteinModelWrapper:
                 get_seq.return_value = "ACDE"
                 for s in mock_sequences:
                     s.structure = str(tmp.name)
+
+                model.fit(mock_sequences)
                 model.transform(mock_sequences)
 
                 mock_sequences = ProteinSequences.from_list(["ACDE", "FGHI"])
@@ -349,7 +351,7 @@ class TestProteinModelWrapper:
                 tmp.close()
 
     def test_requires_msa_mixin(self):
-        class TestModel(RequiresMSAMixin, ProteinModelWrapper):
+        class TestModel(RequiresMSAForFitMixin, ProteinModelWrapper):
             def _fit(self, X, y=None):
                 self.fitted_ = True
                 return self

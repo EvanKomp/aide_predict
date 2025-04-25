@@ -61,7 +61,10 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         wt (Optional[ProteinSequence]): The wild type sequence if present.
     
     Class Attributes:
+        expects_no_fit (bool): Whether the model expects no fit.
         requires_msa_for_fit (bool): Whether the model requires an MSA as input for fitting.
+        requires_wt_msa (bool): Whether the model requires a wild type MSA for fitting.
+        requires_msa_per_sequence (bool): Whether the model requires an MSA for each sequence during transform.
         requires_wt_to_function (bool): Whether the model requires the wild type sequence to function.
         requires_wt_during_inference (bool): Whether the model requires the wild type sequence during inference.
         per_position_capable (bool): Whether the model can output per position scores.
@@ -85,7 +88,10 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
        with the metadata_folder and wt arguments.
     5. If your model requires specific behavior, consider inheriting from the provided mixins. See the mixins for
        the provided behaviors:
-       - RequiresMSAMixin - if the model requires an MSA for fitting
+       - ExpectsNoFitMixin - if the model expects no fit
+       - RequiresMSAForFitMixin - if the model requires aligned sequences at fit time
+       - RequiresWTMSAMixin - if the model requires a wild type MSA for fit
+       - RequiresMSAPerSequenceMixin - if the model requires an MSA for each sequence during transform
        - RequiresFixedLengthMixin - if the model requires fixed length sequences at predict time
        - CanRegressMixin - if the model can regress, otherwise it is assumed to be a transformer only eg. embedding
        - RequiresWTToFunctionMixin - if the model requires the wild type sequence to function
@@ -125,8 +131,10 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
                 return outputs
 
     """
-
+    _expects_no_fit: bool = False
     _requires_msa_for_fit: bool = False
+    _requires_wt_msa: bool = False
+    _requires_msa_per_sequence: bool = False
     _requires_wt_during_inference: bool = False
     _requires_wt_to_function: bool = False
     _per_position_capable: bool = False
@@ -184,6 +192,10 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         processed_wt = wt.upper()
         if self.requires_structure and processed_wt.structure is None:
             raise ValueError("This model acts on structure but a wild type structure was not given.")
+        
+        if self.requires_msa_for_fit and processed_wt.msa is None:
+            raise ValueError("This model requires an MSA for fitting, but the wild type sequence does not have one.")
+        
         return processed_wt
 
     def check_metadata(self) -> None:
@@ -307,23 +319,54 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         Returns:
             ProteinModelWrapper: The fitted model.
         """
-        try:
-            check_is_fitted(self)
-            if not force and not self.should_refit_on_sequences:
-                logger.warning("Model is already fitted. Skipping")
-                return self
-            else:
+        if self.expects_no_fit:
+            if X is None:
                 pass
-        except NotFittedError:
-            pass
+            elif hasattr(X, '__len__') and len(X) == 0:
+                pass
+            else:
+                warnings.warn(f"This model expects no fit, but received input. Ignoring input: {X}")
 
-        logger.info(f"Fitting {self.__class__.__name__}")
-        X = self._validate_input(X)
-        
-        if self.requires_msa_for_fit:
-            X = self._enforce_aligned(X)
-        
-        self._fit(X, y)
+            self._fit(None, None)
+
+        else:
+            try:
+                check_is_fitted(self)
+                if not force and not self.should_refit_on_sequences:
+                    logger.warning("Model is already fitted. Skipping")
+                    return self
+                else:
+                    pass
+            except NotFittedError:
+                pass
+
+            logger.info(f"Fitting {self.__class__.__name__}")
+            X = self._validate_input(X)
+            
+            if self.requires_msa_for_fit:
+                X = self._enforce_aligned(X)
+
+            if self.requires_structure:
+                if any(seq.structure is None for seq in X) and self.wt is None:
+                    raise ValueError("This model requires structure information, at least one of the sequences does not have it, and there is no avialable WT structure.")
+                elif any(seq.structure is None for seq in X):
+                    if X.fixed_length and len(self.wt) == X.width:
+                        pass
+                    else:
+                        raise ValueError("This model requires structure information, at least one of the sequences does not have it, and the WT structure size does not match the sequence lengths.")
+            
+            if self.requires_msa_per_sequence:
+                if any(not seq.has_msa for seq in X):
+                    if self.wt is not None and self.wt.has_msa:
+                        warnings.warn("Some sequences do not have an MSA, but the wild type sequence does. Attempting to use the wild type sequence MSA.")
+                        wt_msa = self.wt.msa
+                        for seq in X:
+                            if len(seq) == wt_msa.width:
+                                seq.msa = wt_msa
+                    else:
+                        raise ValueError("Some sequences do not have an MSA, and the wild type sequence does not have one either. Cannot fit model.")
+            
+            self._fit(X, y)
         
         return self
     
@@ -345,6 +388,27 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         
         if self.requires_msa_for_fit:
             X = self._enforce_aligned(X)
+
+        if self.requires_structure:
+            if any(seq.structure is None for seq in X) and self.wt is None:
+                raise ValueError("This model requires structure information, at least one of the sequences does not have it, and there is no avialable WT structure.")
+            elif any(seq.structure is None for seq in X):
+                if X.fixed_length and len(self.wt) == X.width:
+                    pass
+                else:
+                    raise ValueError("This model requires structure information, at least one of the sequences does not have it, and the WT structure size does not match the sequence lengths.")
+                
+        if self.requires_msa_per_sequence:
+            if any(not seq.has_msa for seq in X):
+                if self.wt is not None and self.wt.has_msa:
+                    warnings.warn("Some sequences do not have an MSA, but the wild type sequence does. Attempting to use the wild type sequence MSA.")
+                    wt_msa = self.wt.msa
+                    for seq in X:
+                        if len(seq) == wt_msa.width:
+                            seq.msa = wt_msa
+
+                else:
+                    raise ValueError("Some sequences do not have an MSA, and the wild type sequence does not have one either. Cannot fit model.")
 
         self._partial_fit(X, y)
         return self
@@ -397,6 +461,18 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
                     pass
                 else:
                     raise ValueError("This model requires structure information, at least one of the sequences does not have it, and the WT structure size does not match the sequence lengths.")
+                
+
+        if self.requires_msa_per_sequence:
+            if any(not seq.has_msa for seq in X):
+                if self.wt is not None and self.wt.has_msa:
+                    warnings.warn("Some sequences do not have an MSA, but the wild type sequence does. Attempting to use the wild type sequence MSA.")
+                    wt_msa = self.wt.msa
+                    for seq in X:
+                        if len(seq) == wt_msa.width:
+                            seq.msa = wt_msa
+                else:
+                    raise ValueError("Some sequences do not have an MSA, and the wild type sequence does not have one either. Cannot fit model.")
 
         if not self.can_handle_aligned_sequences and X.has_gaps:
             logger.info("Input sequences have gaps and the model cannot handle them. Removing gaps.")
@@ -493,9 +569,24 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         return [header]
 
     @property
+    def expects_no_fit(self) -> bool:
+        """Whether the model expects no fit."""
+        return self._expects_no_fit
+
+    @property
     def requires_msa_for_fit(self) -> bool:
         """Whether the model requires an MSA for fitting."""
         return self._requires_msa_for_fit
+    
+    @property
+    def requires_wt_msa(self) -> bool:
+        """Whether the model requires a wild type MSA for fitting."""
+        return self._requires_wt_msa
+    
+    @property
+    def requires_msa_per_sequence(self) -> bool:
+        """Whether the model requires an MSA for each sequence during transform."""
+        return self._requires_msa_per_sequence
     
     @property
     def per_position_capable(self) -> bool:
@@ -567,13 +658,37 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
 # MIXINS FOR MODELS
 #############################################
 
-class RequiresMSAMixin:
+class ExpectsNoFitMixin:
+    """Either because the model is pretrained, or it will be trained based on WT sequence information only, the model expects the fit method to recieve None."""
+
+    _expects_no_fit: bool = True
+
+class RequiresMSAForFitMixin:
     """
     Mixin to ensure model receives aligned sequences at fit.
 
     This mixin overrides the requires_msa_for_fit attribute to be True.
     """
     _requires_msa_for_fit: bool = True
+
+class RequiresWTMSAMixin:
+    """
+    Mixin to ensure model's WT has an alignment available.
+    """
+    _requires_wt_msa: bool = True
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        # check that requires wt is also true, otherwise this mixin makes no sense
+        if not cls.requires_wt_to_function:
+            raise ValueError("RequiresWTMSAMixin  requires that the model also requires the wild type sequence to function. Please add RequiresWTToFunctionMixin to the class.")
+
+class RequiresMSAPerSequenceMixin:
+    """
+    Mixin to ensure model receives sequences at transform that each have an MSA.
+    If that fails it will attempt to find one via the wild type sequence.
+    """
+    _requires_msa_per_sequence: bool = True
 
 class RequiresFixedLengthMixin:
     """

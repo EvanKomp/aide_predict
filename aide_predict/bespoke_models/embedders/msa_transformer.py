@@ -12,7 +12,7 @@ import tqdm
 
 
 from aide_predict.bespoke_models import model_device_context
-from aide_predict.bespoke_models.base import ProteinModelWrapper, PositionSpecificMixin, RequiresMSAMixin, CacheMixin, CanHandleAlignedSequencesMixin
+from aide_predict.bespoke_models.base import ProteinModelWrapper, PositionSpecificMixin, RequiresMSAForFitMixin, CacheMixin, CanHandleAlignedSequencesMixin
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
 from aide_predict.utils.common import MessageBool
 
@@ -28,7 +28,7 @@ except ImportError:
 import logging
 logger = logging.getLogger(__name__)
 
-class MSATransformerEmbedding(CacheMixin, PositionSpecificMixin, CanHandleAlignedSequencesMixin, RequiresMSAMixin, ProteinModelWrapper):
+class MSATransformerEmbedding(CacheMixin, PositionSpecificMixin, CanHandleAlignedSequencesMixin, RequiresMSAForFitMixin, ProteinModelWrapper):
     """
     A protein sequence embedder that uses the MSA Transformer model to generate embeddings.
     

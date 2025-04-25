@@ -16,7 +16,7 @@ import shutil
 from typing import List, Union, Optional
 import numpy as np
 import pandas as pd
-from aide_predict.bespoke_models.base import ProteinModelWrapper, RequiresMSAMixin, CanRegressMixin, RequiresWTToFunctionMixin, RequiresFixedLengthMixin, MessageBool, AcceptsLowerCaseMixin, CacheMixin
+from aide_predict.bespoke_models.base import ProteinModelWrapper, RequiresMSAForFitMixin, CanRegressMixin, RequiresWTToFunctionMixin, RequiresFixedLengthMixin, MessageBool, AcceptsLowerCaseMixin, CacheMixin
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
 
 from tqdm import tqdm
@@ -38,7 +38,7 @@ class EVMutationWrapper(
     CacheMixin,
     RequiresWTToFunctionMixin, 
     RequiresFixedLengthMixin,
-    RequiresMSAMixin,
+    RequiresMSAForFitMixin,
     CanRegressMixin,
     AcceptsLowerCaseMixin,
     ProteinModelWrapper):

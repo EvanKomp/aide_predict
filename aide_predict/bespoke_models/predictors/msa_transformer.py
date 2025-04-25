@@ -12,7 +12,7 @@ import numpy as np
 import tqdm
 
 
-from aide_predict.bespoke_models.base import RequiresMSAMixin, RequiresFixedLengthMixin, CacheMixin
+from aide_predict.bespoke_models.base import RequiresMSAForFitMixin, RequiresFixedLengthMixin, CacheMixin
 from aide_predict.bespoke_models.predictors.pretrained_transformers import LikelihoodTransformerBase, MarginalMethod
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
 from aide_predict.utils.common import MessageBool
@@ -25,7 +25,7 @@ try:
 except ImportError:
     AVAILABLE = MessageBool(False, "MSA Transformer requires fair-esm, which is not installed.")
 
-class MSATransformerLikelihoodWrapper(CacheMixin, RequiresMSAMixin, RequiresFixedLengthMixin, LikelihoodTransformerBase):
+class MSATransformerLikelihoodWrapper(CacheMixin, RequiresMSAForFitMixin, RequiresFixedLengthMixin, LikelihoodTransformerBase):
     """
     A wrapper for the MSA Transformer model to compute log likelihoods for protein sequences.
 

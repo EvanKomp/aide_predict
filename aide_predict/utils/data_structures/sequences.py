@@ -11,6 +11,7 @@ from collections import UserList
 import os
 import warnings
 import numpy as np
+import hashlib
 
 from aide_predict.io.bio_files import read_fasta, write_fasta, read_a3m
 from aide_predict.utils.alignment_calls import sw_global_pairwise, mafft_align
@@ -19,6 +20,8 @@ from typing import List, Optional, Union, Iterator, Dict, Iterable, Any, Tuple
 
 from ..constants import AA_SINGLE, GAP_CHARACTERS, NON_CONONICAL_AA_SINGLE
 from .structures import ProteinStructure
+
+HASHER = hashlib.sha256
 
 
 ############################################
@@ -75,6 +78,10 @@ class ProteinCharacter(str):
         """Return a string representation of the ProteinCharacter."""
         return f"ProteinCharacter('{self}')"
 
+#############################################
+# A class to store a protein sequence
+###############################################
+
 
 class ProteinSequence(str):
     """
@@ -83,7 +90,7 @@ class ProteinSequence(str):
     This class inherits from UserString and provides additional methods and properties
     for analyzing and manipulating protein sequences.
     """
-    def __new__(cls, seq: str, id: Optional[str] = None, structure: Optional[Union[str, "ProteinStructure"]] = None):
+    def __new__(cls, seq: str, id: Optional[str] = None, structure: Optional[Union[str, "ProteinStructure"]] = None, msa: Optional["ProteinSequences"] = None):
         """
         Create a new ProteinSequence object.
 
@@ -99,11 +106,14 @@ class ProteinSequence(str):
         obj._characters: List[ProteinCharacter] = [ProteinCharacter(c) for c in seq]
         obj._id: Optional[str] = None
         obj._structure: Optional[Union[str, "ProteinStructure"]] = None
+        obj._msa: Optional["ProteinSequences"] = None
 
         if id is not None:
             obj.id = id
         if structure is not None:
             obj.structure = structure
+        if msa is not None:
+            obj.msa = msa
 
         return obj
 
@@ -112,14 +122,17 @@ class ProteinSequence(str):
         """Get the identifier of the sequence."""
         return self._id
     
-    @property
-    def structure(self) -> Optional[str]:
-        """Get the structure of the sequence."""
-        return self._structure
-    
     def __hash__(self) -> int:
         """Compute a hash value for the ProteinSequence."""
-        return hash((tuple(self._characters), self._id, self._structure))
+        if not self.has_msa:
+            msa_hash = None
+        else:
+            msa_hash = hash(self.msa)
+
+        fingerprint = str((tuple(self._characters), self._id, self._structure, msa_hash))
+        hash_ob = HASHER(fingerprint.encode())
+        hash_int = int(hash_ob.hexdigest(), 16)
+        return hash_int
     
     def __eq__(self, other: object) -> bool:
         """Check if two ProteinSequence objects are equal."""
@@ -146,7 +159,7 @@ class ProteinSequence(str):
     def with_no_gaps(self) -> 'ProteinSequence':
         """Return a new ProteinSequence with all gaps removed."""
         return ProteinSequence("".join(c for c in self if c not in GAP_CHARACTERS),
-                               id=self._id, structure=self._structure)
+                               id=self._id, structure=self._structure, msa=self._msa)
     
     @property
     def as_array(self) -> np.ndarray:
@@ -284,11 +297,54 @@ class ProteinSequence(str):
         """Set the structure of the sequence."""
         if isinstance(new_structure, str):
             new_structure = ProteinStructure(new_structure)
-            assert len(self) == len(new_structure.get_sequence())
+            if not len(self) == len(new_structure.get_sequence()):
+                warnings.warn("Length of sequence and residues in structure do not match. This will likely cause problems with downstream predictors.")
         elif not isinstance(new_structure, ProteinStructure):
             raise ValueError("Structure must be a ProteinStructure object or a valid PDB file path.")
         
         self._structure = new_structure
+
+    @property
+    def has_structure(self) -> bool:
+        """Check if the sequence has an associated structure."""
+        return self._structure is not None
+
+    @property
+    def msa(self) -> Optional['ProteinSequences']:
+        """Get the MSA (multiple sequence alignment) of the sequence."""
+        return self._msa
+
+    @msa.setter
+    def msa(self, new_msa: 'ProteinSequences') -> None:
+        """Set the MSA (multiple sequence alignment) of the sequence."""
+        if not isinstance(new_msa, ProteinSequences):
+            raise ValueError("MSA must be a ProteinSequences object.")
+        if not new_msa.aligned:
+            raise ValueError("MSA must be aligned to be assigned to a sequence.")
+        self._msa = new_msa
+
+    @property
+    def has_msa(self) -> bool:
+        """Check if the sequence has an associated MSA."""
+        return self._msa is not None
+    
+    @property
+    def msa_same_width(self) -> bool:
+        """Check if the MSA has the same width as the sequence."""
+        if self._msa is None:
+            return False
+        return self._msa.width == len(self)
+    
+    @property
+    def is_in_msa(self) -> bool:
+        """Check if the sequence is part of an MSA."""
+        if not self.has_msa:
+            return False
+        self_str = str(self.with_no_gaps())
+        for seq in self._msa:
+            if str(seq.with_no_gaps()) == self_str:
+                return True
+        return False
 
     @classmethod
     def from_pdb(cls, pdb_file: str, chain: str = 'A', id: Optional[str] = None) -> 'ProteinSequence':
@@ -330,6 +386,22 @@ class ProteinSequence(str):
         # Create sequence object with structure
         return cls(sequence, id=id, structure=structure)
     
+    @classmethod
+    def from_fasta(cls, fasta_file: str) -> 'ProteinSequence':
+        """Create a ProteinSequence from a FASTA file, assuming the first sequence is the query."""
+        msa = ProteinSequences.from_fasta(fasta_file)
+        self_seq = msa[0].with_no_gaps()
+        self_seq.msa = msa
+        return self_seq
+
+    @classmethod
+    def from_a3m(cls, a3m_file: str, inserts: str='first') -> 'ProteinSequence':
+        """Create a ProteinSequence from an A3M file, assuming the first sequence is the query."""
+        msa = ProteinSequences.from_a3m(a3m_file, inserts=inserts)
+        self_seq = msa[0].with_no_gaps()
+        self_seq.msa = msa
+        return self_seq
+    
     def align(self, other: 'ProteinSequence') -> 'ProteinSequence':
         """
         Align this sequence with another using global pairwise alignment.
@@ -369,7 +441,7 @@ class ProteinSequence(str):
     
     def upper(self) -> 'ProteinSequence':
         """Return a new ProteinSequence with all characters converted to uppercase."""
-        return ProteinSequence(str(self).upper(), id=self._id, structure=self._structure)
+        return ProteinSequence(str(self).upper(), id=self._id, structure=self._structure, msa=self._msa)
 
 
 ############################################
@@ -510,6 +582,14 @@ class ProteinSequences(UserList):
         elif isinstance(index, np.ndarray):
             return ProteinSequences([self[i] for i in index])
         return super().__getitem__(index)
+    
+    def __hash__(self) -> str:
+        individual_hashes = [hash(seq) for seq in self]
+        hash_obj = HASHER()
+        fingerprint = str(tuple(individual_hashes))
+        hash_obj.update(fingerprint.encode())
+        hash_int = int(hash_obj.hexdigest(), 16)
+        return hash_int
 
     def to_dict(self) -> Dict[str, str]:
         """

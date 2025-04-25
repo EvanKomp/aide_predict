@@ -176,7 +176,8 @@ END
             seq.structure = "non_existent_file.pdb"
 
     def test_structure_setter_invalid_structure(self, temp_pdb_file):
-        with pytest.raises(AssertionError):
+        # should raise warning
+        with pytest.warns(Warning):
             seq = ProteinSequence("ACDE", structure=str(temp_pdb_file))
     
     def test_properties(self, sample_sequence):
@@ -292,6 +293,175 @@ END
         assert len(mutants) == 380 # 20 * 20 - 20 (no mutation) = 380
         assert all(isinstance(mutant, ProteinSequence) for mutant in mutants)
         assert len(mutants.mutated_positions) == 20
+
+    def test_msa_property(self, sample_sequence):
+        """Test setting and getting MSA property on a ProteinSequence."""
+        # Create a test MSA
+        msa = ProteinSequences([
+            ProteinSequence("ACDEFGHIKLMNPQRSTVWY", id="seq1"),
+            ProteinSequence("ACDEFGHIKLMNPQRSTVWY", id="seq2"),
+            ProteinSequence("ACDEFGHIKLMNPQRSTVWY", id="seq3")
+        ])
+        
+        # Set MSA on the sequence
+        sample_sequence.msa = msa
+        
+        # Check that the MSA is set correctly
+        assert sample_sequence.msa is msa
+        assert sample_sequence.has_msa
+        
+        # Check that we can't set a non-aligned MSA
+        non_aligned_msa = ProteinSequences([
+            ProteinSequence("ACDE", id="seq1"),
+            ProteinSequence("ACD", id="seq2")
+        ])
+        with pytest.raises(ValueError):
+            sample_sequence.msa = non_aligned_msa
+        
+        # Check that we can't set a non-ProteinSequences object
+        with pytest.raises(ValueError):
+            sample_sequence.msa = "not a ProteinSequences object"
+
+    def test_msa_same_width(self, sample_sequence):
+        """Test msa_same_width property."""
+        # Create MSAs of different widths
+        same_width_msa = ProteinSequences([
+            ProteinSequence("ACDEFGHIKLMNPQRSTVWY", id="seq1"),
+            ProteinSequence("ACDEFGHIKLMNPQRSTVWY", id="seq2")
+        ])
+        
+        different_width_msa = ProteinSequences([
+            ProteinSequence("ACDEFGHIKLM", id="seq1"),
+            ProteinSequence("ACDEFGHIKLM", id="seq2")
+        ])
+        
+        # Set MSA with same width
+        sample_sequence.msa = same_width_msa
+        assert sample_sequence.msa_same_width
+        
+        # Set MSA with different width
+        sample_sequence.msa = different_width_msa
+        assert not sample_sequence.msa_same_width
+        
+        # No MSA
+        sample_sequence._msa = None
+        assert not sample_sequence.msa_same_width
+
+    def test_is_in_msa(self, sample_sequence):
+        """Test is_in_msa property."""
+        # Create MSA that includes the sequence
+        including_msa = ProteinSequences([
+            ProteinSequence("ACDEFGHIKLMNPQRSTVWY", id="seq1"),
+            ProteinSequence("ACDEFGHIKLMNPQRSTVWY", id="seq2"),
+        ])
+        
+        # Create MSA that doesn't include the sequence
+        excluding_msa = ProteinSequences([
+            ProteinSequence("MCDEFGHIKLMNPQRSTVWY", id="seq1"),
+            ProteinSequence("MCDEFGHIKLMNPQRSTVWY", id="seq2"),
+        ])
+        
+        # Create MSA with gaps that includes the sequence
+        gapped_msa = ProteinSequences([
+            ProteinSequence("ACDE-FGHIKLMNPQRSTVWY", id="seq1"),
+            ProteinSequence("ACDE-FGHIKLMNPQRSTVWY", id="seq2"),
+        ])
+        
+        # Test when sequence is in MSA
+        sample_sequence.msa = including_msa
+        assert sample_sequence.is_in_msa
+        
+        # Test when sequence is not in MSA
+        sample_sequence.msa = excluding_msa
+        assert not sample_sequence.is_in_msa
+        
+        # Test when sequence is in MSA but MSA has gaps
+        sample_sequence.msa = gapped_msa
+        assert sample_sequence.is_in_msa
+        
+        # No MSA
+        sample_sequence._msa = None
+        assert not sample_sequence.is_in_msa
+
+    def test_hash_with_msa(self, sample_sequence):
+        """Test that hash includes MSA."""
+        # Hash without MSA
+        hash_without_msa = hash(sample_sequence)
+        
+        # Add MSA
+        msa = ProteinSequences([
+            ProteinSequence("ACDEFGHIKLMNPQRSTVWY", id="seq1"),
+            ProteinSequence("ACDEFGHIKLMNPQRSTVWY", id="seq2"),
+        ])
+        sample_sequence.msa = msa
+        
+        # Hash with MSA
+        hash_with_msa = hash(sample_sequence)
+        
+        # Hashes should be different
+        assert hash_without_msa != hash_with_msa
+        
+        # Different MSAs should yield different hashes
+        different_msa = ProteinSequences([
+            ProteinSequence("ACDEFGHIKLMNPQRSTVWY", id="seq1"),
+            ProteinSequence("ACDEFGHIKLMNPQRSTVWY", id="seq2"),
+            ProteinSequence("ACDEFGHIKLMNPQRSTVWY", id="seq3"),
+        ])
+        sample_sequence.msa = different_msa
+        hash_with_different_msa = hash(sample_sequence)
+        assert hash_with_msa != hash_with_different_msa
+
+    def test_from_fasta(self, tmp_path):
+        """Test creating a ProteinSequence from a FASTA file with concrete files."""
+        # Create test FASTA file
+        fasta_content = ">seq1\nACDE\n>seq2\nACDF\n>seq3\nACDG\n"
+        fasta_path = tmp_path / "test.fasta"
+        fasta_path.write_text(fasta_content)
+        
+        # Load sequence with MSA
+        seq = ProteinSequence.from_fasta(str(fasta_path))
+        
+        # Verify sequence and MSA
+        assert str(seq) == "ACDE"
+        assert seq.id == "seq1"
+        assert seq.has_msa
+        assert len(seq.msa) == 3
+        assert str(seq.msa[0]) == "ACDE"
+        assert str(seq.msa[1]) == "ACDF"
+        assert str(seq.msa[2]) == "ACDG"
+        
+        # Verify sequence without gaps is returned
+        fasta_content_with_gaps = ">seq1\nAC-DE\n>seq2\nAC-DF\n>seq3\nAC-DG\n"
+        fasta_gap_path = tmp_path / "test_gaps.fasta"
+        fasta_gap_path.write_text(fasta_content_with_gaps)
+        
+        seq_from_gapped = ProteinSequence.from_fasta(str(fasta_gap_path))
+        assert str(seq_from_gapped) == "ACDE"  # Gaps removed in self_seq
+        assert seq_from_gapped.has_msa
+        assert str(seq_from_gapped.msa[0]) == "AC-DE"  # MSA preserves gaps
+
+    def test_from_a3m(self, tmp_path):
+        """Test creating a ProteinSequence from an A3M file with concrete files."""
+        # Create test A3M file
+        a3m_content = ">seq1\nACDE\n>seq2\nACDF\n>seq3\nACDG\n"
+        a3m_path = tmp_path / "test.a3m"
+        a3m_path.write_text(a3m_content)
+        
+        # Load sequence with MSA
+        seq = ProteinSequence.from_a3m(str(a3m_path))
+        
+        # Verify sequence and MSA
+        assert str(seq) == "ACDE"
+        assert seq.id == "seq1"
+        assert seq.has_msa
+        assert len(seq.msa) == 3
+        assert str(seq.msa[0]) == "ACDE"
+        assert str(seq.msa[1]) == "ACDF"
+        assert str(seq.msa[2]) == "ACDG"
+        
+        # Test inserts parameter
+        seq_first_inserts = ProteinSequence.from_a3m(str(a3m_path), inserts='first')
+        assert seq_first_inserts.has_msa
 
 # ProteinSequences tests
 class TestProteinSequences:
@@ -633,6 +803,135 @@ ACD-,seq3,0.7,0.6"""
         with pytest.raises(IndexError):
             ProteinSequences.from_df(pd.DataFrame())
 
+    def test_equality_with_msa(self):
+        """Test equality comparison when sequences have MSAs attached."""
+        # Create a base sequence
+        seq1 = ProteinSequence("ACDE", id="seq1")
+        seq2 = ProteinSequence("ACDE", id="seq1") 
+        
+        # Initial equality - should be equal as they have same sequence and ID
+        assert seq1 == seq2
+        
+        # Create an MSA and attach to seq1
+        msa = ProteinSequences([
+            ProteinSequence("ACDE", id="seq1"),
+            ProteinSequence("ACDE", id="seq2")
+        ])
+        seq1.msa = msa
+        
+        # Should no longer be equal since one has MSA and the other doesn't
+        assert seq1 != seq2
+        
+        # Attach the same MSA to seq2
+        seq2.msa = msa
+        
+        # Should be equal again
+        assert seq1 == seq2
+        
+        # Attach a different MSA to seq2
+        msa2 = ProteinSequences([
+            ProteinSequence("ACDE", id="seq1"),
+            ProteinSequence("ACDE", id="seq2"),
+            ProteinSequence("ACDE", id="seq3")
+        ])
+        seq2.msa = msa2
+        
+        # Should not be equal with different MSAs
+        assert seq1 != seq2
+
+    def test_copy_with_msa(self):
+        """Test that MSA is properly handled when copying sequences."""
+        # Create sequence with MSA
+        seq = ProteinSequence("ACDE", id="seq1")
+        msa = ProteinSequences([
+            ProteinSequence("ACDE", id="seq1"),
+            ProteinSequence("ACDE", id="seq2")
+        ])
+        seq.msa = msa
+        
+        # Create new sequence using the same parameters
+        seq2 = ProteinSequence("ACDE", id="seq1", msa=msa)
+        
+        # Should be equal
+        assert seq == seq2
+        assert seq.msa == seq2.msa
+
+    def test_protein_sequences_hash_with_msas(self):
+        """Test hashing of ProteinSequences when contained sequences have MSAs."""
+        # Create sequences without MSAs
+        seq1 = ProteinSequence("ACDE", id="seq1")
+        seq2 = ProteinSequence("FGHI", id="seq2")
+        sequences = ProteinSequences([seq1, seq2])
+        
+        # Hash without MSAs
+        hash_without_msas = hash(sequences)
+        
+        # Add MSA to seq1
+        msa = ProteinSequences([
+            ProteinSequence("ACDE", id="seq1"),
+            ProteinSequence("ACDE", id="seq_other")
+        ])
+        seq1.msa = msa
+        
+        # Hash should now be different
+        hash_with_msa = hash(sequences)
+        assert hash_without_msas != hash_with_msa
+
+    def test_sequence_with_msa_mutation_operations(self):
+        """Test behavior of mutation operations with MSAs attached."""
+        # Create a sequence with MSA
+        seq = ProteinSequence("ACDE", id="seq1")
+        msa = ProteinSequences([
+            ProteinSequence("ACDE", id="seq1"),
+            ProteinSequence("ACDE", id="seq2")
+        ])
+        seq.msa = msa
+        
+        # Test mutate - MSA should not be transferred
+        mutated = seq.mutate("A1M")
+        assert not mutated.has_msa
+        
+        # Test _mutate - MSA should not be transferred
+        mutated = seq._mutate(0, "M")
+        assert not mutated.has_msa
+        
+        # Make sure original seq still has MSA
+        assert seq.has_msa
+
+    def test_with_no_gaps_preserves_msa(self):
+        """Test that with_no_gaps preserves the MSA reference."""
+        # Create sequence with gaps and MSA
+        seq = ProteinSequence("AC-DE", id="seq1")
+        msa = ProteinSequences([
+            ProteinSequence("AC-DE", id="seq1"),
+            ProteinSequence("AC-DE", id="seq2")
+        ])
+        seq.msa = msa
+        
+        # Remove gaps
+        no_gaps = seq.with_no_gaps()
+        
+        # MSA should still be attached
+        assert no_gaps.has_msa
+        assert no_gaps.msa == msa
+
+    def test_upper_preserves_msa(self):
+        """Test that upper preserves the MSA reference."""
+        # Create sequence with lowercase and MSA
+        seq = ProteinSequence("acde", id="seq1")
+        msa = ProteinSequences([
+            ProteinSequence("ACDE", id="seq1"),
+            ProteinSequence("ACDE", id="seq2")
+        ])
+        seq.msa = msa
+        
+        # Convert to uppercase
+        upper_seq = seq.upper()
+        
+        # MSA should still be attached
+        assert upper_seq.has_msa
+        assert upper_seq.msa == msa
+
 
 # ProteinSequencesOnFile tests
 class TestProteinSequencesOnFile:
@@ -775,6 +1074,156 @@ def test_integration():
     assert str(on_file[1]) == str(mutated_seq)
     
     os.unlink(temp_file.name)
+
+
+class TestMSAIntegration:
+    """Integration tests for MSA functionality with other library components."""
+    
+    @pytest.fixture
+    def sample_msa_file(self, tmp_path):
+        """Create a sample MSA file."""
+        msa_content = ">seq1\nACDE\n>seq2\nACDF\n>seq3\nACDG\n"
+        msa_path = tmp_path / "sample.fasta"
+        msa_path.write_text(msa_content)
+        return str(msa_path)
+    
+    @pytest.fixture
+    def sample_a3m_file(self, tmp_path):
+        """Create a sample A3M file."""
+        a3m_content = ">seq1\nACDE\n>seq2\nACDF\n>seq3\nACDG\n"
+        a3m_path = tmp_path / "sample.a3m"
+        a3m_path.write_text(a3m_content)
+        return str(a3m_path)
+    
+    def test_load_from_fasta_and_msa_operations(self, sample_msa_file):
+        """Test loading from FASTA and performing operations with MSA."""
+        # Load sequence with MSA from FASTA
+        seq = ProteinSequence.from_fasta(sample_msa_file)
+        
+        # Verify basic properties
+        assert str(seq) == "ACDE"
+        assert seq.id == "seq1"
+        assert seq.has_msa
+        assert len(seq.msa) == 3
+        assert seq.is_in_msa
+        
+        # Test that sequence is found in the MSA
+        assert str(seq.msa[0]) == "ACDE"
+        assert seq.msa[0].id == "seq1"
+        
+        # Create a mutated version
+        mutated = seq.mutate("A1M")
+        assert str(mutated) == "MCDE"
+        assert not mutated.has_msa  # Mutation should not preserve MSA
+        
+        # Demonstrate how to transfer MSA to mutated sequence
+        mutated.msa = seq.msa
+        assert mutated.has_msa
+        assert not mutated.is_in_msa  # Mutated sequence is not in the MSA
+    
+    def test_load_from_a3m_and_msa_operations(self, sample_a3m_file):
+        """Test loading from A3M and performing operations with MSA."""
+        # Load sequence with MSA from A3M
+        seq = ProteinSequence.from_a3m(sample_a3m_file)
+        
+        # Verify basic properties
+        assert str(seq) == "ACDE"
+        assert seq.id == "seq1"
+        assert seq.has_msa
+        assert len(seq.msa) == 3
+        assert seq.is_in_msa
+        
+        # Test that sequence is found in the MSA
+        assert str(seq.msa[0]) == "ACDE"
+        assert seq.msa[0].id == "seq1"
+    
+    def test_hash_stability_with_msa(self, sample_msa_file):
+        """Test hash stability with MSA."""
+        # Load sequence with MSA
+        seq1 = ProteinSequence.from_fasta(sample_msa_file)
+        
+        # Calculate hash
+        hash1 = hash(seq1)
+        
+        # Load again - should have same hash
+        seq2 = ProteinSequence.from_fasta(sample_msa_file)
+        hash2 = hash(seq2)
+        
+        # Hashes should be the same for identical sequences with same MSA
+        assert hash1 == hash2
+        
+        # Modify MSA and verify hash changes
+        seq2.msa = ProteinSequences([
+            ProteinSequence("ACDE", id="seq1"),
+            ProteinSequence("ACDF", id="seq2")
+        ])
+        hash3 = hash(seq2)
+        assert hash1 != hash3
+    
+    @patch('aide_predict.utils.data_structures.sequences.mafft_align')
+    def test_align_operations_with_msa(self, mock_mafft_align, sample_msa_file):
+        """Test alignment operations with sequence having MSA."""
+        # Load sequence with MSA
+        seq = ProteinSequence.from_fasta(sample_msa_file)
+        
+        # Create a second sequence without MSA
+        seq2 = ProteinSequence("ACDX", id="seq4")
+        
+        # Mock the alignment function to preserve MSA properties
+        def mock_align(sequences, **kwargs):
+            # Create aligned sequences but preserve MSA properties
+            aligned_seqs = ProteinSequences([
+                ProteinSequence("ACDE", id="seq1"),
+                ProteinSequence("ACDX", id="seq4")
+            ])
+            # Transfer MSA from original sequences to aligned ones where present
+            for i, orig_seq in enumerate(sequences):
+                if orig_seq.has_msa:
+                    aligned_seqs[i]._msa = orig_seq.msa
+            return aligned_seqs
+        
+        mock_mafft_align.side_effect = mock_align
+        
+        # Create a collection including both sequences
+        sequences = ProteinSequences([seq, seq2])
+        
+        # Align the sequences
+        aligned = sequences.align_all()
+        
+        # Check mafft_align was called
+        mock_mafft_align.assert_called_once()
+        
+        # Verify MSA is preserved in the aligned result
+        assert aligned[0].has_msa
+        assert aligned[0].msa == seq.msa
+        
+        # The second sequence should still not have an MSA
+        assert not aligned[1].has_msa
+    
+    def test_msa_with_protein_sequences_operations(self, sample_msa_file):
+        """Test MSA interaction with ProteinSequences operations."""
+        # Load sequence with MSA
+        seq = ProteinSequence.from_fasta(sample_msa_file)
+        
+        # Create a ProteinSequences object containing this sequence
+        sequences = ProteinSequences([seq])
+        
+        # Test that the MSA is preserved in the collection
+        assert sequences[0].has_msa
+        assert sequences[0].msa == seq.msa
+        
+        # Test that operations preserve MSA
+        upper_sequences = sequences.upper()
+        assert upper_sequences[0].has_msa
+        assert upper_sequences[0].msa == seq.msa
+        
+        # Add sequences without MSA
+        sequences.append(ProteinSequence("ACDF", id="new_seq"))
+        
+        # The original sequence with MSA should still have it
+        assert sequences[0].has_msa
+        
+        # The new sequence should not have 
 
 # Run the tests
 if __name__ == "__main__":
