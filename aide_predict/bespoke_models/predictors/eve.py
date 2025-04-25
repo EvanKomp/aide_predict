@@ -25,7 +25,7 @@ from aide_predict.bespoke_models.base import (
     ProteinModelWrapper, 
     RequiresWTToFunctionMixin,
     RequiresFixedLengthMixin, 
-    RequiresMSAForFitMixin,
+    RequiresWTMSAMixin,
     AcceptsLowerCaseMixin,
     RequiresWTDuringInferenceMixin,
     CanRegressMixin
@@ -59,7 +59,7 @@ if EVE_ENV is None or EVE_REPO is None:
 else:
     AVAILABLE = MessageBool(True, "EVE model is available")
 
-class EVEWrapper(RequiresWTToFunctionMixin, RequiresFixedLengthMixin, RequiresWTDuringInferenceMixin, RequiresMSAForFitMixin, AcceptsLowerCaseMixin, CanRegressMixin, ProteinModelWrapper):
+class EVEWrapper(RequiresWTToFunctionMixin, RequiresFixedLengthMixin, RequiresWTDuringInferenceMixin, RequiresWTMSAMixin, AcceptsLowerCaseMixin, CanRegressMixin, ProteinModelWrapper):
     """
     Wrapper for EVE (Evolutionary Variational Autoencoder) model.
     
@@ -330,10 +330,7 @@ class EVEWrapper(RequiresWTToFunctionMixin, RequiresFixedLengthMixin, RequiresWT
         Raises:
             RuntimeError: If EVE training fails.
         """
-
-        # check that the firs sequence in the MSA is the wild type
-        if X[0].upper() != self.wt.upper():
-            raise ValueError("The first sequence in the MSA must be the wild type sequence")
+        X = self.wt.msa
 
         # Set up folders within metadata directory
         subfolders = ['weights', 'checkpoints', 'logs']

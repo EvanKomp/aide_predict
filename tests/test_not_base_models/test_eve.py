@@ -37,13 +37,9 @@ def test_eve_zero_shot():
     sequences = ProteinSequences.from_list(assay_data['mutated_sequence'].tolist())
     scores = assay_data['DMS_score'].tolist()
 
-    # Define wild type sequence
-    wt_sequence = "LADDRTLLMAGVSHDLRTPLTRIRLATEMMSEQDGYLAESINKDIEECNAIIEQFIDYLR"
-    wt = ProteinSequence(wt_sequence, id='ENVZ_ECOLI/1-60')
-
     # Load MSA
     msa_file = os.path.join('tests', 'data', 'ENVZ_ECOLI_extreme_filtered.a2m')
-    msa = ProteinSequencesOnFile.from_fasta(msa_file)
+    wt = ProteinSequence.from_fasta(msa_file)
 
     # Initialize EVE with minimal training parameters for testing
     model = EVEWrapper(
@@ -55,7 +51,7 @@ def test_eve_zero_shot():
     )
 
     print('Fitting EVE model...')
-    model.fit(msa)
+    model.fit()
     print('EVE model fitted!')
 
     # ensure briefly that the model is capable of handling multiple mutations
