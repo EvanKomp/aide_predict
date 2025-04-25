@@ -16,7 +16,7 @@ import shutil
 from typing import List, Union, Optional
 import numpy as np
 import pandas as pd
-from aide_predict.bespoke_models.base import ProteinModelWrapper, RequiresMSAForFitMixin, CanRegressMixin, RequiresWTToFunctionMixin, RequiresFixedLengthMixin, MessageBool, AcceptsLowerCaseMixin, CacheMixin
+from aide_predict.bespoke_models.base import ProteinModelWrapper, RequiresWTMSAMixin, CanRegressMixin, RequiresWTToFunctionMixin, RequiresFixedLengthMixin, MessageBool, AcceptsLowerCaseMixin, CacheMixin
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
 
 from tqdm import tqdm
@@ -38,7 +38,7 @@ class EVMutationWrapper(
     CacheMixin,
     RequiresWTToFunctionMixin, 
     RequiresFixedLengthMixin,
-    RequiresMSAForFitMixin,
+    RequiresWTMSAMixin,
     CanRegressMixin,
     AcceptsLowerCaseMixin,
     ProteinModelWrapper):
@@ -110,6 +110,7 @@ class EVMutationWrapper(
         Returns:
             EVCouplingsWrapper: The fitted model.
         """
+        X = self.wt.msa
         if not X.width == len(self.wt):
             raise ValueError("The sequences in the MSA must all have the same length as the wild-type sequence")
         if not str(X[0]).upper() == str(self.wt).upper():
