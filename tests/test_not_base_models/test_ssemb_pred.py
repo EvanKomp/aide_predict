@@ -41,11 +41,12 @@ def test_ssemb_zero_shot():
     # Define wild type sequence with structure
     pdb_path = os.path.join('tests', 'data', 'ENVZ_ECOLI.pdb')
     structure = ProteinStructure(pdb_file=pdb_path)
-    wt = ProteinSequence(structure.get_sequence(), id='ENVZ_ECOLI/1-60', structure=structure)
 
     # Load MSA
     msa_file = os.path.join('tests', 'data', 'ENVZ_ECOLI_extreme_filtered.a2m')
-    msa = ProteinSequencesOnFile.from_fasta(msa_file).upper()
+    wt = ProteinSequence.from_fasta(msa_file).upper()
+    wt.msa = wt.msa.upper()
+    wt.structure = structure
 
     # Initialize SSEmb model
     model = SSEmbWrapper(
@@ -55,7 +56,7 @@ def test_ssemb_zero_shot():
     )
 
     print('Fitting SSEmb model...')
-    model.fit(msa)
+    model.fit()
     print('SSEmb model fitted!')
 
     # ensure briefly that the model is capable of handling multiple mutations

@@ -22,7 +22,7 @@ from aide_predict.bespoke_models.base import (
     ProteinModelWrapper, 
     RequiresWTToFunctionMixin,
     RequiresStructureMixin,
-    RequiresMSAForFitMixin,
+    RequiresWTMSAMixin,
     CanRegressMixin
 )
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence, ProteinStructure
@@ -53,7 +53,7 @@ else:
     AVAILABLE = MessageBool(True, "SSEmb model is available")
 
 
-class SSEmbWrapper(RequiresWTToFunctionMixin, RequiresStructureMixin, RequiresMSAForFitMixin, CanRegressMixin, ProteinModelWrapper):
+class SSEmbWrapper(RequiresWTToFunctionMixin, RequiresStructureMixin, RequiresWTMSAMixin, CanRegressMixin, ProteinModelWrapper):
     """
     Wrapper for SSEmb model to predict variant effects on protein stability.
     
@@ -115,7 +115,8 @@ class SSEmbWrapper(RequiresWTToFunctionMixin, RequiresStructureMixin, RequiresMS
         Raises:
             ValueError: If the first sequence in the MSA doesn't match the wild-type sequence.
         """
-        # RequiresMSAForFitMixin already ensures X is aligned
+        X = self.wt.msa
+        
         # we can check that MSA and WT are the same sequence
         if not str(self.wt) == str(X[0]):
             raise ValueError('WT sequence and first MSA sequence expected to be the same')
