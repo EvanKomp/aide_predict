@@ -172,10 +172,10 @@ class ESM2Embedding(CacheMixin, PositionSpecificMixin, CanHandleAlignedSequences
                     outputs = self.model_(**inputs, output_hidden_states=True)
                 
                 # Get embeddings from the specified layer
-                embeddings = outputs.hidden_states[self.layer]
+                embeddings = outputs.hidden_states[self.layer].cpu()
                 # these include masked out tokens
-                mask = inputs['attention_mask']
-                embeddings = [embeddings[i, mask[i].bool(), :].cpu().numpy() for i in range(embeddings.shape[0])]
+                mask = inputs['attention_mask'].cpu().bool()
+                embeddings = [embeddings[i, mask[i], :].numpy() for i in range(embeddings.shape[0])]
                 # these should each be of shape (seq_len, hidden_size)
                 
                 # Remove special tokens (assuming first and last tokens are special)
