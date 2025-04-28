@@ -887,6 +887,15 @@ class PositionSpecificMixin:
             return False
         first_shape = arr[0].shape
         return any(a.shape != first_shape for a in arr[1:])
+    
+    def _pre_transform_hook(self, X):
+        # check that if positions are passed, all inputs are the same length
+        # if positions are passed
+        if self.positions is not None:
+            if not X.aligned:
+                raise ValueError("Input sequences must be same length / aligned for position-specific output.")
+            
+        return X
 
     def _post_transform_hook(self, result, X):
         """
@@ -899,10 +908,25 @@ class PositionSpecificMixin:
         Returns:
             np.ndarray: Processed output with correct dimensions
         """
+        if self.pool:
+            # get the pool function
+            if isinstance(self.pool, str):
+                pool_func = getattr(np, self.pool)
+            elif callable(self.pool):
+                pool_func = self.pool
+            else:
+                pool_func = np.mean
+
         # Handle ragged arrays (different shapes)
         if self._is_ragged_array(result):
-            warnings.warn("The output is a ragged array of embeddings with different sizes. Cannot apply flatten or pool operations uniformly.")
-            return result
+            if not self.pool:
+                raise ValueError("Pooling must be enabled to handle ragged arrays.")
+            else:
+                # apply pooling to each array in the list
+                result = [pool_func(a, axis=-1) for a in result]
+                # convert to a single array
+                if self._is_ragged_array(result):
+                    raise ValueError("Pooling failed to convert ragged arrays to a single array.")
             
         # Convert list of arrays to a single array if possible
         if isinstance(result, list):
@@ -918,22 +942,21 @@ class PositionSpecificMixin:
         # Validate dimensions for position-specific output
         if self.positions is not None and not self.pool:
             dims = len(self.positions)
-            if not self.flatten and result.shape[1] != dims:
-                raise ValueError(f"The output second dimension must have the same length as number of positions. Expected {dims}, got {result.shape[1]}.")
+            if result.ndim > 2:
+                if result.shape[1] != dims:
+                    # make sure that the number of values is equal to the length of the sequences before trying to do indexing ourselves
+                    if result.shape[1] == X.width:
+                        result = result[:, self.positions, :]
+                    else:
+                        raise ValueError(f"Model output has {result.shape[1]} positions, which does not match the sequence size {X.width}.")
+                else:
+                    # this is the expected shap if the model properly handled indexing positions itself
+                    pass
         
-        # Apply pooling if specified
+        # Apply pooling if specified (and not already done by internal model)
         if self.pool and result.ndim > 2:
             # Pooling across the position dimension (dim=1)
-            if callable(self.pool):
-                # Custom pooling function
-                result = self.pool(result, axis=1)
-            elif isinstance(self.pool, str):
-                # Named numpy function
-                pool_func = getattr(np, self.pool)
-                result = pool_func(result, axis=1)
-            else:
-                # Default to mean pooling
-                result = np.mean(result, axis=1)
+            result = pool_func(result, axis=1)
         
         # Flatten output if requested
         if self.flatten and result.ndim > 2:

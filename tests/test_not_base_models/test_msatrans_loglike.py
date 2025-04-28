@@ -12,7 +12,7 @@ import pandas as pd
 import numpy as np
 from scipy.stats import spearmanr
 
-from aide_predict.utils.data_structures import ProteinSequencesOnFile, ProteinSequences
+from aide_predict.utils.data_structures import ProteinSequencesOnFile, ProteinSequences, ProteinSequence
 
 import torch
 if torch.cuda.is_available():
@@ -29,14 +29,12 @@ def test_msa_transformer_zero_shot():
 
     # Load the MSA
     msa_file = os.path.join('tests', 'data', 'ENVZ_ECOLI_extreme_filtered.a2m')
-    msa = ProteinSequencesOnFile.from_fasta(msa_file)
+    wt_sequence = ProteinSequence.from_fasta(msa_file)
 
     # Load the assay data
     assay_data = pd.read_csv(os.path.join('tests', 'data', 'ENVZ_ECOLI_Ghose_2023.csv'))
     sequences = ProteinSequences.from_list(assay_data['mutated_sequence'].tolist())
     scores = assay_data['DMS_score'].tolist()
-
-    wt_sequence = "LADDRTLLMAGVSHDLRTPLTRIRLATEMMSEQDGYLAESINKDIEECNAIIEQFIDYLR"
 
     # Test wt marginal method
     model = MSATransformerLikelihoodWrapper(
@@ -49,7 +47,7 @@ def test_msa_transformer_zero_shot():
         metadata_folder='./tmp/msa_transformer',
     )
 
-    model.fit(msa)
+    model.fit()
     print('wt marginal method fitted')
     predictions = model.predict(sequences)
     spearman = spearmanr(scores, predictions)[0]
@@ -67,7 +65,7 @@ def test_msa_transformer_zero_shot():
         metadata_folder='./tmp/msa_transformer',
     )
 
-    model.fit(msa)
+    model.fit()
     print('masked marginal method fitted')
     predictions = model.predict(sequences)
     spearman = spearmanr(scores, predictions)[0]
@@ -86,7 +84,7 @@ def test_msa_transformer_zero_shot():
         metadata_folder='./tmp/msa_transformer',
     )
 
-    model.fit(msa)
+    model.fit()
     print('mutant marginal method fitted')
     predictions = model.predict(sequences)
     spearman = spearmanr(scores, predictions)[0]
@@ -104,7 +102,7 @@ def test_msa_transformer_zero_shot():
         metadata_folder='./tmp/msa_transformer',
     )
 
-    model.fit(msa)
+    model.fit()
     print('mutant marginal model fitted')
     predictions = model.predict(sequences)
     assert len(predictions) == len(sequences)

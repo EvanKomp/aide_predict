@@ -237,19 +237,30 @@ class TestProteinModelWrapper:
         feature_names = model_pool.get_feature_names_out()
         assert feature_names == ['TestModel_emb0', 'TestModel_emb1', 'TestModel_emb2']
         
-        # Test validation of dimensions - should raise error when dimensions don't match
-        class WrongDimModel(TestModel):
+        # Test validation of dimensions - should index by positions if the model internal did not
+        class OutputFullDimModel(TestModel):
             def _transform(self, X):
                 # Return wrong number of dimensions
-                return np.ones((len(X), 3, 3))  # 3 positions instead of 2
+                return np.ones((len(X), 4, 3))  # all 4 positions on sequence
                 
-        wrong_model = WrongDimModel(metadata_folder=tempdir, positions=[1, 2], pool=False, flatten=False)
-        wrong_model.fit([])
+        full_dim_model = OutputFullDimModel(metadata_folder=tempdir, positions=[1, 2], pool=False, flatten=False)
+        full_dim_model.fit([])
+
+        outs = full_dim_model.transform(seqs)
+        assert outs.shape == (2, 2, 3)  # (samples, positions chosen, features)
+
+        # Same as above but model does not return shape equal to sequence length
+        class OutputFullDimModel(TestModel):
+            def _transform(self, X):
+                # Return wrong number of dimensions
+                return np.ones((len(X), 5, 3))  # 5 positions instead of 4
+        full_dim_model = OutputFullDimModel(metadata_folder=tempdir, positions=[1, 2], pool=False, flatten=False)
+        full_dim_model.fit([])
+
+        with pytest.raises(ValueError):
+            full_dim_model.transform(seqs)
         
-        with pytest.raises(ValueError, match="output second dimension"):
-            wrong_model.transform(seqs)
-        
-        # Test with ragged array output
+        # Test with ragged array output without pooling
         class RaggedModel(TestModel):
             def _transform(self, X):
                 # Return a list of arrays with different shapes
@@ -258,9 +269,14 @@ class TestProteinModelWrapper:
         ragged_model = RaggedModel(metadata_folder=tempdir, positions=[1, 2], pool=False, flatten=True)
         ragged_model.fit([])
         
-        with pytest.warns(UserWarning, match="ragged array"):
+        with pytest.raises(ValueError):
             result = ragged_model.transform(seqs)
-        assert isinstance(result, list)
+
+        # positions are not none but input sequences are not fixed length, should raise error
+        model = TestModel(metadata_folder=tempdir, positions=[1, 2], pool=False, flatten=False).fit([])
+        seqs = ProteinSequences([ProteinSequence("ACDE"), ProteinSequence("FGH")])
+        with pytest.raises(ValueError):
+            model.transform(seqs)
 
 
     def test_wt_with_gaps(self):
