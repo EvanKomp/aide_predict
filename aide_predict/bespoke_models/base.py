@@ -892,7 +892,7 @@ class PositionSpecificMixin:
         # check that if positions are passed, all inputs are the same length
         # if positions are passed
         if self.positions is not None:
-            if not X.aligned:
+            if not X.aligned or len(X) == 1:
                 raise ValueError("Input sequences must be same length / aligned for position-specific output.")
             
         return X
