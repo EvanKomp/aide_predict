@@ -889,6 +889,8 @@ class PositionSpecificMixin:
         return any(a.shape != first_shape for a in arr[1:])
     
     def _pre_transform_hook(self, X):
+        if X is None:
+            return X
         # check that if positions are passed, all inputs are the same length
         # if positions are passed
         if self.positions is not None:
