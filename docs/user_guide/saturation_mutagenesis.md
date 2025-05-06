@@ -35,7 +35,7 @@ model = ESM2LikelihoodWrapper(
     marginal_method="masked_marginal",
     pool=True  # Get one score per variant
 )
-model.fit([])  # No training needed
+model.fit()  # No training needed
 scores = model.predict(mutant_library)
 
 # Create results dataframe

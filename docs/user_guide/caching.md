@@ -44,6 +44,8 @@ from aide_predict.bespoke_models.base import CacheMixin
 isinstance(model, CacheMixin)  # True if model supports caching
 ```
 
+NOTE: When wrapping a new model, it is recommended that `CacheMixin` be inherited first behind `ProteinModelWrapper`. This ensures that the final model outputs after any processing conducted by other mixins is what get cached, preventing any unnecessary recomputation.
+
 ## Cache Location
 
 Caches are stored in a `cache` subdirectory of the model's metadata folder:

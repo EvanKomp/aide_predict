@@ -75,6 +75,7 @@ wt_positions = [1, 2, 3]  # 0-indexed positions of interest in wild type
 
 # Align sequences
 X = X.align_all()
+wt.msa = X
 
 # Get alignment mapping and convert positions
 alignment_mapping = X.get_alignment_mapping()
@@ -84,9 +85,11 @@ aligned_positions = wt_alignment_mapping[wt_positions]
 # Now use these positions in any position-specific model
 model = MSATransformerEmbedding(
     positions=aligned_positions,
-    pool=False
+    pool=False,
+    wt=wt,  # used to get the alignment to align incoming sequence to. Alternative, wt can be None if all seqs in X have the msa attribute set to X 
+
 )
-model.fit(X)
+model.fit()
 embeddings = model.transform(X)
 ```
 

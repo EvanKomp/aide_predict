@@ -35,10 +35,11 @@ check_model_compatibility(
 ### 2. In silico mutagenesis using MSATransformer
 ```python
 # data preparation
-wt = ProteinSequence(
-    "LADDRTLLMAGVSHDLRTPLTRIRLATEMMSEQDGYLAESINKDIEECNAIIEQFIDYLR",
-)
-msa = ProteinSequences.from_fasta("data/msa.fasta")
+wt = ProteinSequence.from_fasta("data/msa.fasta") # assigns the msa attribute of the sequence
+wt.has_msa
+>>> True
+wt.msa_same_width
+>>> True
 library = wt.saturation_mutagenesis()
 mutations = library.ids
 print(mutations[0])
@@ -49,7 +50,7 @@ model = MSATransformerLikelihoodWrapper(
    wt=wt,
    marginal_method="masked_marginal"
 )
-model.fit(msa)
+model.fit()
 
 # make predictions for each mutated sequence
 predictions = model.predict(library)
@@ -63,12 +64,13 @@ results = pd.DataFrame({'mutation': mutations, 'seqeunce': library,'prediction':
 X, y = ProteinSequences.from_csv("data/experimental_data.csv", seq_col='sequence', id_col='id', label_cols='experimental_value')
 wt = X['my_id_for_WT']
 msa = ProteinSequences.from_fasta("data/msa.fasta")
+wt.msa = msa
 
 # model defenitions
 evmut = EVMutation(wt=wt, metadata_folder='./tmp/evm')
-evmut.fit(msa)
+evmut.fit()
 esm2 = ESM2LikelihoodWrapper(wt=wt, model_checkpoint='esm2_t33_650M_UR50S')
-esm2.fit([])
+esm2.fit()
 models = {'evmut': evmut, 'esm2': esm2}
 
 # model fitting and scoring
@@ -96,7 +98,7 @@ test_y = y[test_mask]
 
 # embeddings protein sequences
 # use mean pool embeddings of esm2
-embedder = ESM2Embedding(pool=True)
+embedder = ESM2Embedding(pool='mean')
 train_X = embedder.fit_transform(train_X)
 test_X = embedder.transform(test_X)
 
