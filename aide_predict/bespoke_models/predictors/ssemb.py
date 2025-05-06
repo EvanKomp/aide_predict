@@ -23,7 +23,9 @@ from aide_predict.bespoke_models.base import (
     RequiresWTToFunctionMixin,
     RequiresStructureMixin,
     RequiresWTMSAMixin,
-    CanRegressMixin
+    CanRegressMixin,
+    RequiresFixedLengthMixin,
+    RequiresWTDuringInferenceMixin
 )
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence, ProteinStructure
 from aide_predict.utils.common import MessageBool
@@ -53,7 +55,7 @@ else:
     AVAILABLE = MessageBool(True, "SSEmb model is available")
 
 
-class SSEmbWrapper(RequiresWTToFunctionMixin, RequiresStructureMixin, RequiresWTMSAMixin, CanRegressMixin, ProteinModelWrapper):
+class SSEmbWrapper(RequiresWTToFunctionMixin, RequiresWTDuringInferenceMixin, RequiresStructureMixin, RequiresFixedLengthMixin, RequiresWTMSAMixin, CanRegressMixin, ProteinModelWrapper):
     """
     Wrapper for SSEmb model to predict variant effects on protein stability.
     
@@ -160,10 +162,13 @@ class SSEmbWrapper(RequiresWTToFunctionMixin, RequiresStructureMixin, RequiresWT
         multi_scores_path = os.path.join(self._run_dir, "ssemb_multi_scores.csv")
         
         # Create symlink to structure if it doesn't exist
-        if not os.path.exists(pdb_path):
-            if os.path.islink(pdb_path):
-                os.unlink(pdb_path)
-            os.symlink(self._structure_path, pdb_path)
+        if os.path.exists(pdb_path) and os.path.islink(pdb_path):
+            # remove link
+            os.unlink(pdb_path)
+        elif os.path.exists(pdb_path):
+            # remove file
+            os.remove(pdb_path)
+        os.symlink(self._structure_path, pdb_path)
         
         # Create variants file for multi-mutations
         self._create_variants_file(X, variants_path)
