@@ -25,7 +25,7 @@ try:
 except ImportError:
     AVAILABLE = MessageBool(False, "MSA Transformer requires fair-esm, which is not installed.")
 
-class MSATransformerLikelihoodWrapper(CacheMixin, RequiresMSAPerSequenceMixin, LikelihoodTransformerBase):
+class MSATransformerLikelihoodWrapper(RequiresMSAPerSequenceMixin, LikelihoodTransformerBase):
     """
     A wrapper for the MSA Transformer model to compute log likelihoods for protein sequences.
 

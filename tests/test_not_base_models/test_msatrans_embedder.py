@@ -6,6 +6,7 @@
 * License: MIT
 '''
 import pytest
+import unittest
 import numpy as np
 import torch
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
@@ -90,19 +91,6 @@ class TestMSATransformerEmbedding:
         with pytest.raises(ValueError):
             embedder.transform(invalid_sequences)
 
-    def test_mismatched_msa_width(self, embedder, sample_sequences):
-        embedder.fit(sample_sequences)
-        # Create a sequence with mismatched MSA width
-        seq_with_bad_msa = ProteinSequence("MKALVTGAGRGIGT", id="bad_msa")
-        msa = ProteinSequences([
-            ProteinSequence("MKALVTGAGRGT", id="bad_msa"),
-            ProteinSequence("LRALVTGAGIGT", id="homolog1"),  # Too short
-        ])
-        seq_with_bad_msa.msa = msa
-        invalid_sequences = ProteinSequences([seq_with_bad_msa])
-        with pytest.raises(ValueError):
-            embedder.transform(invalid_sequences)
-
     def test_get_feature_names_out(self, embedder, sample_sequences):
         embedder.fit(sample_sequences)
         feature_names = embedder.get_feature_names_out()
@@ -152,3 +140,94 @@ class TestMSATransformerEmbedding:
         embedder.transform(sample_sequences)
         assert sampling_counter == 0  # No new sampling operations
         assert len(embedder._msa_cache) == 2  # Cache size unchanged
+
+    def test_sequence_alignment_to_msa(self, embedder, sample_sequences):
+        """
+        Test the edge case where a sequence needs to be aligned to its MSA before embedding.
+        
+        This tests the combination of RequiresMSAPerSequenceMixin and CanHandleAlignedSequencesMixin
+        which should allow the model to align a sequence to its MSA context when they don't match.
+        """
+        embedder.positions=None
+        embedder.fit()
+        
+        # Create a sequence with mutations that doesn't exactly match its MSA query sequence
+        # but should be alignable to it
+        mutated_seq = ProteinSequence("MKGLVTGAGKGIG", id="mutated_seq")  # 2 mutations from original
+        
+        # Use the first sample sequence's MSA but with mutations that don't match the first sequence
+        msa = ProteinSequences([
+            ProteinSequence("MKALVTGAGRGIGT", id="original"),
+            ProteinSequence("LRALVTGAG-GIGT", id="homolog1"),
+            ProteinSequence("MKALV-GAGRGIGT", id="homolog2")
+        ])
+        mutated_seq.msa = msa
+        
+        # The model should detect that the sequence doesn't match its MSA's first sequence
+        # and should automatically align it
+        mutated_sequences = ProteinSequences([mutated_seq])
+        
+        # This should not raise an error despite sequence-MSA mismatch
+        embeddings = embedder.transform(mutated_sequences)
+        
+        # Embeddings should still have the expected shape
+        # equal to the msa width even though the sequence has a missing position
+        assert isinstance(embeddings, np.ndarray)
+        assert embeddings.shape == (1, 14, 768)
+
+    def test_gapped_sequences_and_msas(self, embedder, tmp_path):
+        """
+        Test that the embedder can handle sequences with gaps and their corresponding MSAs.
+        
+        This tests that the combination of RequiresMSAPerSequenceMixin and CanHandleAlignedSequencesMixin
+        works correctly for pre-aligned sequences with gaps.
+        """
+        # Create two pre-aligned sequences with gaps
+        seq1 = ProteinSequence("MKA-VTGAGRGIGT", id="seq1_gapped")
+        seq2 = ProteinSequence("LRA-VTGAG-GIGT", id="seq2_gapped")
+        
+        # Create MSAs that match these gapped sequences exactly
+        msa1 = ProteinSequences([
+            ProteinSequence("MKA-VTGAGRGIGT", id="seq1_gapped"),
+            ProteinSequence("LRA-VTGAG-GIGT", id="homolog1"),
+            ProteinSequence("MKA-V-GAGRGIGT", id="homolog2")
+        ])
+        
+        msa2 = ProteinSequences([
+            ProteinSequence("LRA-VTGAG-GIGT", id="seq2_gapped"),
+            ProteinSequence("LRA-VTGAG-GIGT", id="homolog1"),
+            ProteinSequence("LRA-V-GAG-GIGT", id="homolog2")
+        ])
+        
+        # Assign MSAs to sequences
+        seq1.msa = msa1
+        seq2.msa = msa2
+        
+        # Create collection and embedder
+        gapped_sequences = ProteinSequences([seq1, seq2])
+        
+        gapped_embedder = MSATransformerEmbedding(
+            metadata_folder=str(tmp_path),
+            layer=-1,
+            positions=[0, 1, 3],  # Use positions that avoid the gaps
+            flatten=False,
+            pool=False,
+            batch_size=2,
+            device='cpu',
+            n_msa_seqs=3,
+            use_cache=False
+        )
+        
+        # Fit and transform
+        gapped_embedder.fit(gapped_sequences)
+        embeddings = gapped_embedder.transform(gapped_sequences)
+        
+        # Verify embeddings have expected shape
+        assert isinstance(embeddings, np.ndarray)
+        assert embeddings.shape == (2, 3, 768)  # 2 sequences, 3 positions, 768-dim embeddings
+
+if __name__ == "__main__":
+    # run tests so we can debug
+
+
+    unittest.main()    

@@ -28,7 +28,7 @@ except ImportError:
 import logging
 logger = logging.getLogger(__name__)
 
-class MSATransformerEmbedding(CacheMixin, PositionSpecificMixin, CanHandleAlignedSequencesMixin, RequiresMSAPerSequenceMixin, ProteinModelWrapper):
+class MSATransformerEmbedding(PositionSpecificMixin, CanHandleAlignedSequencesMixin, RequiresMSAPerSequenceMixin, CacheMixin, ProteinModelWrapper):
     """
     A protein sequence embedder that uses the MSA Transformer model to generate embeddings.
     
@@ -135,7 +135,7 @@ class MSATransformerEmbedding(CacheMixin, PositionSpecificMixin, CanHandleAligne
             # Sample with a consistent seed based on the hash to ensure reproducibility
             seed = abs(msa_hash) % (2**32)  # Ensure we have a positive seed within uint32 range
             np.random.seed(seed)
-            sampled_msa = msa.sample(min(self.n_msa_seqs, len(msa)), replace=False, keep_first=True)
+            sampled_msa = msa.sample(min(self.n_msa_seqs, len(msa)), replace=False, keep_first=False)
             self._msa_cache[msa_hash] = sampled_msa
         return self._msa_cache[msa_hash]
 

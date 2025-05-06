@@ -30,7 +30,7 @@ from aide_predict.bespoke_models.predictors.saprot import get_structure_tokens
 import logging
 logger = logging.getLogger(__name__)
 
-class SaProtEmbedding(CacheMixin, RequiresStructureMixin, ExpectsNoFitMixin, PositionSpecificMixin, ProteinModelWrapper):
+class SaProtEmbedding(RequiresStructureMixin, ExpectsNoFitMixin, PositionSpecificMixin, CacheMixin, ProteinModelWrapper):
     """
     A protein sequence embedder that uses the SaProt model to generate embeddings.
     

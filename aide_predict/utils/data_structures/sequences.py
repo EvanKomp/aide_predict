@@ -412,11 +412,20 @@ class ProteinSequence(str):
         Returns:
             ProteinSequence: The aligned sequence.
         """
-        base_self = self.with_no_gaps()
-        base_other = other.with_no_gaps()
+        if isinstance(other, ProteinSequence):
+            base_self = self.with_no_gaps()
+            base_other = other.with_no_gaps()
 
-        aligned_seq, aligned_other = sw_global_pairwise(base_self, base_other)
-        return aligned_seq, aligned_other
+            aligned_seq, aligned_other = sw_global_pairwise(base_self, base_other)
+            return aligned_seq, aligned_other
+        elif isinstance(other, ProteinSequences):
+            if not other.aligned:
+                raise ValueError("Assuming the other is an alignment, but it is not aligned.")
+            sequences_self = ProteinSequences([self])
+            aligned_self = sequences_self.align_to(other, realign=False)
+            aligned_self = aligned_self[0]
+            aligned_self.msa = other
+            return aligned_self
     
     def saturation_mutagenesis(self, positions: List[int]=None) -> List['ProteinSequence']:
         """

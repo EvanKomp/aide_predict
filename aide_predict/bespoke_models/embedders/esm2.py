@@ -27,7 +27,7 @@ try:
 except ImportError:
     AVAILABLE = MessageBool(False, "ESM2 model is not available. Please install the transformers library.")
 
-class ESM2Embedding(CacheMixin, ExpectsNoFitMixin, PositionSpecificMixin, CanHandleAlignedSequencesMixin, ProteinModelWrapper):
+class ESM2Embedding(ExpectsNoFitMixin, PositionSpecificMixin, CanHandleAlignedSequencesMixin, CacheMixin, ProteinModelWrapper):
     """
     A protein sequence embedder that uses the ESM2 model to generate embeddings.
     

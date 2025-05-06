@@ -82,7 +82,7 @@ def get_structure_tokens(structure: ProteinStructure, foldseek_path: str, proces
         return struc_seq, seq
 
 
-class SaProtLikelihoodWrapper(CacheMixin, RequiresStructureMixin, LikelihoodTransformerBase):
+class SaProtLikelihoodWrapper(RequiresStructureMixin, LikelihoodTransformerBase):
     _available = AVAILABLE
 
     def __init__(

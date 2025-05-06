@@ -20,7 +20,7 @@ from contextlib import contextmanager
 import os
 
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
-from aide_predict.bespoke_models.base import ProteinModelWrapper, PositionSpecificMixin, RequiresWTDuringInferenceMixin, CanRegressMixin, ExpectsNoFitMixin, RequiresFixedLengthMixin
+from aide_predict.bespoke_models.base import ProteinModelWrapper, PositionSpecificMixin, RequiresWTDuringInferenceMixin, CanRegressMixin, ExpectsNoFitMixin, RequiresFixedLengthMixin, CacheMixin
 
 class MarginalMethod(Enum):
     MASKED = "masked_marginal"
@@ -77,7 +77,7 @@ def model_device_context(model_instance: Any, load_func: Callable[[], None], cle
     with manager.model_on_device(load_func, cleanup_func):
         yield
 
-class LikelihoodTransformerBase(PositionSpecificMixin, RequiresFixedLengthMixin, ExpectsNoFitMixin, CanRegressMixin, RequiresWTDuringInferenceMixin, ProteinModelWrapper, ABC):
+class LikelihoodTransformerBase(PositionSpecificMixin, RequiresFixedLengthMixin, ExpectsNoFitMixin, CanRegressMixin, RequiresWTDuringInferenceMixin, CacheMixin, ProteinModelWrapper, ABC):
     """
     Base class for likelihood transformer models.
 

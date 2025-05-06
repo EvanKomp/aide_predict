@@ -434,15 +434,22 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
                         warnings.warn("Some sequences do not have an MSA, but the wild type sequence does. Attempting to use the wild type sequence MSA.")
                         wt_msa = self.wt.msa
                         for seq in X:
-                            if len(seq) == wt_msa.width:
-                                seq.msa = wt_msa
-                            else:
-                                raise ValueError("Some sequences do not have an MSA, and the wild type sequence does not have one either. Cannot fit model.")
+                            seq.msa = wt_msa
                     else:
                         raise ValueError("Some sequences do not have an MSA, and the wild type sequence does not have one either. Cannot fit model.")
                     
-                if any(not seq.msa_same_width for seq in X):
+                if any(not seq.msa_same_width for seq in X) and not self.can_handle_aligned_sequences:
                     raise ValueError("Not all sequence MSAs have the same width as the sequence itself.")
+                else:
+                    # align the sequence itself to the MSA
+                    new_X = []
+                    for seq in X:
+                        if not seq.msa_same_width:
+                            seq = seq.align(seq.msa)
+                            assert seq.msa_same_width
+                        new_X.append(seq)
+                    X = ProteinSequences(new_X)
+
         
         # Call the actual fit implementation
         self._fit(X, y)
@@ -551,7 +558,7 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
 
          # If X is None after hooks, it indicates all results are cached
         # Skip to post-processing hooks with None result
-        if X is None:
+        if X is None or len(X) == 0:
             outputs = None
         else:
             # Standard validations
@@ -573,15 +580,21 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
                         warnings.warn("Some sequences do not have an MSA, but the wild type sequence does. Attempting to use the wild type sequence MSA.")
                         wt_msa = self.wt.msa
                         for seq in X:
-                            if len(seq) == wt_msa.width:
-                                seq.msa = wt_msa
-                            else:
-                                raise ValueError("Some sequences do not have an MSA, and the wild type sequence does not have one either. Cannot transform.")
+                            seq.msa = wt_msa
                     else:
-                        raise ValueError("Some sequences do not have an MSA, and the wild type sequence does not have one either. Cannot transform.")
+                        raise ValueError("Some sequences do not have an MSA, and the wild type sequence does not have one either. Cannot fit model.")
                     
-                if any(not seq.msa_same_width for seq in X):
+                if any(not seq.msa_same_width for seq in X) and not self.can_handle_aligned_sequences:
                     raise ValueError("Not all sequence MSAs have the same width as the sequence itself.")
+                elif any(not seq.msa_same_width for seq in X):
+                    # align the sequence itself to the MSA
+                    new_X = []
+                    for seq in X:
+                        if not seq.msa_same_width:
+                            seq = seq.align(seq.msa)
+                            assert seq.msa_same_width
+                        new_X.append(seq)
+                    X = ProteinSequences(new_X)
 
             if not self.can_handle_aligned_sequences and X.has_gaps:
                 logger.info("Input sequences have gaps and the model cannot handle them. Removing gaps.")
@@ -894,7 +907,7 @@ class PositionSpecificMixin:
         # check that if positions are passed, all inputs are the same length
         # if positions are passed
         if self.positions is not None:
-            if not X.aligned or len(X) == 1:
+            if not (X.aligned or len(X) == 1):
                 raise ValueError("Input sequences must be same length / aligned for position-specific output.")
             
         return X
@@ -910,6 +923,8 @@ class PositionSpecificMixin:
         Returns:
             np.ndarray: Processed output with correct dimensions
         """
+        if result is None or len(result) == 0:
+            return result
         if self.pool:
             # get the pool function
             if isinstance(self.pool, str):

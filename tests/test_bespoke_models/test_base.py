@@ -128,9 +128,7 @@ class TestProteinModelWrapper:
         mock_fit.assert_called_once()
 
     @patch('aide_predict.bespoke_models.base.ProteinModelWrapper._transform')
-    @patch('aide_predict.bespoke_models.base.ProteinModelWrapper._validate_input')
-    def test_transform(self, mock_validate_input, mock_transform):
-        mock_validate_input.return_value = MagicMock()
+    def test_transform(self, mock_transform):
         mock_transform.return_value = np.array([1, 2, 3])
         self.model.fitted_ = True  # Mock fitted state
         result = self.model.transform(["ACDE", "FGHI"])

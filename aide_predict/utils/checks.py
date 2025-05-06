@@ -62,15 +62,45 @@ def check_model_compatibility(
         """Check if wild-type has an associated MSA."""
         return wt is not None and wt.has_msa
     
-    def check_msa_per_sequence_available() -> bool:
+    def check_msa_per_sequence_available_and_same_length() -> bool:
         """Check if each sequence has its own MSA."""
+        msa_avail = False
+        msa_same_length = False
         if training_sequences:
             if all(seq.has_msa for seq in training_sequences):
-                return True
+                msa_avail = True
+            else:
+                msa_avail = False
         if testing_sequences:
             if all(seq.has_msa for seq in testing_sequences):
-                return True
-        return False
+                msa_avail = True
+            else:
+                msa_avail = False
+
+        # check if the wild type has an MSA
+        if wt and wt.has_msa:
+            msa_avail = True
+            
+        # check if all sequence match msa length
+        if training_sequences and msa_avail:
+            for seq in training_sequences:
+                len_seq = len(seq)
+                msa = seq.msa if seq.has_msa else wt.msa
+                if msa.width != len_seq:
+                    msa_same_length = False
+                    break
+                else:
+                    msa_same_length = True
+        if testing_sequences and msa_avail:
+            for seq in testing_sequences:
+                len_seq = len(seq)
+                msa = seq.msa if seq.has_msa else wt.msa
+                if msa.width != len_seq:
+                    msa_same_length = False
+                    break
+                else:
+                    msa_same_length = True
+        return msa_avail, msa_same_length
 
     def check_compatibility(model: Type[ProteinModelWrapper]) -> bool:
         """Check if the model is compatible with the provided data."""
@@ -88,7 +118,11 @@ def check_model_compatibility(
             return False
         if model._requires_wt_msa and not check_wt_msa_available():
             return False
-        if model._requires_msa_per_sequence and not check_msa_per_sequence_available():
+        
+        msa_avail, msa_same_length = check_msa_per_sequence_available_and_same_length()
+        if model._requires_msa_per_sequence and not msa_avail:
+            return False
+        if model._requires_msa_per_sequence and not model._can_handle_aligned_sequences and not msa_same_length:
             return False
             
         # Check wild-type requirement
