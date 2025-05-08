@@ -940,7 +940,7 @@ class PositionSpecificMixin:
                 raise ValueError("Pooling must be enabled to handle ragged arrays.")
             else:
                 # apply pooling to each array in the list
-                result = [pool_func(a, axis=-1) for a in result]
+                result = [pool_func(a, axis=-2) for a in result]
                 # convert to a single array
                 if self._is_ragged_array(result):
                     raise ValueError("Pooling failed to convert ragged arrays to a single array.")
