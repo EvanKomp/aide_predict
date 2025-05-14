@@ -100,7 +100,7 @@ RequiresMSAPerSequenceMixin  # The model needs msas, but can handle having diffe
 RequiresFixedLengthMixin  # Sequences must be same length
 RequiresStructureMixin    # Uses structural information
 RequiresWTToFunctionMixin          # Needs wild-type sequence
-RequiresWTDuringInferenceMixin # Model does its own normalization to WT internally. If not inheritted, aide will automatically normalize outputs to any WT sequence provided
+RequiresWTDuringInferenceMixin # Model does its own normalization to any WT internally. If not inheritted, aide will automatically normalize outputs to any WT sequence provided
 
 
 # Output capabilities  

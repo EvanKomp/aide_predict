@@ -19,7 +19,7 @@ from aide_predict.bespoke_models.base import (
     ProteinModelWrapper, RequiresMSAForFitMixin, RequiresFixedLengthMixin,
     CanRegressMixin, RequiresWTDuringInferenceMixin, PositionSpecificMixin,
     RequiresWTToFunctionMixin, RequiresWTMSAMixin, RequiresMSAPerSequenceMixin, CacheMixin, CanHandleAlignedSequencesMixin,
-    ShouldRefitOnSequencesMixin, RequiresStructureMixin, is_jsonable
+    ShouldRefitOnSequencesMixin, RequiresStructureMixin, is_jsonable, ExpectsNoFitMixin
 )
 
 
@@ -826,4 +826,150 @@ def test_cache_mixin_advanced():
         assert cache_status[ph] == False
     
 
+def test_expects_no_fit_mixin():
+    """Test the ExpectsNoFitMixin behavior."""
+    class TestNoFitModel(ExpectsNoFitMixin, ProteinModelWrapper):
+        def _fit(self, X, y=None):
+            self.X_ = X
+            self.fitted_ = True
+            return self
         
+        def _transform(self, X):
+            return np.ones((len(X), 1))
+    
+    # Create model and test sequences
+    model = TestNoFitModel()
+    sequences = ProteinSequences.from_list(["ACDE", "FGHI"])
+    
+    # Should fit without input
+    model.fit()
+    assert model.fitted_ is True
+    assert model.X_ is None
+    
+    # Should ignore input when fitting
+    model = TestNoFitModel()
+    with pytest.warns(UserWarning):
+        model.fit(sequences)
+    assert model.fitted_ is True
+    assert model.X_ is None
+    
+    # Should still transform normally
+    result = model.transform(sequences)
+    assert result.shape == (2, 1)
+        
+
+def test_requires_msa_per_sequence_mixin():
+    """Test the RequiresMSAPerSequenceMixin behavior."""
+    class TestMSAPerSeqModel(RequiresMSAPerSequenceMixin, RequiresWTDuringInferenceMixin, ProteinModelWrapper):
+        def _fit(self, X, y=None):
+            self.fitted_ = True
+            return self
+        
+        def _transform(self, X):
+            return np.array([len(seq.msa) for seq in X]).reshape(-1, 1)
+    
+    # Create model
+    model = TestMSAPerSeqModel()
+    model.fitted_ = True  # For testing transform directly
+    
+    # Create sequences with MSAs
+    msa1 = ProteinSequences.from_list(["ACDE", "FGHI"])
+    msa2 = ProteinSequences.from_list(["JKLM", "NOPQ"])
+    
+    seq1 = ProteinSequence("ACDE", id="seq1")
+    seq1.msa = msa1
+    
+    seq2 = ProteinSequence("FGHI", id="seq2")
+    seq2.msa = msa2
+    
+    sequences = ProteinSequences([seq1, seq2])
+    
+    # Should work with MSAs present
+    result = model.transform(sequences)
+    np.testing.assert_array_equal(result, np.array([[2], [2]]))
+    
+    # Test with missing MSA - should raise ValueError
+    seq3 = ProteinSequence("JKLM", id="seq3")  # No MSA
+    sequences_missing_msa = ProteinSequences([seq1, seq3])
+    
+    with pytest.raises(ValueError):
+        model.transform(sequences_missing_msa)
+    
+    # Test with WT that has MSA - should use WT MSA for missing ones
+    wt = ProteinSequence("WTYZ", id="wt")
+    wt.msa = ProteinSequences.from_list(["WTYZ", "RSTU", "VTYZ"])  # MSA with 3 sequences
+    
+    model_with_wt = TestMSAPerSeqModel(wt=wt)
+    model_with_wt.fitted_ = True
+    
+    with pytest.warns(UserWarning):
+        result = model_with_wt.transform(sequences_missing_msa)
+    np.testing.assert_array_equal(result, np.array([[2], [3]]))  # seq3 gets wt MSA with 3 sequences
+    
+    # Test with non-matching MSA width
+    seq4 = ProteinSequence("ACDE", id="seq4")
+    seq4.msa = ProteinSequences.from_list(["ACDEFG", "HIJKLM"])  # Longer than seq4
+    sequences_wrong_width = ProteinSequences([seq4])
+    
+    with pytest.raises(ValueError, match="Not all sequence MSAs have the same width"):
+        model.transform(sequences_wrong_width)
+    
+    # Test with CanHandleAlignedSequencesMixin
+    class TestMSAAlignedModel(RequiresMSAPerSequenceMixin, RequiresWTDuringInferenceMixin, CanHandleAlignedSequencesMixin, ProteinModelWrapper):
+        def _fit(self, X, y=None):
+            self.fitted_ = True
+            return self
+        
+        def _transform(self, X):
+            return np.array([len(seq.msa) for seq in X]).reshape(-1, 1)
+    
+    # Create aligned model
+    aligned_model = TestMSAAlignedModel()
+    aligned_model.fitted_ = True
+    
+    # Should work with non-matching MSA width when CanHandleAlignedSequencesMixin is present
+    result = aligned_model.transform(sequences_wrong_width)
+    np.testing.assert_array_equal(result, np.array([[2]]))
+
+
+def test_requires_wt_during_inference_mixin():
+    """Test the RequiresWTDuringInferenceMixin behavior."""
+    class TestWTInferenceModel(RequiresWTDuringInferenceMixin, RequiresWTToFunctionMixin, ProteinModelWrapper):
+        def _fit(self, X, y=None):
+            self.fitted_ = True
+            return self
+        
+        def _transform(self, X):
+            # Don't normalize by WT in _transform since the mixin handles it
+            return np.array([len(seq) for seq in X]).reshape(-1, 1)
+    
+    # Create model with WT
+    wt = ProteinSequence("ACDE")
+    model = TestWTInferenceModel(wt=wt)
+    model.fitted_ = True
+    
+    # Transform sequences
+    sequences = ProteinSequences.from_list(["FGHI", "JKLMN"])
+    result = model.transform(sequences)
+    
+    # Check results - should not automatically normalize by WT since the mixin
+    # indicates the model handles WT normalization internally
+    np.testing.assert_array_equal(result, np.array([[4], [5]]))
+    
+    # Compare to a model without the mixin, which should automatically normalize
+    class TestNoMixinModel(RequiresWTToFunctionMixin, ProteinModelWrapper):
+        def _fit(self, X, y=None):
+            self.fitted_ = True
+            return self
+        
+        def _transform(self, X):
+            return np.array([len(seq) for seq in X]).reshape(-1, 1)
+    
+    no_mixin_model = TestNoMixinModel(wt=wt)
+    no_mixin_model.fitted_ = True
+    
+    # Transform sequences
+    result_no_mixin = no_mixin_model.transform(sequences)
+    
+    # Check results - should automatically normalize by WT length (4)
+    np.testing.assert_array_equal(result_no_mixin, np.array([[0], [1]]))

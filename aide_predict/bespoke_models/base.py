@@ -66,7 +66,7 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
         requires_wt_msa (bool): Whether the model requires a wild type MSA for fitting.
         requires_msa_per_sequence (bool): Whether the model requires an MSA for each sequence during transform.
         requires_wt_to_function (bool): Whether the model requires the wild type sequence to function.
-        requires_wt_during_inference (bool): Whether the model requires the wild type sequence during inference.
+        requires_wt_during_inference (bool): Whether the any wt is used direectly in model inference, otherwise normalize by any wt
         per_position_capable (bool): Whether the model can output per position scores.
         requires_fixed_length (bool): Whether the model requires a fixed length input.
         can_regress (bool): Whether the model outputs from transform can also be considered estimates of activity label.
@@ -580,7 +580,8 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
                         warnings.warn("Some sequences do not have an MSA, but the wild type sequence does. Attempting to use the wild type sequence MSA.")
                         wt_msa = self.wt.msa
                         for seq in X:
-                            seq.msa = wt_msa
+                            if seq.msa is None:
+                                seq.msa = wt_msa
                     else:
                         raise ValueError("Some sequences do not have an MSA, and the wild type sequence does not have one either. Cannot fit model.")
                     
@@ -727,7 +728,7 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
     
     @property
     def requires_wt_during_inference(self) -> bool:
-        """Whether the model requires the wild type sequence during inference."""
+        """Whether the model requires wild type during inference."""
         return self._requires_wt_during_inference
 
     @property
@@ -853,7 +854,7 @@ class RequiresStructureMixin:
 
 class RequiresWTDuringInferenceMixin:
     """
-    Mixin to ensure model requires wild type during inference.
+    Mixin to indicate whether the model uses a wild type directly during inference, otherwise outputs are noramlized to any wt sequence.
     
     This mixin overrides the requires_wt_during_inference attribute to be True.
     """
