@@ -67,7 +67,7 @@ import tempfile
 import numpy as np
 import pandas as pd
 
-from aide_predict.bespoke_models.base import ProteinModelWrapper, RequiresMSAMixin, CanRegressMixin
+from aide_predict.bespoke_models.base import ProteinModelWrapper, RequiresMSAForFitMixin, CanRegressMixin
 from aide_predict.utils.data_structures import ProteinSequences
 
 from typing import Optional, Union
@@ -76,7 +76,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class HMMWrapper(CanRegressMixin, RequiresMSAMixin, ProteinModelWrapper):
+class HMMWrapper(CanRegressMixin, RequiresMSAForFitMixin, ProteinModelWrapper):
     """
     Wrapper for Hidden Markov Models (HMMs) using HMMsearch to score sequences.
 

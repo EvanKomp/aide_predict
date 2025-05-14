@@ -72,8 +72,8 @@ class MyModel(ProteinModelWrapper):
     """
     _available = AVAILABLE  # Class attribute for availability
 
-    def __init__(self, param1, metadata_folder=None, wt=None):
-        super().__init__(metadata_folder=metadata_folder, wt=wt)
+    def __init__(self, param1, metadata_folder=None, wt=None, **kwargs):
+        super().__init__(metadata_folder=metadata_folder, wt=wt, **kwargs)
         self.param1 = param1  # Save user parameters as attributes
         
     def _fit(self, X, y=None):
@@ -94,18 +94,25 @@ AIDE uses mixins to declare model requirements and capabilities. Common mixins:
 
 ```python
 # Input requirements
-RequiresMSAMixin          # Needs MSA for training
+RequiresMSAForFitMixin          # Needs MSA for fit method. If not found, will attempt to fall back to WT sequence msa
+RequiresWTMSAMixin            # Needs a WT sequence with an msa
+RequiresMSAPerSequenceMixin  # The model needs msas, but can handle having different MSAs for each input. If inputs do not have MSAs, will attempt fall back to WT sequence msa
 RequiresFixedLengthMixin  # Sequences must be same length
 RequiresStructureMixin    # Uses structural information
-RequiresWTMixin          # Needs wild-type sequence
+RequiresWTToFunctionMixin          # Needs wild-type sequence
+RequiresWTDuringInferenceMixin # Model does its own normalization to any WT internally. If not inheritted, aide will automatically normalize outputs to any WT sequence provided
+
 
 # Output capabilities  
 CanRegressMixin          # Can predict numeric values
-PositionSpecificMixin    # Outputs per-position scores
+PositionSpecificMixin    # Outputs per-position scores or embeddings
 
 # Processing behavior
 CacheMixin               # Enables result caching
 AcceptsLowerCaseMixin    # Handles lowercase sequences
+ExpectsNoFitMixin         # Does not require any inputs to the fit method
+ShouldRefitOnSequencesMixin # restore sklearn default behaviour to refit when fit is called or params are set. Be default, models do not refit.
+
 ```
 
 Example with mixins:

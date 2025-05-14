@@ -95,7 +95,6 @@ def mafft_align(sequences: "ProteinSequences",
         # Prepare MAFFT command
         mafft_cmd = ["mafft"]
 
-
         # prepare existing alignment
         if existing_alignment is not None:
             if not existing_alignment.aligned:
@@ -127,8 +126,36 @@ def mafft_align(sequences: "ProteinSequences",
         except FileNotFoundError:
             raise FileNotFoundError("MAFFT is not installed or not in PATH")
 
-        # Return aligned sequences
+        # Load aligned sequences
         if output_fasta:
-            return ProteinSequencesOnFile(output_fasta)
+            aligned_sequences = ProteinSequencesOnFile(output_fasta)
         else:
-            return ProteinSequences.from_fasta(output_file)
+            aligned_sequences = ProteinSequences.from_fasta(output_file)
+            
+        # Transfer MSAs from original sequences to aligned ones
+        # Create mapping from sequence IDs to original sequences
+        id_to_seq = {seq.id: seq for seq in sequences if seq.id is not None}
+        hash_to_seq = {hash(str(seq)): seq for seq in sequences}
+        
+        # Transfer MSAs
+        for i, aligned_seq in enumerate(aligned_sequences):
+            seq_id = aligned_seq.id
+            if seq_id in id_to_seq and id_to_seq[seq_id].has_msa:
+                aligned_sequences[i]._msa = id_to_seq[seq_id].msa
+                
+            elif hash(str(aligned_seq.with_no_gaps())) in hash_to_seq:
+                orig_seq = hash_to_seq[hash(str(aligned_seq.with_no_gaps()))]
+                if orig_seq.has_msa:
+                    aligned_sequences[i]._msa = orig_seq.msa
+
+            # also structures
+            if seq_id in id_to_seq and id_to_seq[seq_id].has_structure:
+                aligned_sequences[i]._structure = id_to_seq[seq_id].structure
+                
+            elif hash(str(aligned_seq.with_no_gaps())) in hash_to_seq:
+                orig_seq = hash_to_seq[hash(str(aligned_seq.with_no_gaps()))]
+                if orig_seq.has_structure:
+                    aligned_sequences[i]._structure = orig_seq.structure
+
+
+        return aligned_sequences

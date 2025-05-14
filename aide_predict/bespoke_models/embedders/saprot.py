@@ -12,7 +12,7 @@ import numpy as np
 
 from tqdm import tqdm
 
-from aide_predict.bespoke_models.base import ProteinModelWrapper, PositionSpecificMixin, CacheMixin, RequiresStructureMixin
+from aide_predict.bespoke_models.base import ProteinModelWrapper, PositionSpecificMixin, CacheMixin, RequiresStructureMixin, ExpectsNoFitMixin
 from aide_predict.bespoke_models import model_device_context
 from aide_predict.bespoke_models.predictors.saprot import get_structure_tokens
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
@@ -30,7 +30,7 @@ from aide_predict.bespoke_models.predictors.saprot import get_structure_tokens
 import logging
 logger = logging.getLogger(__name__)
 
-class SaProtEmbedding(CacheMixin, RequiresStructureMixin, PositionSpecificMixin, ProteinModelWrapper):
+class SaProtEmbedding(RequiresStructureMixin, ExpectsNoFitMixin, PositionSpecificMixin, CacheMixin, ProteinModelWrapper):
     """
     A protein sequence embedder that uses the SaProt model to generate embeddings.
     

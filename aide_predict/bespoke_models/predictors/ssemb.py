@@ -22,8 +22,10 @@ from aide_predict.bespoke_models.base import (
     ProteinModelWrapper, 
     RequiresWTToFunctionMixin,
     RequiresStructureMixin,
-    RequiresMSAMixin,
-    CanRegressMixin
+    RequiresWTMSAMixin,
+    CanRegressMixin,
+    RequiresFixedLengthMixin,
+    RequiresWTDuringInferenceMixin
 )
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence, ProteinStructure
 from aide_predict.utils.common import MessageBool
@@ -53,7 +55,7 @@ else:
     AVAILABLE = MessageBool(True, "SSEmb model is available")
 
 
-class SSEmbWrapper(RequiresWTToFunctionMixin, RequiresStructureMixin, RequiresMSAMixin, CanRegressMixin, ProteinModelWrapper):
+class SSEmbWrapper(RequiresWTToFunctionMixin, RequiresWTDuringInferenceMixin, RequiresStructureMixin, RequiresFixedLengthMixin, RequiresWTMSAMixin, CanRegressMixin, ProteinModelWrapper):
     """
     Wrapper for SSEmb model to predict variant effects on protein stability.
     
@@ -115,7 +117,8 @@ class SSEmbWrapper(RequiresWTToFunctionMixin, RequiresStructureMixin, RequiresMS
         Raises:
             ValueError: If the first sequence in the MSA doesn't match the wild-type sequence.
         """
-        # RequiresMSAMixin already ensures X is aligned
+        X = self.wt.msa
+        
         # we can check that MSA and WT are the same sequence
         if not str(self.wt) == str(X[0]):
             raise ValueError('WT sequence and first MSA sequence expected to be the same')
@@ -159,10 +162,13 @@ class SSEmbWrapper(RequiresWTToFunctionMixin, RequiresStructureMixin, RequiresMS
         multi_scores_path = os.path.join(self._run_dir, "ssemb_multi_scores.csv")
         
         # Create symlink to structure if it doesn't exist
-        if not os.path.exists(pdb_path):
-            if os.path.islink(pdb_path):
-                os.unlink(pdb_path)
-            os.symlink(self._structure_path, pdb_path)
+        if os.path.exists(pdb_path) and os.path.islink(pdb_path):
+            # remove link
+            os.unlink(pdb_path)
+        elif os.path.exists(pdb_path):
+            # remove file
+            os.remove(pdb_path)
+        os.symlink(self._structure_path, pdb_path)
         
         # Create variants file for multi-mutations
         self._create_variants_file(X, variants_path)

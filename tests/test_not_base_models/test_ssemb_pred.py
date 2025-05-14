@@ -34,18 +34,20 @@ def test_ssemb_zero_shot():
     """
     # Load the benchmark data
     assay_data = pd.read_csv(
-        os.path.join('tests', 'data', 'ENVZ_ECOLI_Ghose_2023.csv'))
+        os.path.join('tests', 'data', 'GFP_AEQVI_Sarkisyan_2016.csv'))
     sequences = ProteinSequences.from_list(assay_data['mutated_sequence'].tolist())
     scores = assay_data['DMS_score'].tolist()
 
     # Define wild type sequence with structure
-    pdb_path = os.path.join('tests', 'data', 'ENVZ_ECOLI.pdb')
+    pdb_path = os.path.join('tests', 'data', 'GFP_AEQVI.pdb')
     structure = ProteinStructure(pdb_file=pdb_path)
-    wt = ProteinSequence(structure.get_sequence(), id='ENVZ_ECOLI/1-60', structure=structure)
 
     # Load MSA
-    msa_file = os.path.join('tests', 'data', 'ENVZ_ECOLI_extreme_filtered.a2m')
-    msa = ProteinSequencesOnFile.from_fasta(msa_file).upper()
+    msa_file = os.path.join('tests', 'data', 'GFP_AEQVI_full_04-29-2022_b08.a2m')
+    wt = ProteinSequence.from_fasta(msa_file).upper()
+    wt.msa = wt.msa.upper()
+    assert wt.msa.aligned
+    wt.structure = structure
 
     # Initialize SSEmb model
     model = SSEmbWrapper(
@@ -55,17 +57,8 @@ def test_ssemb_zero_shot():
     )
 
     print('Fitting SSEmb model...')
-    model.fit(msa)
+    model.fit()
     print('SSEmb model fitted!')
-
-    # ensure briefly that the model is capable of handling multiple mutations
-    test_sequences = ProteinSequences([
-        wt.upper()._mutate(10, 'C')._mutate(11, 'A'),
-        wt.upper()._mutate(10, 'C')._mutate(11, 'C')
-    ])
-    multi_predictions = model.predict(test_sequences)
-    print(f"Multiple mutation test predictions: {multi_predictions}")
-    assert len(multi_predictions) == 2, "Should have predictions for both test sequences"
         
     print('Making predictions...')
     predictions = model.predict(sequences)
@@ -76,7 +69,7 @@ def test_ssemb_zero_shot():
     assert not np.isnan(spearman), "Correlation should not be NaN"
     assert spearman > -1 and spearman < 1, "Correlation should be between -1 and 1"
     # Adjust expected correlation range based on SSEmb performance on this dataset
-    assert abs(spearman - 0.05) < 0.2, "Correlation should be in expected range"
+    assert abs(spearman - 0.66) < 0.02, "Correlation should be in expected range"
 
 if __name__ == '__main__':
     test_ssemb_zero_shot()

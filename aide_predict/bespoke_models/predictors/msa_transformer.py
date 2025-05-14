@@ -12,7 +12,7 @@ import numpy as np
 import tqdm
 
 
-from aide_predict.bespoke_models.base import RequiresMSAMixin, RequiresFixedLengthMixin, CacheMixin
+from aide_predict.bespoke_models.base import RequiresMSAPerSequenceMixin, RequiresFixedLengthMixin, CacheMixin
 from aide_predict.bespoke_models.predictors.pretrained_transformers import LikelihoodTransformerBase, MarginalMethod
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
 from aide_predict.utils.common import MessageBool
@@ -25,7 +25,7 @@ try:
 except ImportError:
     AVAILABLE = MessageBool(False, "MSA Transformer requires fair-esm, which is not installed.")
 
-class MSATransformerLikelihoodWrapper(CacheMixin, RequiresMSAMixin, RequiresFixedLengthMixin, LikelihoodTransformerBase):
+class MSATransformerLikelihoodWrapper(RequiresMSAPerSequenceMixin, LikelihoodTransformerBase):
     """
     A wrapper for the MSA Transformer model to compute log likelihoods for protein sequences.
 
@@ -70,6 +70,7 @@ class MSATransformerLikelihoodWrapper(CacheMixin, RequiresMSAMixin, RequiresFixe
                          device=device,
                          wt=wt)
         self.n_msa_seqs = n_msa_seqs
+        self._msa_cache = {}
 
     def _fit(self, X: ProteinSequences, y: Optional[np.ndarray] = None) -> 'MSATransformerLikelihoodWrapper':
         """
@@ -84,9 +85,8 @@ class MSATransformerLikelihoodWrapper(CacheMixin, RequiresMSAMixin, RequiresFixe
         Returns:
             MSATransformerLikelihoodWrapper: The fitted wrapper.
         """
-        self.msa_length_: int = X.width
-        self.original_msa_: ProteinSequences = X.sample(self.n_msa_seqs)
         self.fitted_ = True
+        self._msa_cache = {}
         return self
     
     def _load_model(self) -> None:
@@ -110,6 +110,24 @@ class MSATransformerLikelihoodWrapper(CacheMixin, RequiresMSAMixin, RequiresFixe
         del self.alphabet_
         del self.batch_converter_
 
+    def _get_sampled_msa(self, msa: ProteinSequences) -> ProteinSequences:
+        """
+        Get a sampled MSA from the cache or create a new one.
+
+        Args:
+            msa (ProteinSequences): The original MSA.
+
+        Returns:
+            ProteinSequences: A sampled subset of the MSA.
+        """
+        msa_hash = hash(msa)
+        if msa_hash not in self._msa_cache:
+            # Sample with a consistent seed based on the hash to ensure reproducibility
+            seed = abs(msa_hash) % (2**32)  # Ensure we have a positive seed within uint32 range
+            sampled_msa = msa.sample(min(self.n_msa_seqs, len(msa)), replace=False, seed=seed)
+            self._msa_cache[msa_hash] = sampled_msa
+        return self._msa_cache[msa_hash]
+
     def _prepare_msa_batch(self, msa: ProteinSequences, query_sequence: ProteinSequence, mask_positions: List[int] = []) -> "torch.Tensor":
         """
         Prepare a batch of the MSA including the query sequence.
@@ -132,6 +150,7 @@ class MSATransformerLikelihoodWrapper(CacheMixin, RequiresMSAMixin, RequiresFixe
     def _compute_log_likelihoods(self, X: ProteinSequences, mask_positions: Optional[List[List[int]]] = None) -> List[np.ndarray]:
         """
         Compute log likelihoods for the input sequences using the MSA Transformer model.
+        Each sequence may have its own MSA.
 
         Args:
             X (ProteinSequences): The input protein sequences.
@@ -143,12 +162,24 @@ class MSATransformerLikelihoodWrapper(CacheMixin, RequiresMSAMixin, RequiresFixe
         all_log_likelihoods = []
 
         for i, sequence in enumerate(X):
+            # Validate that the sequence has an MSA
+            if not sequence.has_msa:
+                raise ValueError(f"Sequence {i} does not have an associated MSA.")
+            
+            # Validate that the MSA width matches the sequence length
+            if not sequence.msa_same_width:
+                raise ValueError(f"Sequence {i} has an MSA with width {sequence.msa.width} which doesn't match sequence length {len(sequence)}.")
+            
+            # Get the sampled MSA for this sequence
+            sampled_msa = self._get_sampled_msa(sequence.msa)
+            
             sequence_logits = []
             batch_sizes = []
-            bar = tqdm.tqdm(total=len(self.original_msa_) // (self.batch_size - 1), desc="MSA batches")
-            for msa_sequences in self.original_msa_.iter_batches(self.batch_size - 1):
-                mask_pos = mask_positions[i] if mask_positions else []
-                batch_tokens = self._prepare_msa_batch(msa_sequences, sequence, mask_positions=mask_pos)
+            bar = tqdm.tqdm(total=len(sampled_msa) // (self.batch_size - 1), desc=f"MSA batches for sequence {i}")
+            
+            for msa_batch in sampled_msa.iter_batches(self.batch_size - 1):
+                mask_pos = mask_positions[i] if mask_positions and i < len(mask_positions) else []
+                batch_tokens = self._prepare_msa_batch(msa_batch, sequence, mask_positions=mask_pos)
                 batch_tokens = batch_tokens.to(self.device)
 
                 with torch.no_grad():

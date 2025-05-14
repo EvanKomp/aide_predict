@@ -126,7 +126,7 @@ def score_multi_mutations(df_single_mutations, protein_name, mutations):
         mutations (list): List of mutation tuples [(wt, pos, mt), ...].
         
     Returns:
-        float: Average score for the multi-mutation variant.
+        float: Additive score for the multi-mutation variant.
     
     Raises:
         ValueError: If any of the specified mutations is not found in the
@@ -141,8 +141,8 @@ def score_multi_mutations(df_single_mutations, protein_name, mutations):
             raise ValueError(f"Mutation {variant} not found in single mutation scores for protein {protein_name}")
         scores.append(match['score_ml'].values[0])
     
-    # Average the scores
-    return sum(scores) / len(scores)
+    # sum scores 
+    return sum(scores)
 
 
 def run_ssemb(pdb_paths, msa_paths, run_path, weights_path, variant_file=None, device=0):

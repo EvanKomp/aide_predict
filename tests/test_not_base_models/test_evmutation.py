@@ -21,12 +21,9 @@ def test_evcouplings_zero_shot():
     sequences = ProteinSequences.from_list(assay_data['mutated_sequence'].tolist())
     scores = assay_data['DMS_score'].tolist()
 
-    wt_sequence = "LADDRTLLMAGVSHDLRTPLTRIRLATEMMSEQDGYLAESINKDIEECNAIIEQFIDYLR"
-    wt = ProteinSequence(wt_sequence, id='ENVZ_ECOLI/1-60')
-
     # Create a small MSA for testing (in practice, you'd use a real MSA)
     msa_file = os.path.join('tests', 'data', 'ENVZ_ECOLI_extreme_filtered.a2m')
-    msa = ProteinSequencesOnFile.from_fasta(msa_file)
+    wt = ProteinSequence.from_fasta(msa_file)
 
     # Test with standard protocol
     model = EVMutationWrapper(
@@ -37,7 +34,7 @@ def test_evcouplings_zero_shot():
         iterations=100,
     )
 
-    model.fit(msa)
+    model.fit()
     print('EVCouplings model fitted!')
     predictions = model.predict(sequences)
     spearman = spearmanr(scores, predictions)[0]

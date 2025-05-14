@@ -14,7 +14,7 @@ import tqdm
 
 import numpy as np
 
-from aide_predict.bespoke_models.base import ProteinModelWrapper, PositionSpecificMixin, CanHandleAlignedSequencesMixin, CacheMixin
+from aide_predict.bespoke_models.base import ProteinModelWrapper, PositionSpecificMixin, CanHandleAlignedSequencesMixin, CacheMixin, ExpectsNoFitMixin
 from aide_predict.bespoke_models import model_device_context
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence
 from aide_predict.utils.common import MessageBool
@@ -27,7 +27,7 @@ try:
 except ImportError:
     AVAILABLE = MessageBool(False, "ESM2 model is not available. Please install the transformers library.")
 
-class ESM2Embedding(CacheMixin, PositionSpecificMixin, CanHandleAlignedSequencesMixin, ProteinModelWrapper):
+class ESM2Embedding(ExpectsNoFitMixin, PositionSpecificMixin, CanHandleAlignedSequencesMixin, CacheMixin, ProteinModelWrapper):
     """
     A protein sequence embedder that uses the ESM2 model to generate embeddings.
     
@@ -172,10 +172,10 @@ class ESM2Embedding(CacheMixin, PositionSpecificMixin, CanHandleAlignedSequences
                     outputs = self.model_(**inputs, output_hidden_states=True)
                 
                 # Get embeddings from the specified layer
-                embeddings = outputs.hidden_states[self.layer]
+                embeddings = outputs.hidden_states[self.layer].cpu()
                 # these include masked out tokens
-                mask = inputs['attention_mask']
-                embeddings = [embeddings[i, mask[i].bool(), :].cpu().numpy() for i in range(embeddings.shape[0])]
+                mask = inputs['attention_mask'].cpu().bool()
+                embeddings = [embeddings[i, mask[i], :].numpy() for i in range(embeddings.shape[0])]
                 # these should each be of shape (seq_len, hidden_size)
                 
                 # Remove special tokens (assuming first and last tokens are special)
@@ -203,11 +203,15 @@ class ESM2Embedding(CacheMixin, PositionSpecificMixin, CanHandleAlignedSequences
                     # is on
                     pass
                 
-                if self.pool is not None:
-                    if self.pool == 'mean':
+                if self.pool:
+                    if self.pool == 'mean' or self.pool is True:
                         embeddings = [emb.mean(axis=0) for emb in embeddings]
                     elif self.pool == 'max':
                         embeddings = [emb.max(axis=0) for emb in embeddings]
+                    elif hasattr(np, self.pool):
+                        # check if the pool is a numpy function
+                        pool_func = getattr(np, self.pool)
+                        embeddings = [pool_func(emb, axis=0) for emb in embeddings]
                     else:
                         raise ValueError(f"Invalid pooling method: {self.pool}")
                 

@@ -20,7 +20,7 @@ import warnings
 import numpy as np
 from tqdm import tqdm
 
-from aide_predict.bespoke_models.base import RequiresFixedLengthMixin, RequiresStructureMixin
+from aide_predict.bespoke_models.base import RequiresFixedLengthMixin, RequiresStructureMixin, CacheMixin, ExpectsNoFitMixin
 from aide_predict.bespoke_models.predictors.pretrained_transformers import LikelihoodTransformerBase, MarginalMethod
 from aide_predict.utils.data_structures import ProteinSequences, ProteinSequence, ProteinStructure
 from aide_predict.utils.common import MessageBool
@@ -82,7 +82,7 @@ def get_structure_tokens(structure: ProteinStructure, foldseek_path: str, proces
         return struc_seq, seq
 
 
-class SaProtLikelihoodWrapper(RequiresStructureMixin, RequiresFixedLengthMixin, LikelihoodTransformerBase):
+class SaProtLikelihoodWrapper(RequiresStructureMixin, LikelihoodTransformerBase):
     _available = AVAILABLE
 
     def __init__(

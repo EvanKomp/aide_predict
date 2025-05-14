@@ -18,7 +18,7 @@ import pandas as pd
 import subprocess
 
 from aide_predict.utils.data_structures import ProteinSequence, ProteinSequences
-from aide_predict.bespoke_models.base import ProteinModelWrapper, CanRegressMixin, RequiresWTDuringInferenceMixin, RequiresWTToFunctionMixin
+from aide_predict.bespoke_models.base import ProteinModelWrapper, CanRegressMixin, RequiresWTDuringInferenceMixin, RequiresWTToFunctionMixin, ExpectsNoFitMixin, CacheMixin
 from aide_predict.utils.common import MessageBool
 
 try:
@@ -34,7 +34,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class VESPAWrapper(CanRegressMixin, RequiresWTDuringInferenceMixin, RequiresWTToFunctionMixin, ProteinModelWrapper):
+class VESPAWrapper(CanRegressMixin, ExpectsNoFitMixin, RequiresWTDuringInferenceMixin, RequiresWTToFunctionMixin, CacheMixin, ProteinModelWrapper):
     """
     A wrapper class for the VESPA (Variant Effect Score Prediction using Attention) model.
 

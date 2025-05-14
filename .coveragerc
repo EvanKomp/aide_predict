@@ -25,6 +25,7 @@ omit =
     aide_predict/bespoke_models/embedders/msa_transformer.py
     aide_predict/bespoke_models/embedders/saprot.py
     aide_predict/bespoke_models/predictors/saprot.py
+    aide_predict/bespoke_models/embedders/ssemb.py
 
     aide_predict/utils/badass.py
     aide_predict/utils/soloseq.py

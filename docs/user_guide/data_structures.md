@@ -4,7 +4,7 @@ title: Data Structures, IO
 
 # Data Structures
 
-AIDE provides several key data structures for working with protein sequences and structures. Models will recieve these data structures as input in analog to how sklearn recieves numpy arrays.
+AIDE provides several key data structures for working with protein sequences and structures. Models will receive these data structures as input in analog to how sklearn receives numpy arrays.
 
 ## ProteinSequence
 
@@ -25,16 +25,33 @@ seq = ProteinSequence(
     id="P1234",
     structure="path/to/structure.pdb"
 )
+
+# Create a sequence with an associated MSA
+seq = ProteinSequence(
+    "MKLLVLGLPGAGKGT",
+    id="P1234",
+    msa=msa_sequences  # ProteinSequences object containing the MSA
+)
+
+# From a fasta file, assumed to be aligned. Uses first sequence in file, set's the MSA attribute
+seq = ProteinSequence.from_fasta("path/to/aligned.fasta")
+seq.has_msa
+>>> True
 ```
+
 
 Key attributes and methods:
 
 - `id`: Optional identifier for the sequence
 - `structure`: Optional associated structure (as ProteinStructure object)
+- `msa`: Optional associated multiple sequence alignment (as ProteinSequences object)
 - `has_gaps`: Boolean indicating if sequence contains gaps ('-' or '.')
 - `base_length`: Length excluding gaps
 - `has_non_canonical`: Boolean indicating presence of non-standard amino acids
 - `as_array`: Sequence as numpy array
+- `has_msa`: Boolean indicating if the sequence has an associated MSA
+- `msa_same_width`: Boolean indicating if the MSA has the same width as the sequence
+- `is_in_msa`: Boolean indicating if the sequence is present in its MSA
 
 Common operations:
 
@@ -54,6 +71,13 @@ mutations = seq.get_mutations(other_seq)  # Get mutation strings (e.g., "A123G")
 # Create all possible mutations
 library = seq.saturation_mutagenesis()  # Generate all single mutants
 library = seq.saturation_mutagenesis(positions=[1,2,3])  # Specific positions
+
+# align to another sequence
+seq2 = seq2.align(seq)
+
+# align to an existing alignment
+seq2 = seq2.align(msa)  # Align to existing MSA
+
 ```
 
 ## ProteinSequences
@@ -66,6 +90,7 @@ from aide_predict import ProteinSequences
 # Create from various sources
 sequences = ProteinSequences([seq1, seq2, seq3])  # From ProteinSequence objects
 sequences = ProteinSequences.from_fasta("sequences.fasta")  # From FASTA file
+sequences = ProteinSequences.from_a3m("alignment.a3m")  # From A3M file
 sequences = ProteinSequences.from_list(["MKLL...", "MKLT..."])  # From strings
 sequences = ProteinSequences.from_dict({"seq1": "MKLL...", "seq2": "MKLT..."})
 sequences = ProteinSequences.from_dict(my_dataframe["sequence"].to_dict())
@@ -82,6 +107,7 @@ Key attributes:
 - `has_gaps`: Boolean indicating if any sequence contains gaps
 - `mutated_positions`: List of positions with variation (for aligned sequences)
 - `weights`: Optional weights for each sequence (used in some models)
+- `ids`: List of sequence IDs
 
 Common operations:
 
@@ -102,6 +128,9 @@ msa = sequences.msa_process(
     theta=0.8  # Sequence reweighting parameter
 )
 
+# Sampling operations
+sampled = sequences.sample(n=100, replace=False, keep_first=True)  # Sample sequences, keeping the first one
+
 # Save/export
 sequences.to_fasta("output.fasta")
 sequences_dict = sequences.to_dict()
@@ -110,6 +139,14 @@ sequences_dict = sequences.to_dict()
 for batch in sequences.iter_batches(batch_size=32):
     # Process batch
     pass
+
+# Get mapping between aligned and original positions
+if sequences.aligned:
+    alignment_mapping = sequences.get_alignment_mapping()
+    # Returns dict mapping sequence IDs to lists of positions
+
+# Convert to on-file representation for large MSAs
+on_file = sequences.to_on_file("output.fasta")  # Save to file and return a file-based object
 ```
 
 ## ProteinStructure
@@ -189,6 +226,33 @@ sequences = mapper.assign_structures(sequences)
 
 model = SaProtLikelihoodWrapper(wt=sequences["wild_type"])
 predictions = model.predict(sequences)  # Will use structures where available, falling back to the WT structure
+```
+
+## ProteinSequencesOnFile
+
+`ProteinSequencesOnFile` provides a memory-efficient way to work with large alignments by only loading sequences when needed.
+
+```python
+from aide_predict import ProteinSequencesOnFile
+
+# Create from FASTA file
+on_file_sequences = ProteinSequencesOnFile("large_alignment.fasta")
+
+# Access properties efficiently without loading everything
+print(on_file_sequences.aligned)  # Check if aligned
+print(on_file_sequences.width)    # Get width if aligned
+print(len(on_file_sequences))     # Get count of sequences
+
+# Load a specific sequence
+seq = on_file_sequences[0]  # Get by index
+seq = on_file_sequences["seq1"]  # Get by ID
+
+# Iterate through sequences without loading all at once
+for seq in on_file_sequences:
+    process_sequence(seq)
+
+# Load into memory if needed
+in_memory = on_file_sequences.to_memory()
 ```
 
 ## ProteinTrajectory

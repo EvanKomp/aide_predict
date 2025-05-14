@@ -77,8 +77,11 @@ def run_soloseq(
     # Filter sequences that already have predictions
     sequences_to_predict = []
     existing_paths = []
-    for seq in sequences:
-        seq_id = seq.id if seq.id else f"seq_{len(sequences_to_predict)}"
+    seq_id_mapping = {}  # Keep track of sequence ID to index mapping
+
+    for i, seq in enumerate(sequences):
+        seq_id = seq.id if seq.id else f"seq_{i}"
+        seq_id_mapping[i] = seq_id
         pdb_path = os.path.join(output_dir, f"{seq_id}.pdb")
         if os.path.exists(pdb_path) and not force:
             logger.info(f"Skipping {seq_id} - prediction already exists")
@@ -94,6 +97,7 @@ def run_soloseq(
     tmp_dir = Path("./tmp/soloseq")
     fasta_dir = tmp_dir / "fasta"
     embeddings_dir = tmp_dir / "embeddings"
+    predictions_dir = os.path.join(output_dir, "predictions")
     
     # Create directories if they don't exist
     os.makedirs(fasta_dir, exist_ok=True)
@@ -101,10 +105,14 @@ def run_soloseq(
     
     try:
         # Write individual FASTA files for sequences that need prediction
+        new_seq_id_mapping = {}  # Map between temp IDs and original IDs
+        
         for i, seq in enumerate(sequences_to_predict):
-            seq_id = seq.id if seq.id else f"seq_{i}"
-            with open(fasta_dir / f"{seq_id}.fasta", 'w') as f:
-                f.write(f">{seq_id}\n{str(seq)}\n")
+            temp_id = f"seq_{i}"  # Use a simple numeric ID for OpenFold
+            new_seq_id_mapping[temp_id] = seq.id if seq.id else f"seq_{sequences.index(seq)}"
+            
+            with open(fasta_dir / f"{temp_id}.fasta", 'w') as f:
+                f.write(f">{temp_id}\n{str(seq)}\n")
         
         # Run embedding generation
         cmd = [
@@ -138,32 +146,50 @@ def run_soloseq(
             
         subprocess.run(cmd, check=True)
         
-        # move all pdb files from output_dir/predictions to outputdir
-        # also remove unrelaxed structures if relaxed is present
-        for file in os.listdir(os.path.join(output_dir, "predictions")):
-            if file.endswith(".pdb"):
-                shutil.move(os.path.join(output_dir, "predictions", file), output_dir)
-        shutil.rmtree(os.path.join(output_dir, "predictions"))
-
-        for file in os.listdir(output_dir):
-            if file.endswith(".pdb"):
-                if "unrelaxed" in file and os.path.exists(os.path.join(output_dir, file.replace("unrelaxed.pdb", "relaxed.pdb"))):
-                    os.remove(os.path.join(output_dir, file))
-        
-        # update all names to be the sequence id
-        for id in sequences.ids:
-            for file in os.listdir(output_dir):
-                if file.startswith(str(id)+'_'):
-                    os.rename(os.path.join(output_dir, file), os.path.join(output_dir, f"{id}.pdb"))
-
-        # Get all output PDB paths (both new and existing)
+        # Process the generated PDB files
         new_paths = []
-        for seq in sequences_to_predict:
-            seq_id = seq.id if seq.id else f"seq_{i}"
-            pdb_path = os.path.join(output_dir, f"{seq_id}.pdb")
-            if os.path.exists(pdb_path):
-                new_paths.append(pdb_path)
+        
+        # Check if predictions were placed in a subdirectory
+        if os.path.exists(predictions_dir):
+            pred_dir = predictions_dir
+        else:
+            pred_dir = output_dir
+            
+        # Look for files with the known pattern
+        suffix = "_relaxed.pdb" if not skip_relaxation else "_unrelaxed.pdb"
+        
+        for file in os.listdir(pred_dir):
+            if file.endswith(suffix):
+                # Extract the temp ID from the filename
+                temp_id = file.split('_')[0] + '_' + file.split('_')[1]  # Should match "seq_X"
                 
+                if temp_id in new_seq_id_mapping:
+                    # Get the original sequence ID
+                    original_id = new_seq_id_mapping[temp_id]
+                    
+                    # Create the new path with the original ID
+                    src_path = os.path.join(pred_dir, file)
+                    dst_path = os.path.join(output_dir, f"{original_id}.pdb")
+                    
+                    # Move and rename the file
+                    shutil.move(src_path, dst_path)
+                    new_paths.append(dst_path)
+                    logger.info(f"Renamed {file} to {original_id}.pdb")
+                else:
+                    logger.warning(f"Could not map {file} to an original sequence ID")
+        
+        # Clean up predictions directory if it exists
+        if os.path.exists(predictions_dir):
+            shutil.rmtree(predictions_dir)
+        
+        # Clean up any unrelaxed files if relaxed versions exist
+        if not skip_relaxation:
+            for file in os.listdir(output_dir):
+                if "_unrelaxed.pdb" in file:
+                    relaxed_file = file.replace("_unrelaxed.pdb", "_relaxed.pdb")
+                    if os.path.exists(os.path.join(output_dir, relaxed_file)):
+                        os.remove(os.path.join(output_dir, file))
+                        
         # Clean up if not saving embeddings
         if not save_embeddings:
             shutil.rmtree(embeddings_dir)
