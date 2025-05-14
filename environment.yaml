@@ -4,7 +4,7 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - python<=3.10
+  - python<=3.11
   - hmmer=3.3.2
   - mmseqs2
   - plmc
