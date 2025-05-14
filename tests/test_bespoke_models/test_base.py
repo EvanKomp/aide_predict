@@ -9,16 +9,16 @@ import pytest
 import os
 import tempfile
 import numpy as np
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, PropertyMock
 from aide_predict.utils.common import MessageBool
 
 from aide_predict.utils.data_structures import (
-    ProteinSequence, ProteinSequences,
+    ProteinSequence, ProteinSequences, ProteinStructure
 )
 from aide_predict.bespoke_models.base import (
     ProteinModelWrapper, RequiresMSAForFitMixin, RequiresFixedLengthMixin,
     CanRegressMixin, RequiresWTDuringInferenceMixin, PositionSpecificMixin,
-    RequiresWTToFunctionMixin, CacheMixin, CanHandleAlignedSequencesMixin,
+    RequiresWTToFunctionMixin, RequiresWTMSAMixin, RequiresMSAPerSequenceMixin, CacheMixin, CanHandleAlignedSequencesMixin,
     ShouldRefitOnSequencesMixin, RequiresStructureMixin, is_jsonable
 )
 
@@ -526,5 +526,304 @@ def test_is_jsonable():
         "key4": {"nested_key": NonSerializable()}
     }
     assert is_jsonable(complex_obj) == False
+
+def test_mixin_hooks_registration():
+    """Test that mixin hooks are properly registered and called in the correct order."""
+    # Create a set of test mixins that track hook calls
+    class TestPreFitHook:
+        call_order = []
+        
+        def _pre_fit_hook(self, X, y):
+            TestPreFitHook.call_order.append("pre_fit")
+            return X, y
+    
+    class TestPostFitHook:
+        call_order = []
+        
+        def _post_fit_hook(self, X, y):
+            TestPostFitHook.call_order.append("post_fit")
+    
+    class TestPreTransformHook:
+        call_order = []
+        
+        def _pre_transform_hook(self, X):
+            TestPreTransformHook.call_order.append("pre_transform")
+            return X
+    
+    class TestPostTransformHook:
+        call_order = []
+        
+        def _post_transform_hook(self, result, X):
+            TestPostTransformHook.call_order.append("post_transform")
+            return result
+    
+    class TestInitHandler:
+        call_order = []
+        
+        def _init_handler(self, param1=None, **kwargs):
+            TestInitHandler.call_order.append("init_handler")
+            self.param1 = param1
+    
+    # Create a model with all the test mixins
+    class TestAllHooksModel(
+        TestPreFitHook,
+        TestPostFitHook,
+        TestPreTransformHook,
+        TestPostTransformHook,
+        TestInitHandler,
+        ProteinModelWrapper
+    ):
+        def _fit(self, X, y=None):
+            self.fitted_ = True
+            return self
+            
+        def _transform(self, X):
+            return np.array([len(seq) for seq in X]).reshape(-1, 1)
+    
+    # Reset call orders
+    TestPreFitHook.call_order = []
+    TestPostFitHook.call_order = []
+    TestPreTransformHook.call_order = []
+    TestPostTransformHook.call_order = []
+    TestInitHandler.call_order = []
+    
+    # Test initialization with params
+    model = TestAllHooksModel(param1="test_value")
+    assert model.param1 == "test_value"
+    assert TestInitHandler.call_order == ["init_handler"]
+    
+    # Test fit hooks
+    sequences = ProteinSequences.from_list(["ACDE", "FGHI"])
+    model.fit(sequences)
+    assert TestPreFitHook.call_order == ["pre_fit"]
+    assert TestPostFitHook.call_order == ["post_fit"]
+    
+    # Test transform hooks
+    result = model.transform(sequences)
+    assert TestPreTransformHook.call_order == ["pre_transform"]
+    assert TestPostTransformHook.call_order == ["post_transform"]
+    
+    # Verify that hooks were collected in the class
+    assert len(TestAllHooksModel._pre_fit_hooks) == 1
+    assert len(TestAllHooksModel._post_fit_hooks) == 1
+    assert len(TestAllHooksModel._pre_transform_hooks) == 1
+    assert len(TestAllHooksModel._post_transform_hooks) == 1
+    assert len(TestAllHooksModel._mixin_init_handlers) == 1
+
+def test_process_wt():
+    """Test the _process_wt method with various inputs and model requirements."""
+    # 1. Test basic processing
+    model = ProteinModelWrapper()
+    wt = "acde"  # lowercase sequence
+    processed_wt = model._process_wt(wt)
+    assert str(processed_wt) == "ACDE"  # Should be converted to uppercase
+    assert isinstance(processed_wt, ProteinSequence)
+    
+    # 2. Test None input
+    processed_wt = model._process_wt(None)
+    assert processed_wt is None
+    
+    # 3. Test with already ProteinSequence input
+    wt_seq = ProteinSequence("ACDE")
+    processed_wt = model._process_wt(wt_seq)
+    assert processed_wt is not wt_seq  # Should be a new object
+    assert str(processed_wt) == "ACDE"
+    
+    # 4. Test with gaps - should raise exception
+    with pytest.raises(ValueError, match="Wild type sequence cannot have gaps"):
+        model._process_wt("AC-DE")
+    
+    # 5. Test with RequiresStructureMixin
+    class StructureModel(RequiresStructureMixin, ProteinModelWrapper):
+        pass
+    
+    structure_model = StructureModel()
+    
+    # Without structure - should raise exception
+    with pytest.raises(ValueError, match="This model acts on structure but a wild type structure was not given"):
+        structure_model._process_wt("ACDE")
+        
+    # With structure - properly mock the structure property
+    with patch.object(ProteinSequence, 'structure', new_callable=PropertyMock) as mock_structure:
+        # Configure the mock to return True (indicating structure exists)
+        mock_structure.return_value = True
+        
+        # Create a sequence with our mocked property
+        wt_with_structure = ProteinSequence("ACDE")
+        # The above patching should make this pass the structure check
+        
+        # We need to patch the has_structure property too
+        with patch.object(ProteinSequence, 'has_structure', new_callable=PropertyMock) as mock_has_structure:
+            mock_has_structure.return_value = True
+            
+            # Test that it passes validation
+            processed_wt = structure_model._process_wt(wt_with_structure)
+            assert processed_wt is not None
+            assert str(processed_wt) == "ACDE"
+
+    # 6. Test with RequiresWTMSAMixin
+    class MSAModel(RequiresWTMSAMixin, RequiresWTToFunctionMixin, ProteinModelWrapper):
+        pass
+    msa_good = ProteinSequences([ProteinSequence("ACDE"), ProteinSequence("FGHI")])
+    
+    msa_model = MSAModel(wt=ProteinSequence("ACDE", msa=msa_good))
+    
+    # Without MSA - should raise exception
+    with pytest.raises(ValueError):
+        msa_model._process_wt(ProteinSequence("ACDE"))
+    
+    # With MSA but not matching width
+    wt_with_msa = ProteinSequence("ACDE")
+    msa = ProteinSequences([ProteinSequence("ACDEFG"), ProteinSequence("HIJKLM")])
+    wt_with_msa.msa = msa
+    
+    with pytest.raises(ValueError):
+        msa_model._process_wt(wt_with_msa)
+    
+    # With properly aligned MSA
+    wt_with_msa = ProteinSequence("ACDE")
+    wt_with_msa.msa = msa_good
+    
+    processed_wt = msa_model._process_wt(wt_with_msa)
+    assert processed_wt.msa is msa_good
+
+def test_cache_mixin_advanced():
+    """Test advanced functionality of the CacheMixin."""
+    test_dir = tempfile.mkdtemp()
+    
+    class TestCacheModel(CacheMixin, ProteinModelWrapper):
+        def __init__(self, **kwargs):
+            super().__init__(**kwargs)
+            self.fitted_ = True
+            self._transform_call_count = 0
+            
+        def _fit(self, X, y=None):
+            self.fitted_ = True
+            return self
+            
+        def _transform(self, X):
+            # Track number of actual transform calls
+            self._transform_call_count += 1
+            if X is None:  # Handle case where all sequences are cached
+                return None
+            # Return a simple array with sequence index and length
+            return np.array([[i, len(seq)] for i, seq in enumerate(X)])
+    
+    # 1. Test model state hashing
+    model = TestCacheModel(metadata_folder=test_dir, use_cache=True)
+    state_hash1 = model._get_model_state_hash()
+    
+    # Change a parameter and check hash changes
+    model._param2 = 10
+    state_hash2 = model._get_model_state_hash()
+    assert state_hash1 == state_hash2  # Should be same since _transform_call_count_ ends with underscore
+    
+    # Add a fitted attribute and check hash changes
+    model.new_param_ = "test"
+    state_hash3 = model._get_model_state_hash()
+    assert state_hash2 != state_hash3  # Should be different
+    
+    # 2. Test protein hashing
+    seq1 = ProteinSequence("ACDE", id="seq1")
+    seq2 = ProteinSequence("ACDE", id="seq2")  # Same sequence, different ID
+    
+    hash1 = model._get_protein_hashes([seq1])[0]
+    hash2 = model._get_protein_hashes([seq2])[0]
+    assert hash1 != hash2  # Hashes should differ due to different IDs
+    
+    # Test with structure
+    mock_structure = MagicMock()
+    mock_structure.pdb_file = "test.pdb"
+    mock_structure.chain = "A"
+    mock_structure.plddt_file = None
+    # modify mock so that isinsance returns true
+    mock_structure.__class__ = ProteinStructure
+    
+    seq3 = ProteinSequence("ACDE", id="seq1")
+    seq3.structure = mock_structure
+    
+    hash3 = model._get_protein_hashes([seq3])[0]
+    assert hash1 != hash3  # Hashes should differ due to structure
+    
+    # 3. Test batch caching operations
+    model = TestCacheModel(metadata_folder=test_dir, use_cache=True)
+    sequences = ProteinSequences([
+        ProteinSequence("ACDE", id="seq1"),
+        ProteinSequence("FGHI", id="seq2"),
+        ProteinSequence("JKLM", id="seq3")
+    ])
+    
+    # First run - should cache all results
+    result1 = model.transform(sequences)
+    assert model._transform_call_count == 1
+    
+    # Second run - should use cache for all
+    result2 = model.transform(sequences)
+    assert model._transform_call_count == 1  # No additional calls
+    np.testing.assert_array_equal(result1, result2)
+    
+    # 4. Test cache invalidation based on model state
+    model.new_param_ = "changed"  # Change model state
+    result3 = model.transform(sequences)
+    assert model._transform_call_count == 2  # Should have called transform again
+    
+    # 5. Test partial cache usage with mixed sequences
+    model = TestCacheModel(metadata_folder=test_dir, use_cache=True)
+    # First cache some sequences
+    result1 = model.transform(sequences[:2])
+    assert model._transform_call_count == 1
+    
+    # Now add a new sequence
+    extended_sequences = ProteinSequences([
+        sequences[0], sequences[1], 
+        ProteinSequence("NOPQ", id="seq4")  # New sequence
+    ])
+    
+    # Should use cache for first two, compute only the third
+    result2 = model.transform(extended_sequences)
+    assert model._transform_call_count == 2  # Only one additional call
+    assert result2.shape == (3, 2)  # Should have 3 sequences
+    np.testing.assert_array_equal(result2[:2], result1)  # First two should match
+    
+    # Now all should be cached
+    result3 = model.transform(extended_sequences)
+    assert model._transform_call_count == 2  # No additional calls
+    
+    # 6. Test HDF5 storage and retrieval
+    # Create a test array with complex shape
+    complex_array = np.random.random((2, 3, 4))
+    
+    # Manually cache it
+    protein_hashes = model._get_protein_hashes(sequences[:2])
+    model_state = model._get_model_state_hash()
+    protein_lengths = {ph: len(sequences[i]) for i, ph in enumerate(protein_hashes)}
+    
+    results_dict = {
+        protein_hashes[0]: complex_array[0:1],
+        protein_hashes[1]: complex_array[1:2]
+    }
+    
+    model._batch_cache_results(
+        results_dict,
+        model_state,
+        protein_lengths
+    )
+    
+    # Retrieve and check
+    cached_results = model._batch_get_cached_results(protein_hashes)
+    for i, ph in enumerate(protein_hashes):
+        np.testing.assert_array_equal(cached_results[ph], complex_array[i:i+1])
+    
+    # 7. Test _batch_is_cached function
+    cache_status = model._batch_is_cached(protein_hashes, model_state)
+    for ph in protein_hashes:
+        assert cache_status[ph] == True
+    
+    # Check with wrong model state
+    wrong_state = "wrong_state"
+    cache_status = model._batch_is_cached(protein_hashes, wrong_state)
+    for ph in protein_hashes:
+        assert cache_status[ph] == False
+    
 
         
