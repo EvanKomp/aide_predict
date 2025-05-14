@@ -124,6 +124,12 @@ You can always check which modules are installed/available to you by running `ge
    - Requires fixed-length sequences
    - Requires additional dependencies (see `requirements-fair-esm.txt`)
 
+7. [SSEmb*](https://www.nature.com/articles/s41467-024-53982-z#Sec25)
+   - MSATransformer with attention constrained by 3D structure contacts, combined with Graph Neural network on the structure
+   - Requires Per sequence msa and structure
+   - Position specific
+   - See Installation for additional dependencies
+
 Each model in this package is implemented as a subclass of `ProteinModelWrapper`, which provides a consistent interface for all models. The specific behaviors (e.g., requiring MSA, fixed-length sequences, etc.) are implemented using mixins, making it easy to understand and extend the functionality of each model.
 
 ## Helper tools

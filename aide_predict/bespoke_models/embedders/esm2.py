@@ -208,6 +208,10 @@ class ESM2Embedding(ExpectsNoFitMixin, PositionSpecificMixin, CanHandleAlignedSe
                         embeddings = [emb.mean(axis=0) for emb in embeddings]
                     elif self.pool == 'max':
                         embeddings = [emb.max(axis=0) for emb in embeddings]
+                    elif hasattr(np, self.pool):
+                        # check if the pool is a numpy function
+                        pool_func = getattr(np, self.pool)
+                        embeddings = [pool_func(emb, axis=0) for emb in embeddings]
                     else:
                         raise ValueError(f"Invalid pooling method: {self.pool}")
                 

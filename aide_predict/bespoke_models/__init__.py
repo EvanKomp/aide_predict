@@ -19,6 +19,7 @@ from .embedders.ohe import OneHotAlignedEmbedding, OneHotProteinEmbedding
 from .embedders.msa_transformer import MSATransformerEmbedding
 from .embedders.saprot import SaProtEmbedding
 from .embedders.kmer import KmerEmbedding
+from .embedders.ssemb import SSEmbEmbedding
 
 
 TOOLS = [
@@ -37,5 +38,6 @@ TOOLS = [
     OneHotProteinEmbedding,
     MSATransformerEmbedding,
     SaProtEmbedding,
-    KmerEmbedding
+    KmerEmbedding,
+    SSEmbEmbedding,
 ]
