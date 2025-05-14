@@ -48,7 +48,7 @@ model.requires_wt_msa              # Whether the model requires a wild type MSA
 model.requires_msa_per_sequence    # Whether the model requires an MSA for each sequence
 model.requires_fixed_length        # Whether the model requires a fixed length input
 model.requires_wt_to_function      # Whether the model requires the wild type sequence
-model.requires_wt_during_inference # Whether wild type is needed during inference
+model.requires_wt_during_inference # Whether wild is used during inference, see note below
 model.requires_structure           # Whether the model requires structure information
 
 # Model capabilities  
@@ -172,10 +172,9 @@ For models that need a reference sequence:
 - Used by models computing mutation effects
 
 #### RequiresWTDuringInferenceMixin
-For models that need wild-type context during inference:
+These models are expected to handle their own use of any widl type sequence:
 - Sets `requires_wt_during_inference = True`
-- Ensures WT sequence is accessible during transform
-- Used by models that normalize predictions against WT
+- If wt is present during inference, AIDE does no further processing, where by default AIDE will call the model on any WT present and normalize the output to that sequence
 
 ### Output Capabilities
 
