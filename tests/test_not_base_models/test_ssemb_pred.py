@@ -39,11 +39,11 @@ def test_ssemb_zero_shot():
     scores = assay_data['DMS_score'].tolist()
 
     # Define wild type sequence with structure
-    pdb_path = os.path.join('tests', 'data', 'GFP_AEQVI.pdb')
+    pdb_path = os.path.join('tests', 'data', 'GFP_AEQVI_Sarkisyan_2016.pdb')
     structure = ProteinStructure(pdb_file=pdb_path)
 
     # Load MSA
-    msa_file = os.path.join('tests', 'data', 'GFP_AEQVI_full_04-29-2022_b08.a2m')
+    msa_file = os.path.join('tests', 'data', 'GFP_AEQVI_Sarkisyan_2016.a3m')
     wt = ProteinSequence.from_fasta(msa_file).upper()
     wt.msa = wt.msa.upper()
     assert wt.msa.aligned
@@ -69,7 +69,7 @@ def test_ssemb_zero_shot():
     assert not np.isnan(spearman), "Correlation should not be NaN"
     assert spearman > -1 and spearman < 1, "Correlation should be between -1 and 1"
     # Adjust expected correlation range based on SSEmb performance on this dataset
-    assert abs(spearman - 0.66) < 0.02, "Correlation should be in expected range"
+    assert abs(spearman - 0.72) < 0.02, "Correlation should be in expected range"
 
 if __name__ == '__main__':
     test_ssemb_zero_shot()

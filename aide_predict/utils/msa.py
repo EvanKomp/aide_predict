@@ -478,3 +478,132 @@ class MSAProcessing:
         
         logger.info(f"Conservation calculation complete: min={conservation.min():.4f}, max={conservation.max():.4f}, mean={conservation.mean():.4f}")
         return conservation
+
+
+    def remove_gappy_columns(self, 
+                           msa: ProteinSequences, 
+                           gap_threshold: Optional[float] = None,
+                           focus_seq_id: Optional[str] = None) -> ProteinSequences:
+        """
+        Remove columns from the MSA that exceed the gap threshold.
+        
+        All sequences are retained, but columns with gap fraction above the threshold
+        are completely removed from the alignment.
+        
+        Args:
+            msa (ProteinSequences): The input multiple sequence alignment.
+            gap_threshold (Optional[float]): Maximum allowed fraction of gaps per column.
+                If None, uses self.threshold_focus_cols_frac_gaps.
+            focus_seq_id (Optional[str]): If provided, only consider gaps relative to 
+                non-gap positions in the focus sequence. If None, consider all positions.
+                
+        Returns:
+            ProteinSequences: New MSA with high-gap columns removed.
+            
+        Raises:
+            ValueError: If the input MSA is not aligned.
+            ValueError: If gap_threshold is not between 0 and 1.
+            ValueError: If focus_seq_id is provided but not found in MSA.
+        """
+        if not msa.aligned:
+            raise ValueError("Input MSA must be aligned")
+            
+        if gap_threshold is None:
+            gap_threshold = self.threshold_focus_cols_frac_gaps
+            
+        if not 0 <= gap_threshold <= 1:
+            raise ValueError("gap_threshold must be between 0 and 1")
+            
+        logger.info(f"Removing columns with gap fraction > {gap_threshold}")
+        logger.debug(f"Input MSA: {len(msa)} sequences, {msa.width} columns")
+        
+        # Get MSA as array for easier manipulation
+        msa_array = msa.as_array()
+        
+        # If focus sequence is specified, first filter to focus sequence non-gap positions
+        if focus_seq_id is not None:
+            if focus_seq_id not in msa.id_mapping:
+                raise ValueError(f"Focus sequence ID '{focus_seq_id}' not found in MSA")
+                
+            focus_seq = msa[focus_seq_id]
+            focus_seq_array = np.array(list(str(focus_seq)))
+            
+            # Only consider positions that are not gaps in the focus sequence
+            focus_positions = focus_seq_array != '-'
+            msa_array_filtered = msa_array[:, focus_positions]
+            
+            logger.debug(f"Focus sequence '{focus_seq_id}' has {np.sum(focus_positions)} non-gap positions")
+        else:
+            msa_array_filtered = msa_array
+            focus_positions = np.ones(msa.width, dtype=bool)
+        
+        # Calculate gap fraction for each column
+        gap_fractions = np.mean(msa_array_filtered == '-', axis=0)
+        
+        # Identify columns that pass the threshold
+        columns_to_keep_filtered = gap_fractions <= gap_threshold
+        
+        logger.debug(f"Gap fractions: min={gap_fractions.min():.3f}, "
+                    f"max={gap_fractions.max():.3f}, mean={gap_fractions.mean():.3f}")
+        logger.debug(f"Columns passing threshold: {np.sum(columns_to_keep_filtered)}/{len(columns_to_keep_filtered)}")
+        
+        # Map back to original column indices if focus sequence was used
+        if focus_seq_id is not None:
+            columns_to_keep = np.zeros(msa.width, dtype=bool)
+            columns_to_keep[focus_positions] = columns_to_keep_filtered
+        else:
+            columns_to_keep = columns_to_keep_filtered
+            
+        # Check if any columns remain
+        if np.sum(columns_to_keep) == 0:
+            raise ValueError(f"No columns pass the gap threshold of {gap_threshold}. "
+                           f"Consider increasing the threshold.")
+        
+        # Filter the MSA array
+        filtered_msa_array = msa_array[:, columns_to_keep]
+        
+        # Create new ProteinSequences with filtered columns
+        filtered_sequences = []
+        valid_sequence_indices = []
+        
+        for i, original_seq in enumerate(msa):
+            filtered_seq_str = ''.join(filtered_msa_array[i])
+            
+            # Check if sequence is all gaps after column removal
+            non_gap_chars = [char for char in filtered_seq_str if char not in GAP_CHARACTERS]
+            
+            if len(non_gap_chars) == 0:
+                logger.debug(f"Removing sequence '{original_seq.id}' - all gaps after column filtering")
+                continue  # Skip this sequence
+            
+            # Create new ProteinSequence preserving metadata
+            filtered_seq = ProteinSequence(
+                filtered_seq_str,
+                id=original_seq.id,
+                structure=original_seq.structure
+            )
+            
+            # Preserve MSA reference if it exists
+            if original_seq.has_msa:
+                filtered_seq.msa = original_seq.msa
+                
+            filtered_sequences.append(filtered_seq)
+            valid_sequence_indices.append(i)
+        
+        # Check if any sequences remain
+        if len(filtered_sequences) == 0:
+            raise ValueError("No sequences remain after removing all-gap sequences. "
+                           f"Consider relaxing the gap threshold (current: {gap_threshold})")
+        
+        # Create new ProteinSequences object
+        filtered_msa = ProteinSequences(filtered_sequences)
+        
+        # Preserve weights for valid sequences only
+        if hasattr(msa, 'weights') and msa.weights is not None:
+            filtered_msa.weights = msa.weights[valid_sequence_indices]
+        
+        removed_sequences = len(msa) - len(filtered_msa)
+        logger.info(f"Filtered MSA: {len(filtered_msa)} sequences, {filtered_msa.width} columns "
+                   f"(removed {msa.width - filtered_msa.width} columns, {removed_sequences} all-gap sequences)")
+        
+        return filtered_msa
