@@ -427,7 +427,7 @@ class ProteinSequence(str):
             aligned_self.msa = other
             return aligned_self
     
-    def saturation_mutagenesis(self, positions: List[int]=None) -> List['ProteinSequence']:
+    def saturation_mutagenesis(self, positions: List[int]=None, include_wt: bool=False) -> List['ProteinSequence']:
         """
         Perform saturation mutagenesis at the specified positions.
 
@@ -442,10 +442,11 @@ class ProteinSequence(str):
             positions = range(len(self))
         for i in positions:
             for aa in AA_SINGLE:
-                if aa != self[i]:
-                    mutated = self._mutate(i, aa)
-                    mutated.id = f"{self[i]}{i+1}{aa}"
-                    sequences.append(mutated)
+                if aa == self[i] and not include_wt:
+                    continue
+                mutated = self._mutate(i, aa)
+                mutated.id = f"{self[i]}{i+1}{aa}"
+                sequences.append(mutated)
         return ProteinSequences(sequences)
     
     def upper(self) -> 'ProteinSequence':
