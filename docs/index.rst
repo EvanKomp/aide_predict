@@ -31,6 +31,8 @@ User Guide
    user_guide/structure_pred.md
    user_guide/msa_search.md
    user_guide/badass.md
+   user_guide/roadmap.md
+   user_guide/resource_test.md
 
 .. toctree::
    :maxdepth: 2

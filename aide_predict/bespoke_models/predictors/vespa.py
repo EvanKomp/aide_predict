@@ -49,6 +49,7 @@ class VESPAWrapper(CanRegressMixin, ExpectsNoFitMixin, RequiresWTDuringInference
 
     def __init__(self, metadata_folder: Optional[str] = None, 
                  wt: Optional[Union[str, ProteinSequence]] = None, 
+                 use_cache: bool = False,  
                  light: bool = True) -> None:
         """
         Initialize the VESPAWrapper.
@@ -58,7 +59,7 @@ class VESPAWrapper(CanRegressMixin, ExpectsNoFitMixin, RequiresWTDuringInference
             wt (Optional[Union[str, ProteinSequence]]): Wild-type protein sequence.
             light (bool): If True, use the lighter VESPAl model. If False, use the full VESPA model.
         """
-        super().__init__(metadata_folder=metadata_folder, wt=wt)
+        super().__init__(metadata_folder=metadata_folder, use_cache=use_cache, wt=wt)
         self.light = light
 
     def _fit(self, X: ProteinSequences, y: Optional[np.ndarray] = None) -> 'VESPAWrapper':

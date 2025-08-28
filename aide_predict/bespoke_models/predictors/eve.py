@@ -26,6 +26,7 @@ from aide_predict.bespoke_models.base import (
     RequiresWTToFunctionMixin,
     RequiresFixedLengthMixin, 
     RequiresWTMSAMixin,
+    RequiresMSAForFitMixin,
     AcceptsLowerCaseMixin,
     RequiresWTDuringInferenceMixin,
     CanRegressMixin
@@ -59,7 +60,7 @@ if EVE_ENV is None or EVE_REPO is None:
 else:
     AVAILABLE = MessageBool(True, "EVE model is available")
 
-class EVEWrapper(RequiresWTToFunctionMixin, RequiresFixedLengthMixin, RequiresWTDuringInferenceMixin, RequiresWTMSAMixin, AcceptsLowerCaseMixin, CanRegressMixin, ProteinModelWrapper):
+class EVEWrapper(RequiresWTToFunctionMixin, RequiresFixedLengthMixin, RequiresWTDuringInferenceMixin, RequiresMSAForFitMixin, RequiresWTMSAMixin, AcceptsLowerCaseMixin, CanRegressMixin, ProteinModelWrapper):
     """
     Wrapper for EVE (Evolutionary Variational Autoencoder) model.
     
