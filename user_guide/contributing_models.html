@@ -1,0 +1,312 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contributing Models to AIDE &mdash; aide 1.1.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=e50f1ef7"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Structure Prediction with SoloSeq" href="structure_pred.html" />
+    <link rel="prev" title="Position-Specific Models" href="position_specific.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            aide
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installing AIDE</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_examples.html">API examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="data_structures.html">Data Structures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model_compatibility.html">Model Compatibility</a></li>
+<li class="toctree-l1"><a class="reference internal" href="protein_model.html">ProteinModelWrapper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="zero_shot.html">Zero-Shot Prediction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="supervised.html">Supervised Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="saturation_mutagenesis.html">Saturation Mutagenesis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pipelines.html">Building ML Pipelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caching.html">Caching Model Outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="position_specific.html">Position-Specific Models</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Contributing Models to AIDE</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#setting-up-development-environment">1. Setting Up Development Environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#understanding-model-dependencies">2. Understanding Model Dependencies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#creating-the-model-class">3. Creating the Model Class</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#adding-model-requirements-with-mixins">4. Adding Model Requirements with Mixins</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#testing-your-model">5. Testing Your Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#expose-your-model-so-that-aide-can-find-it-and-test-it-against-user-data">7. Expose your model so that AIDE can find it and test it against user data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#submitting-your-contribution">7. Submitting Your Contribution</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="structure_pred.html">Structure Prediction with SoloSeq</a></li>
+<li class="toctree-l1"><a class="reference internal" href="msa_search.html">Generating MSAs with MMseqs2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="badass.html">Protein Optimization with BADASS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="roadmap.html">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="resource_test.html">Resource testing</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">aide_predict</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">aide</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Contributing Models to AIDE</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/user_guide/contributing_models.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="contributing-models-to-aide">
+<h1>Contributing Models to AIDE<a class="headerlink" href="#contributing-models-to-aide" title="Link to this heading"></a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>AIDE is designed to make it easy to wrap new protein prediction models into a scikit-learn compatible interface. This guide walks through the process of contributing a new model.</p>
+<section id="setting-up-development-environment">
+<h3>1. Setting Up Development Environment<a class="headerlink" href="#setting-up-development-environment" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/beckham-lab/aide_predict
+<span class="nb">cd</span><span class="w"> </span>aide_predict
+conda<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>environment.yaml
+conda<span class="w"> </span>activate<span class="w"> </span>aide_predict
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[dev]&quot;</span><span class="w">  </span><span class="c1"># Installs in editable mode with development dependencies</span>
+</pre></div>
+</div>
+</section>
+<section id="understanding-model-dependencies">
+<h3>2. Understanding Model Dependencies<a class="headerlink" href="#understanding-model-dependencies" title="Link to this heading"></a></h3>
+<p>AIDE uses a tiered dependency system to minimize conflicts and installation complexity:</p>
+<ol class="arabic simple">
+<li><p><strong>Base Dependencies</strong>: If your model only needs numpy, scipy, scikit-learn, etc., it can be included in the base package.</p></li>
+<li><p><strong>Optional Dependencies</strong>: If your model needs additional pip-installable packages:</p>
+<ul class="simple">
+<li><p>Create or update a <code class="docutils literal notranslate"><span class="pre">requirements-&lt;feature&gt;.txt</span></code> file</p></li>
+<li><p>Example: <code class="docutils literal notranslate"><span class="pre">requirements-transformers.txt</span></code> for models using HuggingFace transformers</p></li>
+</ul>
+</li>
+<li><p><strong>Complex Dependencies</strong>: If your model requires a specific environment or complex setup:</p>
+<ul class="simple">
+<li><p>Package should be installed separately</p></li>
+<li><p>AIDE will call it via subprocess</p></li>
+<li><p>Model checks for environment variables pointing to installation</p></li>
+<li><p>Example: EVE model checking for <code class="docutils literal notranslate"><span class="pre">EVE_REPO</span></code> and <code class="docutils literal notranslate"><span class="pre">EVE_CONDA_ENV</span></code></p></li>
+</ul>
+</li>
+</ol>
+</section>
+<section id="creating-the-model-class">
+<h3>3. Creating the Model Class<a class="headerlink" href="#creating-the-model-class" title="Link to this heading"></a></h3>
+<p>Models should be placed in one of two directories:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">aide_predict/bespoke_models/embedders/</span></code>: For models that create numerical features</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">aide_predict/bespoke_models/predictors/</span></code>: For models that predict protein properties</p></li>
+</ul>
+<p>Basic structure:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aide_predict.bespoke_models.base</span> <span class="kn">import</span> <span class="n">ProteinModelWrapper</span>
+<span class="kn">from</span> <span class="nn">aide_predict.utils.common</span> <span class="kn">import</span> <span class="n">MessageBool</span>
+
+<span class="c1"># Check dependencies</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">some_required_package</span>
+    <span class="n">AVAILABLE</span> <span class="o">=</span> <span class="n">MessageBool</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;Model is available&quot;</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">AVAILABLE</span> <span class="o">=</span> <span class="n">MessageBool</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;Requires some_required_package&quot;</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">MyModel</span><span class="p">(</span><span class="n">ProteinModelWrapper</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Documentation in NumPy style.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    param1 : type</span>
+<span class="sd">        Description</span>
+<span class="sd">    metadata_folder : str, optional</span>
+<span class="sd">        Directory for model files</span>
+<span class="sd">    wt : ProteinSequence, optional</span>
+<span class="sd">        Wild-type sequence for comparative predictions</span>
+<span class="sd">        </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    fitted_ : bool</span>
+<span class="sd">        Whether model has been fitted</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_available</span> <span class="o">=</span> <span class="n">AVAILABLE</span>  <span class="c1"># Class attribute for availability</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param1</span><span class="p">,</span> <span class="n">metadata_folder</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">wt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">metadata_folder</span><span class="o">=</span><span class="n">metadata_folder</span><span class="p">,</span> <span class="n">wt</span><span class="o">=</span><span class="n">wt</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">param1</span> <span class="o">=</span> <span class="n">param1</span>  <span class="c1"># Save user parameters as attributes</span>
+        
+    <span class="k">def</span> <span class="nf">_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fit the model. Called by public fit() method.&quot;&quot;&quot;</span>
+        <span class="c1"># Implementation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fitted_</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Mark as fitted</span>
+        <span class="k">return</span> <span class="bp">self</span>
+        
+    <span class="k">def</span> <span class="nf">_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Transform sequences. Called by public transform() method.&quot;&quot;&quot;</span>
+        <span class="c1"># Implementation</span>
+        <span class="k">return</span> <span class="n">features</span>
+</pre></div>
+</div>
+</section>
+<section id="adding-model-requirements-with-mixins">
+<h3>4. Adding Model Requirements with Mixins<a class="headerlink" href="#adding-model-requirements-with-mixins" title="Link to this heading"></a></h3>
+<p>AIDE uses mixins to declare model requirements and capabilities. Common mixins:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Input requirements</span>
+<span class="n">RequiresMSAForFitMixin</span>          <span class="c1"># Needs MSA for fit method. If not found, will attempt to fall back to WT sequence msa</span>
+<span class="n">RequiresWTMSAMixin</span>            <span class="c1"># Needs a WT sequence with an msa</span>
+<span class="n">RequiresMSAPerSequenceMixin</span>  <span class="c1"># The model needs msas, but can handle having different MSAs for each input. If inputs do not have MSAs, will attempt fall back to WT sequence msa</span>
+<span class="n">RequiresFixedLengthMixin</span>  <span class="c1"># Sequences must be same length</span>
+<span class="n">RequiresStructureMixin</span>    <span class="c1"># Uses structural information</span>
+<span class="n">RequiresWTToFunctionMixin</span>          <span class="c1"># Needs wild-type sequence</span>
+<span class="n">RequiresWTDuringInferenceMixin</span> <span class="c1"># Model does its own normalization to any WT internally. If not inheritted, aide will automatically normalize outputs to any WT sequence provided</span>
+
+
+<span class="c1"># Output capabilities  </span>
+<span class="n">CanRegressMixin</span>          <span class="c1"># Can predict numeric values</span>
+<span class="n">PositionSpecificMixin</span>    <span class="c1"># Outputs per-position scores or embeddings</span>
+
+<span class="c1"># Processing behavior</span>
+<span class="n">CacheMixin</span>               <span class="c1"># Enables result caching</span>
+<span class="n">AcceptsLowerCaseMixin</span>    <span class="c1"># Handles lowercase sequences</span>
+<span class="n">ExpectsNoFitMixin</span>         <span class="c1"># Does not require any inputs to the fit method</span>
+<span class="n">ShouldRefitOnSequencesMixin</span> <span class="c1"># restore sklearn default behaviour to refit when fit is called or params are set. Be default, models do not refit.</span>
+
+</pre></div>
+</div>
+<p>Example with mixins:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyModel</span><span class="p">(</span>
+    <span class="n">RequiresMSAMixin</span><span class="p">,</span>      <span class="c1"># Needs MSA for training</span>
+    <span class="n">CanRegressMixin</span><span class="p">,</span>       <span class="c1"># Makes predictions</span>
+    <span class="n">PositionSpecificMixin</span><span class="p">,</span> <span class="c1"># Per-position outputs</span>
+    <span class="n">CacheMixin</span><span class="p">,</span>           <span class="c1"># Caches results</span>
+    <span class="n">ProteinModelWrapper</span>    <span class="c1"># Always last</span>
+<span class="p">):</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+<p>Ensure that the <code class="docutils literal notranslate"><span class="pre">_avialable</span></code> attribute is set to a valid <code class="docutils literal notranslate"><span class="pre">MessageBool</span></code> object that is computed on import based on the availability of the model’s dependencies.</p>
+</section>
+<section id="testing-your-model">
+<h3>5. Testing Your Model<a class="headerlink" href="#testing-your-model" title="Link to this heading"></a></h3>
+<p>If applicable, add scientific validation tests in <code class="docutils literal notranslate"><span class="pre">tests/test_not_base_models/</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aide_predict.bespoke_models.embedders.my_model</span> <span class="kn">import</span> <span class="n">MyModel</span>
+<span class="k">def</span> <span class="nf">test_my_model_benchmark</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test against published benchmark.&quot;&quot;&quot;</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">MyModel</span><span class="p">()</span>
+    <span class="n">score</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">benchmark_data</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">score</span> <span class="o">&gt;=</span> <span class="n">expected_performance</span>
+</pre></div>
+</div>
+<p>Run the tests with <code class="docutils literal notranslate"><span class="pre">pytest</span> <span class="pre">tests/test_not_base_models/test_my_model.py</span></code>, and copy the results.</p>
+<p>Ensure that this test is not tracked by coverage, as we do not run CI on non-base models that have additional dependencies:</p>
+<p>Update <code class="docutils literal notranslate"><span class="pre">.coveragerc</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">omit</span> <span class="o">=</span> 
+    <span class="o">...</span> <span class="n">other</span> <span class="n">omitted</span> <span class="n">files</span> <span class="n">are</span> <span class="n">here</span> <span class="o">...</span>
+    <span class="n">aide_predict</span><span class="o">/</span><span class="n">bespoke_models</span><span class="o">/</span><span class="n">embedders</span><span class="o">/</span><span class="n">my_model</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+</section>
+<section id="expose-your-model-so-that-aide-can-find-it-and-test-it-against-user-data">
+<h3>7. Expose your model so that AIDE can find it and test it against user data<a class="headerlink" href="#expose-your-model-so-that-aide-can-find-it-and-test-it-against-user-data" title="Link to this heading"></a></h3>
+<p>Update <code class="docutils literal notranslate"><span class="pre">aide_predict/bespoke_models/__init__.py</span></code> to include your model in the <code class="docutils literal notranslate"><span class="pre">TOOLS</span></code> list:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">.embedders.my_model</span> <span class="kn">import</span> <span class="n">MyModel</span>
+
+<span class="n">TOOLS</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="o">...</span><span class="n">other</span> <span class="n">tools</span> <span class="n">are</span> <span class="n">here</span><span class="o">...</span>
+    <span class="n">MyModel</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</section>
+<section id="submitting-your-contribution">
+<h3>7. Submitting Your Contribution<a class="headerlink" href="#submitting-your-contribution" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>Create a new branch</p></li>
+<li><p>Implement your model in its own module</p></li>
+<li><p>Add any tests</p></li>
+<li><p>Submit a pull request, add any test results to the pull request so the expected performance can be verified</p></li>
+</ol>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="position_specific.html" class="btn btn-neutral float-left" title="Position-Specific Models" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="structure_pred.html" class="btn btn-neutral float-right" title="Structure Prediction with SoloSeq" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Gregg T. Beckham.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,403 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AIDE &mdash; aide 1.1.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=e50f1ef7"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["\\(", "\\)"]], "displayMath": [["\\[", "\\]"]]}, "options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            aide
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/installation.html">Installing AIDE</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/api_examples.html">API examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/data_structures.html">Data Structures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/model_compatibility.html">Model Compatibility</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/protein_model.html">ProteinModelWrapper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/zero_shot.html">Zero-Shot Prediction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/supervised.html">Supervised Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/saturation_mutagenesis.html">Saturation Mutagenesis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/pipelines.html">Building ML Pipelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/caching.html">Caching Model Outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/position_specific.html">Position-Specific Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/contributing_models.html">Contributing Models to AIDE</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/structure_pred.html">Structure Prediction with SoloSeq</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/msa_search.html">Generating MSAs with MMseqs2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/badass.html">Protein Optimization with BADASS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/roadmap.html">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/resource_test.html">Resource testing</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">aide_predict</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">aide</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">AIDE</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/header.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="aide">
+<h1>AIDE<a class="headerlink" href="#aide" title="Link to this heading"></a></h1>
+<p><a class="reference external" href="https://github.com/EvanKomp/aide_predict/actions/workflows/ci-tests.yml"><img alt="Python Tests" src="https://github.com/EvanKomp/aide_predict/actions/workflows/ci-tests.yml/badge.svg" /></a>
+<a class="reference external" href="https://codecov.io/gh/EvanKomp/aide_predict"><img alt="codecov" src="https://codecov.io/gh/EvanKomp/aide_predict/branch/main/graph/badge.svg" /></a></p>
+<p><img alt="alt text" src="_images/fig1.png" /></p>
+<p><strong>Authors</strong>: Evan Komp, Gregg T. Beckham
+<strong>Associated manuscript</strong>: TODO</p>
+<p>This repository serves fundementally to increase the accessibility of protein engineering tasks that fall into the following catagory:</p>
+<div class="math notranslate nohighlight">
+\[\hat{y}=f(X)\]</div>
+<p>Here, <span class="math notranslate nohighlight">\(X\)</span> is a set of proteins, eg. their sequence and optionaly structure. <span class="math notranslate nohighlight">\(y\)</span> is a property of the protein that is difficult to measure, such as binding affinity, stability, or catalytic activity. <span class="math notranslate nohighlight">\(\hat{y}\)</span> is the predicted value of <span class="math notranslate nohighlight">\(y\)</span> given <span class="math notranslate nohighlight">\(X\)</span>.</p>
+<p>Existing models <span class="math notranslate nohighlight">\(f\)</span> in the literature are varied, and a huge amount of work has gone into designing clever algorithms that leverage labeled and unlabeled data. For example, models differ in the following ways (non exhaustive):</p>
+<ul class="simple">
+<li><p>Some require supervised labels <span class="math notranslate nohighlight">\(y\)</span>, while others <a class="reference external" href="https://www.nature.com/articles/s41587-021-01146-5">do not</a></p></li>
+<li><p>Unsupervised models can be trained on <a class="reference external" href="https://ieeexplore.ieee.org/document/9477085">vast sets of sequences</a>, or <a class="reference external" href="https://www.nature.com/articles/s41592-018-0138-4">MSAs of the related proteins</a></p></li>
+<li><p>Models exist to predict the effect of mutations on a wild type sequence, or to globally predict protein properties</p></li>
+<li><p>Some models incorporate <a class="reference external" href="https://www.biorxiv.org/content/10.1101/2024.07.01.600583v1">structural information</a></p></li>
+<li><p>Some models are <a class="reference external" href="http://biorxiv.org/lookup/doi/10.1101/2021.07.09.450648">pretrained</a></p></li>
+<li><p>Some models are capable of position specific predictions, which can be useful for <a class="reference external" href="https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1009853">some tasks</a></p></li>
+</ul>
+<p>The variety an nuance of each of these means that each application is a bespoke, independent codebase, and are generally inaccessible to those with little or no coding exprience. Some applications alleviate the second problem by hosting web servers. Add to this problem is a lack of standardization in API across applications, where individual code bases can be extremely poorly documented or hard to use due to hasty development to minimize time to publication.</p>
+<p>The goals of this project are succinctly as follows:</p>
+<ul class="contains-task-list simple">
+<li class="task-list-item"><p><input class="task-list-item-checkbox" checked="checked" disabled="disabled" type="checkbox"> <strong>Create a generalizable, unittested, API for protein prediction tasks that is compatible with scikit learn</strong>. This API will allow those who are familiar with the gold standard of ML libraries to conduct protein prediction tasks in much the same way you’d see on an intro to ML Medium article. Further, it makes it much easier for bespoke strategies to be accessed and compared; any new method whose authors wrap their code in the API are easily accessed by the community without spending hours studying the codebase.</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> <strong>Use API components to create a DVC tracked pipeline for protein prediction tasks</strong>. This pipeline will allow for those with zero software experience to conduct protein prediction tasks with a few simple commands. After (optionally) editting a config file, inputing their training data and their putative proteins, they can train and get predictions as simply as executing <code class="docutils literal notranslate"><span class="pre">dvc</span> <span class="pre">repro</span></code>.</p></li>
+</ul>
+<section id="api-examples">
+<h2>API examples:<a class="headerlink" href="#api-examples" title="Link to this heading"></a></h2>
+<p>AIDE examples look and feel like canonical sklearn tasks/code. Aide is not limited to only combinatorial/mutant data or global wt sequence predictors: it is meant for all protein property prediction tasks. The complete API and user guide is available at: https://beckham-lab.github.io/aide_predict/</p>
+<p>See also the <code class="docutils literal notranslate"><span class="pre">demo</span></code> folder for some executable examples. Also see the <a class="reference external" href="https://colab.research.google.com/drive/1baz4DdYkxaw6pPRTDscwh2o-Xqum5Krp#scrollTo=AV9VXhM6ebgI">colab notebook</a> to play with some if its capabilities in the cloud. Finally, checkout the notebooks in <code class="docutils literal notranslate"><span class="pre">showcase</span></code> where we conduct two full protein predictions optimization and scoring tasks on real data that are greater than small example sets.</p>
+</section>
+<section id="available-tools">
+<h2>Available Tools<a class="headerlink" href="#available-tools" title="Link to this heading"></a></h2>
+<p>You can always check which modules are installed/available to you by running <code class="docutils literal notranslate"><span class="pre">get_supported_tools()</span></code>. The following is a list of tools that are available. Models marked with a * require additional dependencies or envionments to be installed, see <code class="docutils literal notranslate"><span class="pre">Installation</span></code></p>
+<section id="data-structures-and-utilities">
+<h3>Data Structures and Utilities<a class="headerlink" href="#data-structures-and-utilities" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Protein Sequence and Structure data structures</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">StructureMapper</span></code> - A utility for mapping a folder of PDB structures to sequences</p></li>
+</ul>
+</section>
+<section id="prediction-models">
+<h3>Prediction Models<a class="headerlink" href="#prediction-models" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p><a class="reference external" href="https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1002195">HMM (Hidden Markov Model)</a></p>
+<ul class="simple">
+<li><p>Computes statistics over matching columns in an MSA, treating each column independantly but allowing for alignment of query sequences before scoring</p></li>
+<li><p>Requires MSA for fitting</p></li>
+<li><p>Can handle aligned sequences during inference</p></li>
+</ul>
+</li>
+<li><p><a class="reference external" href="https://academic.oup.com/bioinformatics/article/35/9/1582/5124274">EVMutation*</a></p>
+<ul class="simple">
+<li><p>Computes pairwise couplings between AAs in an MSA for select positions well represented in the MSA, variants are scored by the change in coupling energy.</p></li>
+<li><p>Requires MSA for fitting</p></li>
+<li><p>Requires wild-type sequence for inference</p></li>
+<li><p>Requires fixed-length sequences</p></li>
+<li><p>Requires additional dependencies (see <code class="docutils literal notranslate"><span class="pre">requirements-evmutation.txt</span></code>)</p></li>
+</ul>
+</li>
+<li><p><a class="reference external" href="https://www.biorxiv.org/content/10.1101/2022.07.20.500902v1">ESM2 Likelihood Wrapper*</a></p>
+<ul class="simple">
+<li><p>Pretrained PLM (BERT style) model for protein sequences, scores variants according to masked, mutant, or wild type marginal likelihoods. Mutant marginal computes likelihoods in the context of the mutant sequence, while masked and wild type marginal compute likelihoods in the context of the wild type sequence. These methods are apprximations of the joint likelihood.</p></li>
+<li><p>Can handle aligned sequences</p></li>
+<li><p>Requires additional dependencies (see <code class="docutils literal notranslate"><span class="pre">requirements-transformers.txt</span></code>)</p></li>
+</ul>
+</li>
+<li><p><a class="reference external" href="https://www.biorxiv.org/content/10.1101/2023.10.01.560349v2">SaProt Likelihood Wrapper*</a></p>
+<ul class="simple">
+<li><p>ESM except using a size 400 vocabulary including local structure tokens from Foldseek’s VAE. The authors only used Masked marginal, but we’ve made Wild type, Mutant, and masked marginals avialable.</p></li>
+<li><p>Requires fixed-length sequences</p></li>
+<li><p>Uses WT structure if structures of sequences are not passed</p></li>
+<li><p>Requires additional dependencies:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">requirements-transformers.txt</span></code></p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><a class="reference external" href="https://www.biorxiv.org/content/10.1101/2021.02.12.430858v1.full">MSA Transformer Likelihood Wrapper*</a></p>
+<ul class="simple">
+<li><p>Like ESM but with a transformer model that is trained on MSAs. The variants are placed at the top position in the MSA and scores are computed along that row. Wild type, Mutant, and masked marginals avialable.</p></li>
+<li><p>Requires MSA for fitting</p></li>
+<li><p>Requires wild-type sequence during inference</p></li>
+<li><p>Requires additional dependencies (see <code class="docutils literal notranslate"><span class="pre">requirements-fair-esm.txt</span></code>)</p></li>
+</ul>
+</li>
+<li><p><a class="reference external" href="https://link.springer.com/article/10.1007/s00439-021-02411-y">VESPA*</a></p>
+<ul class="simple">
+<li><p>Conservation head model trained on PLM embeddings and logistic regression used to predict if mutation is detrimental.</p></li>
+<li><p>Requires wild type, only works for single point mutations</p></li>
+<li><p>Requires fixed-length sequences</p></li>
+<li><p>Requires additional dependencies (see <code class="docutils literal notranslate"><span class="pre">requirements-vespa.txt</span></code>)</p></li>
+</ul>
+</li>
+<li><p><a class="reference external" href="https://www.nature.com/articles/s41586-021-04043-8">EVE*</a></p>
+<ul class="simple">
+<li><p>VAE trained on MSA, learns conditional distribution of AA. Latent space tends to be bimodal for deleterious vs neutral mutations.</p></li>
+<li><p>Requires MSA for fitting</p></li>
+<li><p>Requires fixed-length sequences</p></li>
+<li><p>Requires independant EVE environment, see Installation.</p></li>
+</ul>
+</li>
+<li><p><a class="reference external" href="https://www.nature.com/articles/s41467-024-53982-z#Sec25">SSEmb*</a></p>
+<ul class="simple">
+<li><p>MSATransformer with attention constrained by 3D structure contacts, combined with Graph Neural network on the structure</p></li>
+<li><p>Requires MSA for fitting</p></li>
+<li><p>Requires wild-type sequence during inference</p></li>
+<li><p>Requires fixed-length sequences</p></li>
+<li><p>Requires Structure</p></li>
+<li><p>Requires independant SSEmb environment, see Installation.</p></li>
+</ul>
+</li>
+</ol>
+</section>
+<section id="embeddings-for-downstream-ml">
+<h3>Embeddings for Downstream ML<a class="headerlink" href="#embeddings-for-downstream-ml" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>One Hot Protein Embedding</p>
+<ul class="simple">
+<li><p>Columnwise one hot encoding of amino acids for a fixed length set of sequences</p></li>
+<li><p>Requires fixed-length sequences</p></li>
+<li><p>Position specific</p></li>
+</ul>
+</li>
+<li><p>One Hot Aligned Embedding</p>
+<ul class="simple">
+<li><p>Columnwise one hot encoding including gaps for sequences aligned to an MSA.</p></li>
+<li><p>Requires MSA for fitting</p></li>
+<li><p>Position specific</p></li>
+</ul>
+</li>
+<li><p>Kmer Embedding</p>
+<ul class="simple">
+<li><p>Counts of observed amino acid kmers in the sequences</p></li>
+<li><p>Allows for variable length sequences</p></li>
+</ul>
+</li>
+<li><p><a class="reference external" href="https://www.biorxiv.org/content/10.1101/2022.07.20.500902v1">ESM2 Embedding*</a></p>
+<ul class="simple">
+<li><p>Pretrained PLM (BERT style) model for protein sequences, outputs embeddings for each amino acid in the sequece from the last transformer layer.</p></li>
+<li><p>Position specific</p></li>
+<li><p>Requires additional dependencies (see <code class="docutils literal notranslate"><span class="pre">requirements-transformers.txt</span></code>)</p></li>
+</ul>
+</li>
+<li><p><a class="reference external" href="https://www.biorxiv.org/content/10.1101/2023.10.01.560349v2">SaProt Embedding*</a></p>
+<ul class="simple">
+<li><p>ESM except using a size 400 vocabulary including local structure tokens from Foldseek’s VAE. AA embeddings from the last layer of the transformer are used.</p></li>
+<li><p>Position specific</p></li>
+<li><p>Requires additional dependencies:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">requirements-transformers.txt</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">foldseek</span></code> executable must be available in the PATH</p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><a class="reference external" href="https://www.biorxiv.org/content/10.1101/2021.02.12.430858v1.full">MSA Transformer Embedding*</a></p>
+<ul class="simple">
+<li><p>Like ESM but with a transformer model that is trained on MSAs. The embeddings are computed for each amino acid in the query sequence in the context of an existing MSA</p></li>
+<li><p>Requires MSA for fitting</p></li>
+<li><p>Requires fixed-length sequences</p></li>
+<li><p>Requires additional dependencies (see <code class="docutils literal notranslate"><span class="pre">requirements-fair-esm.txt</span></code>)</p></li>
+</ul>
+</li>
+<li><p><a class="reference external" href="https://www.nature.com/articles/s41467-024-53982-z#Sec25">SSEmb*</a></p>
+<ul class="simple">
+<li><p>MSATransformer with attention constrained by 3D structure contacts, combined with Graph Neural network on the structure</p></li>
+<li><p>Requires Per sequence msa and structure</p></li>
+<li><p>Position specific</p></li>
+<li><p>See installation for additional dependencies</p></li>
+</ul>
+</li>
+</ol>
+<p>Each model in this package is implemented as a subclass of <code class="docutils literal notranslate"><span class="pre">ProteinModelWrapper</span></code>, which provides a consistent interface for all models. The specific behaviors (e.g., requiring MSA, fixed-length sequences, etc.) are implemented using mixins, making it easy to understand and extend the functionality of each model.</p>
+</section>
+</section>
+<section id="helper-tools">
+<h2>Helper tools<a class="headerlink" href="#helper-tools" title="Link to this heading"></a></h2>
+<p>The tools within the API often require somewhat expensive input information such as MSA and structures. We provide high level interfaces to predict structures and compute MSAs, see the user guide.</p>
+</section>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">environment</span><span class="o">.</span><span class="n">yaml</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="o">.</span>
+</pre></div>
+</div>
+</section>
+<section id="installation-of-additional-modules">
+<h2>Installation of additional modules<a class="headerlink" href="#installation-of-additional-modules" title="Link to this heading"></a></h2>
+<p>Tools that require additional dependancies can be installed with the corresponding requirements file. See above for those files. For example, to access VESPA:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">r</span> <span class="n">requirements</span><span class="o">-</span><span class="n">vespa</span><span class="o">.</span><span class="n">txt</span>
+</pre></div>
+</div>
+<p>Some tools were deemed to heavy in terms of their environment to be included as a pip module. These require manual setup, see below.</p>
+<section id="installation-of-eve">
+<h3>Installation of EVE<a class="headerlink" href="#installation-of-eve" title="Link to this heading"></a></h3>
+<p>To access the EVE module, first clone the repo (NOT inside of AIDE):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">OATML</span><span class="o">/</span><span class="n">EVE</span><span class="o">.</span><span class="n">git</span>
+</pre></div>
+</div>
+<p><strong>IMPORTANT</strong>: set the environment variable <code class="docutils literal notranslate"><span class="pre">EVE_REPO</span></code> to the path of the cloned repo. This is used by AIDE to import EVE modules as it is not installable.</p>
+<p>Build a new conda environment according to instructions/<code class="docutils literal notranslate"><span class="pre">.yaml</span></code> file there.</p>
+<p>We recommend testing that the environment is set up correctly and that the package is using any GPUs but running their example script and observing the log.</p>
+<p><strong>IMPORTANT</strong>: set the environment variable <code class="docutils literal notranslate"><span class="pre">EVE_CONDA_ENV</span></code> to the name of the conda environment you created for EVE. This is used by AIDE to activate the EVE environment.</p>
+<p>Confirm AIDE now has access to the EVE module:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aide_predicts</span> <span class="kn">import</span> <span class="n">get_supported_tools</span>
+<span class="n">get_supported_tools</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="installation-of-ssemb">
+<h3>Installation of SSEmb<a class="headerlink" href="#installation-of-ssemb" title="Link to this heading"></a></h3>
+<p>To access the SSEmb module, first clone the repo (NOT inside of AIDE):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">KULL</span><span class="o">-</span><span class="n">Centre</span><span class="o">/</span><span class="n">_2023_Blaabjerg_SSEmb</span>
+</pre></div>
+</div>
+<p><strong>IMPORTANT</strong>: set the environment variable <code class="docutils literal notranslate"><span class="pre">SSEMB_REPO</span></code> to the path of the cloned repo. This is used by AIDE to import SSEmb modules as it is not installable.</p>
+<p>Build a new conda environment:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">ssemb_env</span> <span class="n">python</span><span class="o">=</span><span class="mf">3.11</span> <span class="n">pytorch</span><span class="o">=</span><span class="mf">2.3</span> <span class="n">scipy</span> <span class="n">scikit</span><span class="o">-</span><span class="n">learn</span> <span class="n">pandas</span> <span class="n">fair</span><span class="o">-</span><span class="n">esm</span><span class="o">==</span><span class="mf">2.0.0</span> <span class="n">biopython</span><span class="o">==</span><span class="mf">1.79</span> <span class="n">openmm</span><span class="o">==</span><span class="mf">8.0</span> <span class="n">pdbfixer</span><span class="o">==</span><span class="mf">1.8</span> <span class="n">pyyaml</span> <span class="n">matplotlib</span> <span class="n">mpl</span><span class="o">-</span><span class="n">scatter</span><span class="o">-</span><span class="n">density</span>
+<span class="n">conda</span> <span class="n">activate</span> <span class="n">ssemb_env</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">torch_scatter</span> <span class="n">torch_cluster</span>
+</pre></div>
+</div>
+<p><strong>IMPORTANT</strong>: set the environment variable <code class="docutils literal notranslate"><span class="pre">SSEMB_CONDA_ENV</span></code> to the name of the conda environment you just created. This is used by AIDE to activate the SSEmb environment.</p>
+<p>Download the model weights. This must be conducted in the root directory of the SSEmb repo:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">zenodo</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">records</span><span class="o">/</span><span class="mi">12798019</span><span class="o">/</span><span class="n">files</span><span class="o">/</span><span class="n">weights</span><span class="o">.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span>
+<span class="n">tar</span> <span class="o">-</span><span class="n">zxf</span> <span class="n">weights</span><span class="o">.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span> 
+</pre></div>
+</div>
+<p>Confirm AIDE now has access to the SSEmb module:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aide_predicts</span> <span class="kn">import</span> <span class="n">get_supported_tools</span>
+<span class="n">get_supported_tools</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Its also probably worth running this test script to make sure it does not error:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">tests</span><span class="o">/</span><span class="n">test_not_base_models</span><span class="o">/</span><span class="n">test_ssemb_pred</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="tests">
+<h2>Tests<a class="headerlink" href="#tests" title="Link to this heading"></a></h2>
+<p>Continuous integration only runs base module tests, eg.
+<code class="docutils literal notranslate"><span class="pre">pytest</span> <span class="pre">-v</span> <span class="pre">-m</span> <span class="pre">&quot;not</span> <span class="pre">slow</span> <span class="pre">and</span> <span class="pre">not</span> <span class="pre">optional&quot;</span></code></p>
+<p>Additional tests are availabe to check the scientific output of wrapped models, that they meet the expected values, such as:</p>
+<ul class="simple">
+<li><p>Score of ESM2 log liklihood, MSATransformer, SaProt, VESPA, EVE against ENVZ_ECOLI_Ghose benchmark of <a class="reference external" href="https://proteingym.org/">ProteinGym</a></p></li>
+<li><p>run with <code class="docutils literal notranslate"><span class="pre">pytest</span> <span class="pre">-v</span> <span class="pre">-m</span> <span class="pre">tests/not_base_models</span></code></p></li>
+</ul>
+</section>
+<section id="citations-and-acknowledgements">
+<h2>Citations and Acknowledgements<a class="headerlink" href="#citations-and-acknowledgements" title="Link to this heading"></a></h2>
+<p>No software or code with viral licenses was used in the creation of this project.</p>
+<p>The following deserve credit as they are either directly wrapped within AIDE, serve as code inspiration (noted in modules when necessary), or are used for testing:</p>
+<ol class="arabic simple">
+<li><p>Frazer, J. et al. Disease variant prediction with deep generative models of evolutionary data. Nature 599, 91–95 (2021).</p></li>
+<li><p>Hopf, T. A. et al. The EVcouplings Python framework for coevolutionary sequence analysis. Bioinforma. Oxf. Engl. 35, 1582–1584 (2019).</p></li>
+<li><p>Notin, P. et al. Tranception: protein fitness prediction with autoregressive transformers and inference-time retrieval. Preprint at https://doi.org/10.48550/arXiv.2205.13760 (2022).</p></li>
+<li><p>Rao, R. et al. MSA Transformer. 2021.02.12.430858 Pre-print at https://doi.org/10.1101/2021.02.12.430858 (2021).</p></li>
+<li><p>Hopf, T. A. et al. Mutation effects predicted from se-quence co-variation. Nat. Biotechnol. 35, 128–135 (2017).</p></li>
+<li><p>Hsu, C., Nisonoff, H., Fannjiang, C. &amp; Listgarten, J. Learning protein fitness models from evolutionary and assay-labeled data. Nat. Biotechnol. 40, 1114–1122 (2022).</p></li>
+<li><p>Meier, J. et al. Language models enable zero-shot prediction of the effects of mutations on protein func-tion. Preprint at https://doi.org/10.1101/2021.07.09.450648 (2021).</p></li>
+<li><p>Verkuil, R. et al. Language models generalize beyond natural proteins. 2022.12.21.521521 Preprint at https://doi.org/10.1101/2022.12.21.521521 (2022).</p></li>
+<li><p>Su, J. et al. SaProt: Protein Language Modeling with Structure-aware Vocabulary. 2023.10.01.560349 Preprint at https://doi.org/10.1101/2023.10.01.560349 (2023).</p></li>
+<li><p>Marquet, C. et al. Embeddings from protein language models predict conservation and variant effects. Hum Genet 141, 1629–1647 (2022).</p></li>
+<li><p>Eddy, S. R. Accelerated Profile HMM Searches. PLOS Computational Biology 7, e1002195 (2011).</p></li>
+<li><p>Pedregosa, F. et al. Scikit-learn: Machine Learning in Python. MACHINE LEARNING IN PYTHON.</p></li>
+<li><p>Notin, P. et al. ProteinGym: Large-Scale Benchmarks for Protein Fitness Prediction and Design.</p></li>
+<li><p>Blaabjerg, L.M., Jonsson, N., Boomsma, W. et al. SSEmb: A joint embedding of protein sequence and structure enables robust variant effect predictions. Nat Commun 15, 9646 (2024). https://doi.org/10.1038/s41467-024-53982-z</p></li>
+</ol>
+</section>
+<section id="license">
+<h2>License<a class="headerlink" href="#license" title="Link to this heading"></a></h2>
+<p>This project is licensed under the <a class="reference internal" href="#LICENSE"><span class="xref myst">MIT License</span></a>.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Gregg T. Beckham.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

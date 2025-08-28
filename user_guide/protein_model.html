@@ -1,0 +1,535 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ProteinModelWrapper &mdash; aide 1.1.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=e50f1ef7"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Zero-Shot Prediction" href="zero_shot.html" />
+    <link rel="prev" title="Model Compatibility" href="model_compatibility.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            aide
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installing AIDE</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_examples.html">API examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="data_structures.html">Data Structures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model_compatibility.html">Model Compatibility</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">ProteinModelWrapper</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#core-behavior">Core Behavior</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#key-attributes">Key Attributes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#data-paths-and-references">Data Paths and References</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#automated-properties">Automated Properties</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#mixin-hooks-system">Mixin Hooks System</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#wrapping-a-new-model">Wrapping a New Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#availability-checking">Availability Checking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mixins">Mixins</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#training-behavior">Training Behavior</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#expectsnofitmixin">ExpectsNoFitMixin</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#shouldrefitonsequencesmixin">ShouldRefitOnSequencesMixin</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#input-requirements">Input Requirements</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#requiresmsaforfitmixin">RequiresMSAForFitMixin</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#requireswtmsamixin">RequiresWTMSAMixin</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#requiresmsapersequencemixin">RequiresMSAPerSequenceMixin</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#requiresfixedlengthmixin">RequiresFixedLengthMixin</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#requiresstructuremixin">RequiresStructureMixin</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#requireswttofunctionmixin">RequiresWTToFunctionMixin</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#requireswtduringinferencemixin">RequiresWTDuringInferenceMixin</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#output-capabilities">Output Capabilities</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#canregressmixin">CanRegressMixin</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#positionspecificmixin">PositionSpecificMixin</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#data-processing">Data Processing</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#canhandlealignedsequencesmixin">CanHandleAlignedSequencesMixin</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#acceptslowercasemixin">AcceptsLowerCaseMixin</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#computational-behavior">Computational Behavior</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#cachemixin">CacheMixin</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#using-multiple-mixins">Using Multiple Mixins</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#complete-list-of-mixins">Complete List of Mixins</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="zero_shot.html">Zero-Shot Prediction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="supervised.html">Supervised Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="saturation_mutagenesis.html">Saturation Mutagenesis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pipelines.html">Building ML Pipelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caching.html">Caching Model Outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="position_specific.html">Position-Specific Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing_models.html">Contributing Models to AIDE</a></li>
+<li class="toctree-l1"><a class="reference internal" href="structure_pred.html">Structure Prediction with SoloSeq</a></li>
+<li class="toctree-l1"><a class="reference internal" href="msa_search.html">Generating MSAs with MMseqs2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="badass.html">Protein Optimization with BADASS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="roadmap.html">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="resource_test.html">Resource testing</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">aide_predict</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">aide</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">ProteinModelWrapper</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/user_guide/protein_model.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="proteinmodelwrapper">
+<h1>ProteinModelWrapper<a class="headerlink" href="#proteinmodelwrapper" title="Link to this heading"></a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">ProteinModelWrapper</span></code> is the base class for all protein prediction models in AIDE. It inherits from scikit-learn’s <code class="docutils literal notranslate"><span class="pre">BaseEstimator</span></code> and <code class="docutils literal notranslate"><span class="pre">TransformerMixin</span></code>, providing a familiar API while adding protein-specific validation and functionality. The framework uses a powerful mixin architecture to define model requirements and capabilities.</p>
+</section>
+<section id="core-behavior">
+<h2>Core Behavior<a class="headerlink" href="#core-behavior" title="Link to this heading"></a></h2>
+<p>The wrapper handles all protein-specific validation through its public methods:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Public methods do all validation</span>
+<span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="c1"># Validates sequences</span>
+    <span class="c1"># Checks requirements based on mixins</span>
+    <span class="c1"># Runs pre-fit hooks from mixins</span>
+    <span class="c1"># Then calls _fit()</span>
+    <span class="c1"># Runs post-fit hooks from mixins</span>
+    
+<span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+    <span class="c1"># Validates sequences</span>
+    <span class="c1"># Checks requirements based on mixins</span>
+    <span class="c1"># Runs pre-transform hooks from mixins</span>
+    <span class="c1"># Then calls _transform()</span>
+    <span class="c1"># Runs post-transform hooks from mixins</span>
+</pre></div>
+</div>
+<p>You never need to call the private methods directly - they implement just the core model logic while the public methods handle validation, hooks, and other processing.</p>
+</section>
+<section id="key-attributes">
+<h2>Key Attributes<a class="headerlink" href="#key-attributes" title="Link to this heading"></a></h2>
+<section id="data-paths-and-references">
+<h3>Data Paths and References<a class="headerlink" href="#data-paths-and-references" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">metadata_folder</span></code>: Directory for model files (weights, checkpoints, etc.), randomly generated if not given.</p>
+<ul>
+<li><p>This serves to give each model a dedicated place to store necessary files, for example if a fasta file needs to be passed to an external program. Some models do not use it. If the model is capable of Caching (see the caching section), it is stored here. Currently this location may break when saving and loading models across machines.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">wt</span></code>: Optional wild-type sequence for comparative predictions</p></li>
+</ul>
+</section>
+<section id="automated-properties">
+<h3>Automated Properties<a class="headerlink" href="#automated-properties" title="Link to this heading"></a></h3>
+<p>These are set based on which mixins you use:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Model requirements</span>
+<span class="n">model</span><span class="o">.</span><span class="n">expects_no_fit</span>               <span class="c1"># Whether the model expects no fit</span>
+<span class="n">model</span><span class="o">.</span><span class="n">requires_msa_for_fit</span>         <span class="c1"># Whether the model requires an MSA as input for fitting</span>
+<span class="n">model</span><span class="o">.</span><span class="n">requires_wt_msa</span>              <span class="c1"># Whether the model requires a wild type MSA</span>
+<span class="n">model</span><span class="o">.</span><span class="n">requires_msa_per_sequence</span>    <span class="c1"># Whether the model requires an MSA for each sequence</span>
+<span class="n">model</span><span class="o">.</span><span class="n">requires_fixed_length</span>        <span class="c1"># Whether the model requires a fixed length input</span>
+<span class="n">model</span><span class="o">.</span><span class="n">requires_wt_to_function</span>      <span class="c1"># Whether the model requires the wild type sequence</span>
+<span class="n">model</span><span class="o">.</span><span class="n">requires_wt_during_inference</span> <span class="c1"># Whether wild is used during inference, see note below</span>
+<span class="n">model</span><span class="o">.</span><span class="n">requires_structure</span>           <span class="c1"># Whether the model requires structure information</span>
+
+<span class="c1"># Model capabilities  </span>
+<span class="n">model</span><span class="o">.</span><span class="n">per_position_capable</span>         <span class="c1"># Whether the model can output per position scores</span>
+<span class="n">model</span><span class="o">.</span><span class="n">can_regress</span>                  <span class="c1"># Whether the model outputs are estimates of activity</span>
+<span class="n">model</span><span class="o">.</span><span class="n">can_handle_aligned_sequences</span> <span class="c1"># Whether the model can handle unaligned sequences</span>
+<span class="n">model</span><span class="o">.</span><span class="n">accepts_lower_case</span>           <span class="c1"># Whether the model can accept lowercase sequences</span>
+<span class="n">model</span><span class="o">.</span><span class="n">should_refit_on_sequences</span>    <span class="c1"># Whether model should refit on new sequences</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="mixin-hooks-system">
+<h2>Mixin Hooks System<a class="headerlink" href="#mixin-hooks-system" title="Link to this heading"></a></h2>
+<p>AIDE uses a system of hooks to allow mixins to modify the behavior of fitting and transformation. Hooks are registered during subclass creation and executed in order:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">_mixin_init_handlers</span></code>: Runs during initialization to extract mixin parameters</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_pre_fit_hooks</span></code>: Runs before fitting to prepare data</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_post_fit_hooks</span></code>: Runs after fitting to process results</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_pre_transform_hooks</span></code>: Runs before transformation to prepare data</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_post_transform_hooks</span></code>: Runs after transformation to process results</p></li>
+</ul>
+<p>For example, the <code class="docutils literal notranslate"><span class="pre">CacheMixin</span></code> uses <code class="docutils literal notranslate"><span class="pre">_pre_transform_hook</span></code> to check if results are already cached and <code class="docutils literal notranslate"><span class="pre">_post_transform_hook</span></code> to store new results in the cache.</p>
+</section>
+<section id="wrapping-a-new-model">
+<h2>Wrapping a New Model<a class="headerlink" href="#wrapping-a-new-model" title="Link to this heading"></a></h2>
+<p>To wrap a new model:</p>
+<ol class="arabic simple">
+<li><p>Inherit from <code class="docutils literal notranslate"><span class="pre">ProteinModelWrapper</span></code> and any needed mixins</p></li>
+<li><p>Implement only the core logic in private methods</p></li>
+</ol>
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyModel</span><span class="p">(</span><span class="n">CanRegressMixin</span><span class="p">,</span> <span class="n">ProteinModelWrapper</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metadata_folder</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">my_param</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">metadata_folder</span><span class="o">=</span><span class="n">metadata_folder</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">my_param</span> <span class="o">=</span> <span class="n">my_param</span>
+    
+    <span class="k">def</span> <span class="nf">_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># Just core training logic</span>
+        <span class="c1"># X is guaranteed to be valid</span>
+        <span class="c1"># set a fitted attribute so sklearn can check if it&#39;s been fit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fitted_</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="bp">self</span>
+    
+    <span class="k">def</span> <span class="nf">_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="c1"># Just core transformation</span>
+        <span class="c1"># X is guaranteed to be valid</span>
+        <span class="k">return</span> <span class="n">features</span>
+</pre></div>
+</div>
+</section>
+<section id="availability-checking">
+<h2>Availability Checking<a class="headerlink" href="#availability-checking" title="Link to this heading"></a></h2>
+<p>Models can specify their availability based on installed dependencies:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">some_required_package</span>
+    <span class="n">AVAILABLE</span> <span class="o">=</span> <span class="n">MessageBool</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;Model is available&quot;</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">AVAILABLE</span> <span class="o">=</span> <span class="n">MessageBool</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;Requires some_required_package&quot;</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">MyModel</span><span class="p">(</span><span class="n">ProteinModelWrapper</span><span class="p">):</span>
+    <span class="n">_available</span> <span class="o">=</span> <span class="n">AVAILABLE</span>
+</pre></div>
+</div>
+</section>
+<section id="mixins">
+<h2>Mixins<a class="headerlink" href="#mixins" title="Link to this heading"></a></h2>
+<p>Mixins define model requirements and capabilities. When combined with <code class="docutils literal notranslate"><span class="pre">ProteinModelWrapper</span></code>, they automatically enable appropriate validation and behavior. Mixins are grouped by their general purpose:</p>
+<section id="training-behavior">
+<h3>Training Behavior<a class="headerlink" href="#training-behavior" title="Link to this heading"></a></h3>
+<section id="expectsnofitmixin">
+<h4>ExpectsNoFitMixin<a class="headerlink" href="#expectsnofitmixin" title="Link to this heading"></a></h4>
+<p>For models that don’t require training:</p>
+<ul class="simple">
+<li><p>Sets <code class="docutils literal notranslate"><span class="pre">expects_no_fit</span> <span class="pre">=</span> <span class="pre">True</span></code></p></li>
+<li><p>Used by pretrained models like ESM2, SaProt</p></li>
+<li><p>Allows <code class="docutils literal notranslate"><span class="pre">fit()</span></code> to be called with no data</p></li>
+</ul>
+</section>
+<section id="shouldrefitonsequencesmixin">
+<h4>ShouldRefitOnSequencesMixin<a class="headerlink" href="#shouldrefitonsequencesmixin" title="Link to this heading"></a></h4>
+<p>For models that need retraining on new sequences:</p>
+<ul class="simple">
+<li><p>Sets <code class="docutils literal notranslate"><span class="pre">should_refit_on_sequences</span> <span class="pre">=</span> <span class="pre">True</span></code></p></li>
+<li><p>By default sklearn will refit when fit is called, this is undesirable for some models (e.g., those that fit using an MSA)</p></li>
+<li><p>That default behavior was disabled for <code class="docutils literal notranslate"><span class="pre">ProteinModelWrapper</span></code> but can be re-enabled by using this mixin</p></li>
+</ul>
+</section>
+</section>
+<section id="input-requirements">
+<h3>Input Requirements<a class="headerlink" href="#input-requirements" title="Link to this heading"></a></h3>
+<section id="requiresmsaforfitmixin">
+<h4>RequiresMSAForFitMixin<a class="headerlink" href="#requiresmsaforfitmixin" title="Link to this heading"></a></h4>
+<p>For models trained on multiple sequence alignments:</p>
+<ul class="simple">
+<li><p>Sets <code class="docutils literal notranslate"><span class="pre">requires_msa_for_fit</span> <span class="pre">=</span> <span class="pre">True</span></code></p></li>
+<li><p>Base class ensures input is aligned during fit</p></li>
+<li><p>Model receives guaranteed aligned sequences in <code class="docutils literal notranslate"><span class="pre">_fit</span></code></p></li>
+<li><p>Used by evolutionary models like EVMutation, HMM</p></li>
+</ul>
+</section>
+<section id="requireswtmsamixin">
+<h4>RequiresWTMSAMixin<a class="headerlink" href="#requireswtmsamixin" title="Link to this heading"></a></h4>
+<p>For models that need the wild-type MSA during training:</p>
+<ul class="simple">
+<li><p>Sets <code class="docutils literal notranslate"><span class="pre">requires_wt_msa</span> <span class="pre">=</span> <span class="pre">True</span></code></p></li>
+<li><p>Ensures wild-type sequence has an associated MSA</p></li>
+<li><p>Used by models like EVE that need WT context</p></li>
+</ul>
+</section>
+<section id="requiresmsapersequencemixin">
+<h4>RequiresMSAPerSequenceMixin<a class="headerlink" href="#requiresmsapersequencemixin" title="Link to this heading"></a></h4>
+<p>For models requiring MSA information for each sequence:</p>
+<ul class="simple">
+<li><p>Sets <code class="docutils literal notranslate"><span class="pre">requires_msa_per_sequence</span> <span class="pre">=</span> <span class="pre">True</span></code></p></li>
+<li><p>Ensures each sequence has its own MSA or falls back to WT MSA</p></li>
+<li><p>Used by MSA Transformer for embedding generation</p></li>
+</ul>
+</section>
+<section id="requiresfixedlengthmixin">
+<h4>RequiresFixedLengthMixin<a class="headerlink" href="#requiresfixedlengthmixin" title="Link to this heading"></a></h4>
+<p>For models requiring uniform sequence length:</p>
+<ul class="simple">
+<li><p>Sets <code class="docutils literal notranslate"><span class="pre">requires_fixed_length</span> <span class="pre">=</span> <span class="pre">True</span></code></p></li>
+<li><p>Base class validates all sequences are same length</p></li>
+<li><p>Common in neural networks and position-specific models</p></li>
+<li><p>Validates wild-type length matches if present</p></li>
+</ul>
+</section>
+<section id="requiresstructuremixin">
+<h4>RequiresStructureMixin<a class="headerlink" href="#requiresstructuremixin" title="Link to this heading"></a></h4>
+<p>For models using structural information:</p>
+<ul class="simple">
+<li><p>Sets <code class="docutils literal notranslate"><span class="pre">requires_structure</span> <span class="pre">=</span> <span class="pre">True</span></code></p></li>
+<li><p>Ensures structures available or falls back to wild-type structure</p></li>
+<li><p>Used by structure-aware models like SaProt</p></li>
+</ul>
+</section>
+<section id="requireswttofunctionmixin">
+<h4>RequiresWTToFunctionMixin<a class="headerlink" href="#requireswttofunctionmixin" title="Link to this heading"></a></h4>
+<p>For models that need a reference sequence:</p>
+<ul class="simple">
+<li><p>Sets <code class="docutils literal notranslate"><span class="pre">requires_wt_to_function</span> <span class="pre">=</span> <span class="pre">True</span></code></p></li>
+<li><p>Ensures wild-type sequence provided at initialization</p></li>
+<li><p>Used by models computing mutation effects</p></li>
+</ul>
+</section>
+<section id="requireswtduringinferencemixin">
+<h4>RequiresWTDuringInferenceMixin<a class="headerlink" href="#requireswtduringinferencemixin" title="Link to this heading"></a></h4>
+<p>These models are expected to handle their own use of any widl type sequence:</p>
+<ul class="simple">
+<li><p>Sets <code class="docutils literal notranslate"><span class="pre">requires_wt_during_inference</span> <span class="pre">=</span> <span class="pre">True</span></code></p></li>
+<li><p>If wt is present during inference, AIDE does no further processing, where by default AIDE will call the model on any WT present and normalize the output to that sequence</p></li>
+</ul>
+</section>
+</section>
+<section id="output-capabilities">
+<h3>Output Capabilities<a class="headerlink" href="#output-capabilities" title="Link to this heading"></a></h3>
+<section id="canregressmixin">
+<h4>CanRegressMixin<a class="headerlink" href="#canregressmixin" title="Link to this heading"></a></h4>
+<p>For models producing numeric predictions:</p>
+<ul class="simple">
+<li><p>Sets <code class="docutils literal notranslate"><span class="pre">can_regress</span> <span class="pre">=</span> <span class="pre">True</span></code></p></li>
+<li><p>Enables <code class="docutils literal notranslate"><span class="pre">predict()</span></code> method</p></li>
+<li><p>Adds Spearman correlation scoring</p></li>
+<li><p>Common in variant effect predictors</p></li>
+</ul>
+</section>
+<section id="positionspecificmixin">
+<h4>PositionSpecificMixin<a class="headerlink" href="#positionspecificmixin" title="Link to this heading"></a></h4>
+<p>For models with per-position outputs:</p>
+<ul class="simple">
+<li><p>Sets <code class="docutils literal notranslate"><span class="pre">per_position_capable</span> <span class="pre">=</span> <span class="pre">True</span></code></p></li>
+<li><p>Adds position selection with <code class="docutils literal notranslate"><span class="pre">positions</span></code> parameter</p></li>
+<li><p>Controls output format with <code class="docutils literal notranslate"><span class="pre">pool</span></code> and <code class="docutils literal notranslate"><span class="pre">flatten</span></code> parameters</p></li>
+<li><p>Handles dimension validation and reshaping</p></li>
+<li><p>Common in language models and conservation analysis</p></li>
+</ul>
+</section>
+</section>
+<section id="data-processing">
+<h3>Data Processing<a class="headerlink" href="#data-processing" title="Link to this heading"></a></h3>
+<section id="canhandlealignedsequencesmixin">
+<h4>CanHandleAlignedSequencesMixin<a class="headerlink" href="#canhandlealignedsequencesmixin" title="Link to this heading"></a></h4>
+<p>For models working with gapped sequences:</p>
+<ul class="simple">
+<li><p>Sets <code class="docutils literal notranslate"><span class="pre">can_handle_aligned_sequences</span> <span class="pre">=</span> <span class="pre">True</span></code></p></li>
+<li><p>Prevents automatic gap removal by base class</p></li>
+<li><p>Essential for MSA-based models</p></li>
+<li><p>Ensures gap characters preserved during processing</p></li>
+</ul>
+</section>
+<section id="acceptslowercasemixin">
+<h4>AcceptsLowerCaseMixin<a class="headerlink" href="#acceptslowercasemixin" title="Link to this heading"></a></h4>
+<p>For case-sensitive models:</p>
+<ul class="simple">
+<li><p>Sets <code class="docutils literal notranslate"><span class="pre">accepts_lower_case</span> <span class="pre">=</span> <span class="pre">True</span></code></p></li>
+<li><p>Disables automatic uppercase conversion</p></li>
+<li><p>Useful when case represents conservation or focus columns</p></li>
+</ul>
+</section>
+</section>
+<section id="computational-behavior">
+<h3>Computational Behavior<a class="headerlink" href="#computational-behavior" title="Link to this heading"></a></h3>
+<section id="cachemixin">
+<h4>CacheMixin<a class="headerlink" href="#cachemixin" title="Link to this heading"></a></h4>
+<p>For caching model outputs:</p>
+<ul class="simple">
+<li><p>Adds disk-based caching system using SQLite and HDF5</p></li>
+<li><p>Thread-safe for parallel processing</p></li>
+<li><p>Automatic cache invalidation on parameter changes</p></li>
+<li><p>Particularly useful for computationally expensive models</p></li>
+</ul>
+</section>
+</section>
+<section id="using-multiple-mixins">
+<h3>Using Multiple Mixins<a class="headerlink" href="#using-multiple-mixins" title="Link to this heading"></a></h3>
+<p>Mixins can be combined to define complex model requirements. Always put <code class="docutils literal notranslate"><span class="pre">ProteinModelWrapper</span></code> last in the inheritance chain:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ComplexModel</span><span class="p">(</span>
+    <span class="n">RequiresMSAForFitMixin</span><span class="p">,</span>       <span class="c1"># Needs MSA for training</span>
+    <span class="n">RequiresWTToFunctionMixin</span><span class="p">,</span>    <span class="c1"># Needs wild-type reference</span>
+    <span class="n">CanRegressMixin</span><span class="p">,</span>              <span class="c1"># Makes predictions</span>
+    <span class="n">PositionSpecificMixin</span><span class="p">,</span>        <span class="c1"># Per-position outputs</span>
+    <span class="n">CacheMixin</span><span class="p">,</span>                   <span class="c1"># Caches results</span>
+    <span class="n">ProteinModelWrapper</span>           <span class="c1"># Always last</span>
+<span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">ProteinSequences</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># X is guaranteed to be aligned</span>
+        <span class="c1"># Implementation focuses on core logic</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">ProteinSequences</span><span class="p">):</span>
+        <span class="c1"># All requirements validated by base class</span>
+        <span class="c1"># Implementation focuses on core logic</span>
+        <span class="k">pass</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="complete-list-of-mixins">
+<h2>Complete List of Mixins<a class="headerlink" href="#complete-list-of-mixins" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Mixin</p></th>
+<th class="head"><p>Purpose</p></th>
+<th class="head"><p>Sets</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ExpectsNoFitMixin</span></code></p></td>
+<td><p>For models without fitting</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">expects_no_fit</span> <span class="pre">=</span> <span class="pre">True</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">RequiresMSAForFitMixin</span></code></p></td>
+<td><p>For MSA-based training</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">requires_msa_for_fit</span> <span class="pre">=</span> <span class="pre">True</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">RequiresWTMSAMixin</span></code></p></td>
+<td><p>For models needing WT MSA</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">requires_wt_msa</span> <span class="pre">=</span> <span class="pre">True</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">RequiresMSAPerSequenceMixin</span></code></p></td>
+<td><p>For per-sequence MSA</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">requires_msa_per_sequence</span> <span class="pre">=</span> <span class="pre">True</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">RequiresFixedLengthMixin</span></code></p></td>
+<td><p>For fixed-length inputs</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">requires_fixed_length</span> <span class="pre">=</span> <span class="pre">True</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">RequiresStructureMixin</span></code></p></td>
+<td><p>For structure-aware models</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">requires_structure</span> <span class="pre">=</span> <span class="pre">True</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">RequiresWTToFunctionMixin</span></code></p></td>
+<td><p>For models needing WT</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">requires_wt_to_function</span> <span class="pre">=</span> <span class="pre">True</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">RequiresWTDuringInferenceMixin</span></code></p></td>
+<td><p>For WT during inference</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">requires_wt_during_inference</span> <span class="pre">=</span> <span class="pre">True</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">CanRegressMixin</span></code></p></td>
+<td><p>For prediction models</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">can_regress</span> <span class="pre">=</span> <span class="pre">True</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">PositionSpecificMixin</span></code></p></td>
+<td><p>For position outputs</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">per_position_capable</span> <span class="pre">=</span> <span class="pre">True</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">CanHandleAlignedSequencesMixin</span></code></p></td>
+<td><p>For gapped sequences</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">can_handle_aligned_sequences</span> <span class="pre">=</span> <span class="pre">True</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">AcceptsLowerCaseMixin</span></code></p></td>
+<td><p>For case sensitivity</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">accepts_lower_case</span> <span class="pre">=</span> <span class="pre">True</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">CacheMixin</span></code></p></td>
+<td><p>For result caching</p></td>
+<td><p>Adds caching hooks</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ShouldRefitOnSequencesMixin</span></code></p></td>
+<td><p>For retraining</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">should_refit_on_sequences</span> <span class="pre">=</span> <span class="pre">True</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="model_compatibility.html" class="btn btn-neutral float-left" title="Model Compatibility" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="zero_shot.html" class="btn btn-neutral float-right" title="Zero-Shot Prediction" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Gregg T. Beckham.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,237 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Generating MSAs with MMseqs2 &mdash; aide 1.1.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=e50f1ef7"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Protein Optimization with BADASS" href="badass.html" />
+    <link rel="prev" title="Structure Prediction with SoloSeq" href="structure_pred.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            aide
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installing AIDE</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_examples.html">API examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="data_structures.html">Data Structures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model_compatibility.html">Model Compatibility</a></li>
+<li class="toctree-l1"><a class="reference internal" href="protein_model.html">ProteinModelWrapper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="zero_shot.html">Zero-Shot Prediction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="supervised.html">Supervised Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="saturation_mutagenesis.html">Saturation Mutagenesis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pipelines.html">Building ML Pipelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caching.html">Caching Model Outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="position_specific.html">Position-Specific Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing_models.html">Contributing Models to AIDE</a></li>
+<li class="toctree-l1"><a class="reference internal" href="structure_pred.html">Structure Prediction with SoloSeq</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Generating MSAs with MMseqs2</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#basic-usage">Basic Usage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#python-interface">Python Interface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#command-line-interface">Command Line Interface</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#advanced-options">Advanced Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#search-modes">Search Modes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#output-format">Output Format</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="badass.html">Protein Optimization with BADASS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="roadmap.html">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="resource_test.html">Resource testing</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">aide_predict</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">aide</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Generating MSAs with MMseqs2</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/user_guide/msa_search.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="generating-msas-with-mmseqs2">
+<h1>Generating MSAs with MMseqs2<a class="headerlink" href="#generating-msas-with-mmseqs2" title="Link to this heading"></a></h1>
+<p>For problems where you have not already determined an MSA with another tool (eg. Jackhmmer, EVCouplings, MMseqs, etc.) AIDE provides a high lavel wrapper for generating Multiple Sequence Alignments (MSAs) using MMseqs2, implementing the sensitive search similar to colabfold. This can be useful when you need MSAs for models like EVMutation, MSATransformer, or EVE. This is literally just calling MMseqs with a few parameters set - all credit should go to the authors of MMseqs and Colabfold:</p>
+<p>Steinegger M and Soeding J. MMseqs2 enables sensitive protein sequence searching for the analysis of massive data sets. Nature Biotechnology, doi: 10.1038/nbt.3988 (2017).</p>
+<p>Mirdita, M., Schütze, K., Moriwaki, Y. et al. ColabFold: making protein folding accessible to all. Nat Methods 19, 679–682 (2022). https://doi.org/10.1038/s41592-022-01488-1</p>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p>Ensure MMseqs2 is installed and available in your PATH:</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>bioconda<span class="w"> </span>mmseqs2
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>Download the ColabFold database(s): https://colabfold.mmseqs.com/. You will need to point towards this database to run the search.</p></li>
+</ol>
+</section>
+<section id="basic-usage">
+<h2>Basic Usage<a class="headerlink" href="#basic-usage" title="Link to this heading"></a></h2>
+<section id="python-interface">
+<h3>Python Interface<a class="headerlink" href="#python-interface" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aide_predict</span> <span class="kn">import</span> <span class="n">ProteinSequences</span>
+<span class="kn">from</span> <span class="nn">aide_predict.utils.mmseqs_msa_search</span> <span class="kn">import</span> <span class="n">run_mmseqs_search</span>
+
+<span class="c1"># Load sequences</span>
+<span class="n">sequences</span> <span class="o">=</span> <span class="n">ProteinSequences</span><span class="o">.</span><span class="n">from_fasta</span><span class="p">(</span><span class="s2">&quot;proteins.fasta&quot;</span><span class="p">)</span>
+
+<span class="c1"># Generate MSAs</span>
+<span class="n">msa_paths</span> <span class="o">=</span> <span class="n">run_mmseqs_search</span><span class="p">(</span>
+    <span class="n">sequences</span><span class="o">=</span><span class="n">sequences</span><span class="p">,</span>
+    <span class="n">uniref_db</span><span class="o">=</span><span class="s2">&quot;path/to/uniref30_2302&quot;</span><span class="p">,</span>
+    <span class="n">output_dir</span><span class="o">=</span><span class="s2">&quot;./msas&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Load MSAs for use with models</span>
+<span class="kn">from</span> <span class="nn">aide_predict</span> <span class="kn">import</span> <span class="n">ProteinSequences</span>
+<span class="n">msas</span> <span class="o">=</span> <span class="p">[</span><span class="n">ProteinSequences</span><span class="o">.</span><span class="n">from_a3m</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">msa_paths</span><span class="p">]</span>
+</pre></div>
+</div>
+</section>
+<section id="command-line-interface">
+<h3>Command Line Interface<a class="headerlink" href="#command-line-interface" title="Link to this heading"></a></h3>
+<p>You can also run MSA generation directly from the command line:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>aide_predict.utils.mmseqs_msa_search<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>proteins.fasta<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>path/to/uniref30_2302<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>./msas
+</pre></div>
+</div>
+</section>
+</section>
+<section id="advanced-options">
+<h2>Advanced Options<a class="headerlink" href="#advanced-options" title="Link to this heading"></a></h2>
+<p>The search can be customized with several parameters:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">msa_paths</span> <span class="o">=</span> <span class="n">run_mmseqs_search</span><span class="p">(</span>
+    <span class="n">sequences</span><span class="o">=</span><span class="n">sequences</span><span class="p">,</span>
+    <span class="n">uniref_db</span><span class="o">=</span><span class="s2">&quot;path/to/uniref30_2302&quot;</span><span class="p">,</span>
+    <span class="n">output_dir</span><span class="o">=</span><span class="s2">&quot;./msas&quot;</span><span class="p">,</span>
+    <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;sensitive&#39;</span><span class="p">,</span>     <span class="c1"># Search sensitivity: &#39;fast&#39;, &#39;standard&#39;, or &#39;sensitive&#39;</span>
+    <span class="n">threads</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>           <span class="c1"># Number of CPU threads</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Command line equivalents:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>aide_predict.utils.mmseqs_msa_search<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>proteins.fasta<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>path/to/uniref30_2302<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>./msas<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--mode<span class="w"> </span>sensitive<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--threads<span class="w"> </span><span class="m">8</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--keep-tmp
+</pre></div>
+</div>
+</section>
+<section id="search-modes">
+<h2>Search Modes<a class="headerlink" href="#search-modes" title="Link to this heading"></a></h2>
+<p>Three sensitivity modes are available:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">fast</span></code>: Quick search with sensitivity 4.0</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">standard</span></code>: Balanced approach with sensitivity 5.7 (default)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sensitive</span></code>: More thorough search with sensitivity 7.5</p></li>
+</ul>
+<p>Higher sensitivity will find more distant homologs but takes longer to run.</p>
+</section>
+<section id="output-format">
+<h2>Output Format<a class="headerlink" href="#output-format" title="Link to this heading"></a></h2>
+<p>MSAs are generated in A3M format, one file per input sequence. The files are named based on the sequence IDs in your input FASTA file. These files can be directly used with AIDE’s MSA-based models:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Use MSA with a model</span>
+<span class="kn">from</span> <span class="nn">aide_predict</span> <span class="kn">import</span> <span class="n">MSATransformerLikelihoodWrapper</span>
+
+<span class="n">msa</span> <span class="o">=</span> <span class="n">ProteinSequences</span><span class="o">.</span><span class="n">from_a3m</span><span class="p">(</span><span class="s2">&quot;msas/sequence1.a3m&quot;</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">MSATransformerLikelihoodWrapper</span><span class="p">(</span><span class="n">wt</span><span class="o">=</span><span class="n">wt</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">msa</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="structure_pred.html" class="btn btn-neutral float-left" title="Structure Prediction with SoloSeq" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="badass.html" class="btn btn-neutral float-right" title="Protein Optimization with BADASS" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Gregg T. Beckham.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

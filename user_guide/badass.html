@@ -1,0 +1,325 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Protein Optimization with BADASS &mdash; aide 1.1.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=e50f1ef7"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Roadmap" href="roadmap.html" />
+    <link rel="prev" title="Generating MSAs with MMseqs2" href="msa_search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            aide
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installing AIDE</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_examples.html">API examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="data_structures.html">Data Structures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model_compatibility.html">Model Compatibility</a></li>
+<li class="toctree-l1"><a class="reference internal" href="protein_model.html">ProteinModelWrapper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="zero_shot.html">Zero-Shot Prediction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="supervised.html">Supervised Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="saturation_mutagenesis.html">Saturation Mutagenesis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pipelines.html">Building ML Pipelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caching.html">Caching Model Outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="position_specific.html">Position-Specific Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing_models.html">Contributing Models to AIDE</a></li>
+<li class="toctree-l1"><a class="reference internal" href="structure_pred.html">Structure Prediction with SoloSeq</a></li>
+<li class="toctree-l1"><a class="reference internal" href="msa_search.html">Generating MSAs with MMseqs2</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Protein Optimization with BADASS</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#basic-usage">Basic Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#optimization-parameters">Optimization Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-badass-works">How BADASS Works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#optimization-results">Optimization Results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#analyzing-results">Analyzing Results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#performance-considerations">Performance Considerations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="roadmap.html">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="resource_test.html">Resource testing</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">aide_predict</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">aide</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Protein Optimization with BADASS</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/user_guide/badass.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="protein-optimization-with-badass">
+<h1>Protein Optimization with BADASS<a class="headerlink" href="#protein-optimization-with-badass" title="Link to this heading"></a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>AIDE integrates BADASS, an adaptive simulated annealing algorithm that efficiently explores protein sequence space to find variants with optimal properties. The BADASS algorithm was introduced in <a class="reference external" href="https://www.biorxiv.org/content/10.1101/2024.10.25.620340v1">this paper</a> and has been adapted in AIDE to work with any of its protein prediction models.</p>
+</section>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
+<p>To use BADASS with AIDE, install the required dependencies:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements-badass.txt
+</pre></div>
+</div>
+</section>
+<section id="basic-usage">
+<h2>Basic Usage<a class="headerlink" href="#basic-usage" title="Link to this heading"></a></h2>
+<p>Here’s a complete example of using BADASS with an ESM2 zero-shot predictor:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aide_predict</span> <span class="kn">import</span> <span class="n">ProteinSequence</span><span class="p">,</span> <span class="n">ESM2LikelihoodWrapper</span>
+<span class="kn">from</span> <span class="nn">aide_predict.utils.badass</span> <span class="kn">import</span> <span class="n">BADASSOptimizer</span><span class="p">,</span> <span class="n">BADASSOptimizerParams</span>
+
+<span class="c1"># 1. Define your protein sequence and prediction model</span>
+<span class="n">wt</span> <span class="o">=</span> <span class="n">ProteinSequence</span><span class="p">(</span><span class="s2">&quot;MKLLVLGLPGAGKGTQAEKIVAAYGIPHISTGDMFRAAMKEGTPLGLQAKQYMDEGDLVPDEVTIGIVRERLSKDDCQNGFLLDGFPRTVAQAEALETMLADIASRLSALPPATQTRMILMVEDELRNLHRGQVLPSENTFRVADDNEETIKKIRQKYGNSSGVI&quot;</span><span class="p">)</span>
+
+<span class="c1"># 2. Set up a prediction model</span>
+<span class="c1"># Note that this can be a supervised model. In general, any ProteinModel or </span>
+<span class="c1"># scikit-learn pipeline whose input models are ProteinModelWrapper can be used.</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">ESM2LikelihoodWrapper</span><span class="p">(</span><span class="n">wt</span><span class="o">=</span><span class="n">wt</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">([])</span>  <span class="c1"># No training needed for zero-shot model</span>
+
+<span class="c1"># 3. Configure optimization parameters</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">BADASSOptimizerParams</span><span class="p">(</span>
+    <span class="n">num_mutations</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>       <span class="c1"># Maximum mutations per variant</span>
+    <span class="n">num_iter</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>          <span class="c1"># Number of optimization iterations</span>
+    <span class="n">seqs_per_iter</span><span class="o">=</span><span class="mi">200</span>      <span class="c1"># Sequences evaluated per iteration</span>
+<span class="p">)</span>
+
+<span class="c1"># 4. Create and run the optimizer</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">BADASSOptimizer</span><span class="p">(</span>
+    <span class="n">predictor</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">,</span>
+    <span class="n">reference_sequence</span><span class="o">=</span><span class="n">wt</span><span class="p">,</span>
+    <span class="n">params</span><span class="o">=</span><span class="n">params</span>
+<span class="p">)</span>
+
+<span class="c1"># 5. Run optimization</span>
+<span class="c1"># This returns protein variants as well as scores from the optimizer </span>
+<span class="c1"># (which may be scaled and not equal to direct model outputs)</span>
+<span class="n">results_df</span><span class="p">,</span> <span class="n">stats_df</span> <span class="o">=</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
+
+<span class="c1"># 6. Visualize the optimization process</span>
+<span class="n">optimizer</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+
+<span class="c1"># 7. Print top variants</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">results_df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;scores&#39;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
+</pre></div>
+</div>
+</section>
+<section id="optimization-parameters">
+<h2>Optimization Parameters<a class="headerlink" href="#optimization-parameters" title="Link to this heading"></a></h2>
+<p>BADASS behavior can be extensively customized through the <code class="docutils literal notranslate"><span class="pre">BADASSOptimizerParams</span></code> class:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">params</span> <span class="o">=</span> <span class="n">BADASSOptimizerParams</span><span class="p">(</span>
+    <span class="c1"># Core parameters</span>
+    <span class="n">seqs_per_iter</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>              <span class="c1"># Sequences per iteration</span>
+    <span class="n">num_iter</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>                   <span class="c1"># Total optimization iterations</span>
+    <span class="n">num_mutations</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>                <span class="c1"># Maximum mutations per variant</span>
+    <span class="n">init_score_batch_size</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>      <span class="c1"># Batch size for initial scoring</span>
+    
+    <span class="c1"># Algorithm behavior</span>
+    <span class="n">temperature</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span>                <span class="c1"># Initial temperature</span>
+    <span class="n">cooling_rate</span><span class="o">=</span><span class="mf">0.92</span><span class="p">,</span>              <span class="c1"># Cooling rate for SA</span>
+    <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span>                        <span class="c1"># Random seed</span>
+    <span class="n">gamma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>                      <span class="c1"># Variance boosting weight</span>
+    
+    <span class="c1"># Constraints</span>
+    <span class="n">sites_to_ignore</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>      <span class="c1"># Positions to exclude from mutation (1-indexed)</span>
+    
+    <span class="c1"># Advanced options</span>
+    <span class="n">normalize_scores</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>          <span class="c1"># Normalize scores</span>
+    <span class="n">simple_simulated_annealing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="c1"># Use simple SA without adaptation</span>
+    <span class="n">cool_then_heat</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>           <span class="c1"># Use cooling-then-heating schedule</span>
+    <span class="n">adaptive_upper_threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># Threshold for adaptivity (float for quantile, int for top N)</span>
+    <span class="n">n_seqs_to_keep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>            <span class="c1"># Number of sequences to keep in results</span>
+    <span class="n">score_threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>           <span class="c1"># Score threshold for phase transitions (auto-computed if None)</span>
+    <span class="n">reversal_threshold</span><span class="o">=</span><span class="kc">None</span>         <span class="c1"># Score threshold for phase reversals (auto-computed if None)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="how-badass-works">
+<h2>How BADASS Works<a class="headerlink" href="#how-badass-works" title="Link to this heading"></a></h2>
+<p>BADASS operates through the following key mechanisms:</p>
+<ol class="arabic simple">
+<li><p><strong>Initialization</strong>: Computes a score matrix of all single-point mutations</p></li>
+<li><p><strong>Sampling</strong>: Uses Boltzmann sampling to generate candidate sequences</p></li>
+<li><p><strong>Scoring</strong>: Evaluates candidates with the provided predictor function</p></li>
+<li><p><strong>Phase detection</strong>: Identifies when the optimizer has found a promising region</p></li>
+<li><p><strong>Adaptive temperature</strong>: Adjusts temperature to balance exploration/exploitation</p></li>
+<li><p><strong>Score normalization</strong>: Standardizes scores for better comparison</p></li>
+</ol>
+<p>During optimization, BADASS maintains several tracking matrices:</p>
+<ul class="simple">
+<li><p>Score matrix for each amino acid at each position</p></li>
+<li><p>Observation counts for statistical significance</p></li>
+<li><p>Variance estimates for uncertainty quantification</p></li>
+</ul>
+</section>
+<section id="optimization-results">
+<h2>Optimization Results<a class="headerlink" href="#optimization-results" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">optimize()</span></code> method returns two DataFrames:</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">results_df</span></code>: Contains information about all evaluated sequences:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">sequences</span></code>: Compact mutation representation (e.g., “M1L-K5R”)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">scores</span></code>: Predicted fitness scores</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">full_sequence</span></code>: Complete protein sequence</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">counts</span></code>: Number of times each sequence was evaluated</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">num_mutations</span></code>: Number of mutations in each sequence</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">iteration</span></code>: When the sequence was first observed</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">stats_df</span></code>: Contains statistics for each iteration:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">iteration</span></code>: Iteration number</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">avg_score</span></code>: Average score per iteration</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">var_score</span></code>: Variance of scores</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">n_eff_joint</span></code>: Effective number of joint samples</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">n_eff_sites</span></code>: Effective number of sites explored</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">n_eff_aa</span></code>: Effective number of amino acids explored</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">T</span></code>: Temperature at each iteration</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">n_seqs</span></code>: Number of sequences evaluated</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">n_new_seqs</span></code>: Number of new sequences evaluated</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">num_phase_transitions</span></code>: Cumulative number of phase transitions</p></li>
+</ul>
+</li>
+</ol>
+</section>
+<section id="analyzing-results">
+<h2>Analyzing Results<a class="headerlink" href="#analyzing-results" title="Link to this heading"></a></h2>
+<p>After optimization, BADASS offers several visualization and analysis options:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Plot optimization progress</span>
+<span class="n">optimizer</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>  <span class="c1"># Creates multiple plots showing optimization trajectory</span>
+
+<span class="c1"># Save results to CSV</span>
+<span class="n">optimizer</span><span class="o">.</span><span class="n">save_results</span><span class="p">(</span><span class="s2">&quot;optimization_run&quot;</span><span class="p">)</span>
+
+<span class="c1"># Get best sequences</span>
+<span class="n">best_sequences</span> <span class="o">=</span> <span class="n">results_df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;scores&#39;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="c1"># Create a ProteinSequences object from best variants</span>
+<span class="kn">from</span> <span class="nn">aide_predict</span> <span class="kn">import</span> <span class="n">ProteinSequences</span>
+<span class="n">top_variants</span> <span class="o">=</span> <span class="n">ProteinSequences</span><span class="p">(</span><span class="n">best_sequences</span><span class="p">[</span><span class="s1">&#39;full_sequence&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+
+<span class="c1"># Further analyze with other AIDE tools</span>
+<span class="kn">from</span> <span class="nn">aide_predict.utils.plotting</span> <span class="kn">import</span> <span class="n">plot_mutation_heatmap</span>
+<span class="n">mutations</span> <span class="o">=</span> <span class="p">[</span><span class="n">seq</span><span class="o">.</span><span class="n">get_mutations</span><span class="p">(</span><span class="n">wt</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">seq</span> <span class="ow">in</span> <span class="n">top_variants</span><span class="p">]</span>
+<span class="n">scores</span> <span class="o">=</span> <span class="n">best_sequences</span><span class="p">[</span><span class="s1">&#39;scores&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+<span class="n">plot_mutation_heatmap</span><span class="p">(</span><span class="n">mutations</span><span class="p">,</span> <span class="n">scores</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The visualization includes:</p>
+<ol class="arabic simple">
+<li><p>Statistics by iteration (scores, effective samples, temperature)</p></li>
+<li><p>Score distributions vs temperature</p></li>
+<li><p>Score density distributions across early and late iterations</p></li>
+</ol>
+</section>
+<section id="performance-considerations">
+<h2>Performance Considerations<a class="headerlink" href="#performance-considerations" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>BADASS evaluates thousands of sequences, so efficient predictors are important</p></li>
+<li><p>For computationally expensive models, consider:</p>
+<ul>
+<li><p>Using model caching (via <code class="docutils literal notranslate"><span class="pre">CacheMixin</span></code>)</p></li>
+<li><p>Reducing <code class="docutils literal notranslate"><span class="pre">seqs_per_iter</span></code> and <code class="docutils literal notranslate"><span class="pre">num_iter</span></code></p></li>
+<li><p>Using batch processing in custom predictors</p></li>
+<li><p>Increasing <code class="docutils literal notranslate"><span class="pre">init_score_batch_size</span></code> for better initial sampling</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>BADASS: <a class="reference external" href="https://www.biorxiv.org/content/10.1101/2024.10.25.620340v1">biphasic annealing for diverse adaptive sequence sampling</a></p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="msa_search.html" class="btn btn-neutral float-left" title="Generating MSAs with MMseqs2" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="roadmap.html" class="btn btn-neutral float-right" title="Roadmap" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Gregg T. Beckham.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

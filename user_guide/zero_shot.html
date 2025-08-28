@@ -1,0 +1,381 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zero-Shot Prediction &mdash; aide 1.1.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=e50f1ef7"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Supervised Learning" href="supervised.html" />
+    <link rel="prev" title="ProteinModelWrapper" href="protein_model.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            aide
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installing AIDE</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_examples.html">API examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="data_structures.html">Data Structures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model_compatibility.html">Model Compatibility</a></li>
+<li class="toctree-l1"><a class="reference internal" href="protein_model.html">ProteinModelWrapper</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Zero-Shot Prediction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#transformer-based-models">Transformer-Based Models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#esm2">ESM2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#msa-transformer">MSA Transformer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#vespa">VESPA</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#structure-aware-models">Structure-Aware Models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#saprot">SaProt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ssemb">SSEmb</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#evolutionary-models">Evolutionary Models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#hmm">HMM</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#evmutation">EVMutation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#eve">EVE</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#contributing">Contributing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="supervised.html">Supervised Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="saturation_mutagenesis.html">Saturation Mutagenesis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pipelines.html">Building ML Pipelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caching.html">Caching Model Outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="position_specific.html">Position-Specific Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing_models.html">Contributing Models to AIDE</a></li>
+<li class="toctree-l1"><a class="reference internal" href="structure_pred.html">Structure Prediction with SoloSeq</a></li>
+<li class="toctree-l1"><a class="reference internal" href="msa_search.html">Generating MSAs with MMseqs2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="badass.html">Protein Optimization with BADASS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="roadmap.html">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="resource_test.html">Resource testing</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">aide_predict</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">aide</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Zero-Shot Prediction</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/user_guide/zero_shot.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="zero-shot-prediction">
+<h1>Zero-Shot Prediction<a class="headerlink" href="#zero-shot-prediction" title="Link to this heading"></a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>Zero-shot predictors in AIDE can assess protein variants without requiring training data. These models leverage different types of information:</p>
+<ul class="simple">
+<li><p>Pretrained language models that capture protein sequence patterns</p></li>
+<li><p>Multiple sequence alignments that capture evolutionary information</p></li>
+<li><p>Structural information for 3D context and conservation signals</p></li>
+<li><p>Combinations of these approaches for more robust predictions</p></li>
+<li><p>Note that the examples below are all single point mutations, but many of the models can also be used for multiple mutations.</p></li>
+</ul>
+</section>
+<section id="transformer-based-models">
+<h2>Transformer-Based Models<a class="headerlink" href="#transformer-based-models" title="Link to this heading"></a></h2>
+<section id="esm2">
+<h3>ESM2<a class="headerlink" href="#esm2" title="Link to this heading"></a></h3>
+<p><a class="reference external" href="https://www.biorxiv.org/content/10.1101/2021.07.09.450648v2.full">ESM2</a> uses masked language modeling to predict mutation effects based on the likelihood of amino acids in context:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aide_predict</span> <span class="kn">import</span> <span class="n">ESM2LikelihoodWrapper</span><span class="p">,</span> <span class="n">ProteinSequence</span>
+
+<span class="c1"># Setup wild type sequence</span>
+<span class="n">wt</span> <span class="o">=</span> <span class="n">ProteinSequence</span><span class="p">(</span>
+    <span class="s2">&quot;MKLLVLGLPGAGKGT&quot;</span><span class="p">,</span>
+    <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;wild_type&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Choose marginal method for computing likelihoods</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">ESM2LikelihoodWrapper</span><span class="p">(</span>
+    <span class="n">wt</span><span class="o">=</span><span class="n">wt</span><span class="p">,</span>
+    <span class="n">marginal_method</span><span class="o">=</span><span class="s2">&quot;masked_marginal&quot;</span><span class="p">,</span>  <span class="c1"># or &quot;wildtype_marginal&quot; or &quot;mutant_marginal&quot;</span>
+    <span class="n">pool</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># True to get single score per sequence</span>
+<span class="p">)</span>
+
+<span class="c1"># No training needed</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+
+<span class="c1"># Score mutations</span>
+<span class="n">mutants</span> <span class="o">=</span> <span class="n">wt</span><span class="o">.</span><span class="n">saturation_mutagenesis</span><span class="p">()</span>
+<span class="n">scores</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">mutants</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The marginal method determines how likelihoods are computed:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">masked_marginal</span></code>: Masks each position to compute direct probability</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">wildtype_marginal</span></code>: Uses wild type context only</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mutant_marginal</span></code>: Uses mutant sequence context</p></li>
+</ul>
+</section>
+<section id="msa-transformer">
+<h3>MSA Transformer<a class="headerlink" href="#msa-transformer" title="Link to this heading"></a></h3>
+<p><a class="reference external" href="https://www.biorxiv.org/content/10.1101/2021.07.09.450648v2.full">MSA Transformer</a> extends ESM’s approach by incorporating evolutionary information from multiple sequence alignments:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aide_predict</span> <span class="kn">import</span> <span class="n">MSATransformerLikelihoodWrapper</span><span class="p">,</span> <span class="n">ProteinSequence</span>
+
+<span class="c1"># Setup wild type sequence with MSA</span>
+<span class="n">wt</span> <span class="o">=</span> <span class="n">ProteinSequence</span><span class="o">.</span><span class="n">from_a3m</span><span class="p">(</span><span class="s2">&quot;protein_family.a3m&quot;</span><span class="p">)</span>
+
+<span class="c1"># Create model with MSA context</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">MSATransformerLikelihoodWrapper</span><span class="p">(</span>
+    <span class="n">wt</span><span class="o">=</span><span class="n">wt</span><span class="p">,</span>
+    <span class="n">marginal_method</span><span class="o">=</span><span class="s2">&quot;masked_marginal&quot;</span><span class="p">,</span>
+    <span class="n">n_msa_seqs</span><span class="o">=</span><span class="mi">360</span>  <span class="c1"># Number of MSA sequences to use</span>
+<span class="p">)</span>
+
+<span class="c1"># Fit to MSA </span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+
+<span class="c1"># Score mutations</span>
+<span class="n">mutants</span> <span class="o">=</span> <span class="n">wt</span><span class="o">.</span><span class="n">saturation_mutagenesis</span><span class="p">()</span>
+<span class="n">scores</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">mutants</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>MSA Transformer combines the power of language models with evolutionary information, often improving predictions for proteins with rich evolutionary profiles.</p>
+</section>
+<section id="vespa">
+<h3>VESPA<a class="headerlink" href="#vespa" title="Link to this heading"></a></h3>
+<p><a class="reference external" href="https://link.springer.com/article/10.1007/s00439-021-02411-y">VESPA</a> uses a pretrained model head on top of transformer embeddings specifically trained to predict variant effects:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aide_predict</span> <span class="kn">import</span> <span class="n">VESPAWrapper</span><span class="p">,</span> <span class="n">ProteinSequence</span>
+
+<span class="c1"># Setup wild type sequence</span>
+<span class="n">wt</span> <span class="o">=</span> <span class="n">ProteinSequence</span><span class="p">(</span>
+    <span class="s2">&quot;MKLLVLGLPGAGKGT&quot;</span><span class="p">,</span>
+    <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;wild_type&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Create VESPA model (light version by default)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">VESPAWrapper</span><span class="p">(</span>
+    <span class="n">wt</span><span class="o">=</span><span class="n">wt</span><span class="p">,</span>
+    <span class="n">light</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># Use lighter VESPAl model instead of full VESPA</span>
+<span class="p">)</span>
+
+<span class="c1"># No training needed</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+
+<span class="c1"># Score single mutations (VESPA is only for single mutations)</span>
+<span class="n">mutants</span> <span class="o">=</span> <span class="n">wt</span><span class="o">.</span><span class="n">saturation_mutagenesis</span><span class="p">()</span>
+<span class="n">scores</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">mutants</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>VESPA was trained on human disease variants and is particularly useful for predicting pathogenicity of human protein variants.</p>
+</section>
+</section>
+<section id="structure-aware-models">
+<h2>Structure-Aware Models<a class="headerlink" href="#structure-aware-models" title="Link to this heading"></a></h2>
+<section id="saprot">
+<h3>SaProt<a class="headerlink" href="#saprot" title="Link to this heading"></a></h3>
+<p><a class="reference external" href="https://www.biorxiv.org/content/10.1101/2023.10.01.560349v1">SaProt</a> incorporates protein structure information with sequence to improve predictions:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aide_predict</span> <span class="kn">import</span> <span class="n">SaProtLikelihoodWrapper</span><span class="p">,</span> <span class="n">ProteinStructure</span>
+
+<span class="c1"># Load sequences and map structures</span>
+<span class="n">wt</span> <span class="o">=</span> <span class="n">ProteinStructure</span><span class="o">.</span><span class="n">from_pdb</span><span class="p">(</span><span class="s2">&quot;structures/structure.pdb&quot;</span><span class="p">)</span>
+
+<span class="c1"># Create model</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">SaProtLikelihoodWrapper</span><span class="p">(</span>
+    <span class="n">wt</span><span class="o">=</span><span class="n">wt</span><span class="p">,</span>
+    <span class="n">marginal_method</span><span class="o">=</span><span class="s2">&quot;masked_marginal&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># No training needed</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+
+<span class="c1"># Score mutations with structure info</span>
+<span class="n">mutatnts</span> <span class="o">=</span> <span class="n">wt</span><span class="o">.</span><span class="n">saturation_mutagenesis</span><span class="p">()</span>
+<span class="n">scores</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">mutants</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>SaProt is particularly valuable for proteins where structural context plays a significant role in function or stability.</p>
+</section>
+<section id="ssemb">
+<h3>SSEmb<a class="headerlink" href="#ssemb" title="Link to this heading"></a></h3>
+<p><a class="reference external" href="https://www.nature.com/articles/s41467-024-53982-z">SSEmb</a> combines structure and sequence information through a joint embedding approach:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aide_predict</span> <span class="kn">import</span> <span class="n">SSEmbWrapper</span><span class="p">,</span> <span class="n">ProteinSequence</span><span class="p">,</span> <span class="n">StructureMapper</span>
+
+<span class="c1"># Setup environment variables first</span>
+<span class="c1"># os.environ[&#39;SSEMB_CONDA_ENV&#39;] = &#39;ssemb_env&#39;</span>
+<span class="c1"># os.environ[&#39;SSEMB_REPO&#39;] = &#39;/path/to/ssemb/repo&#39;</span>
+
+<span class="c1"># Setup wild type with structure and MSA</span>
+<span class="n">wt</span> <span class="o">=</span> <span class="n">ProteinSequence</span><span class="o">.</span><span class="n">from_a3m</span><span class="p">(</span><span class="s2">&quot;protein_family.a3m&quot;</span><span class="p">)</span>
+<span class="n">wt</span><span class="o">.</span><span class="n">structure</span> <span class="o">=</span> <span class="s2">&quot;structures/structure.pdb&quot;</span>
+
+<span class="c1"># Create model</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">SSEmbWrapper</span><span class="p">(</span><span class="n">wt</span><span class="o">=</span><span class="n">wt</span><span class="p">)</span>
+
+<span class="c1"># Fit using MSA</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+
+<span class="c1"># Score mutations</span>
+<span class="n">mutants</span> <span class="o">=</span> <span class="n">wt</span><span class="o">.</span><span class="n">saturation_mutagenesis</span><span class="p">()</span>
+<span class="n">scores</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">mutants</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>SSEmb is especially effective for scoring mutations in proteins with known structures and rich evolutionary information.</p>
+</section>
+</section>
+<section id="evolutionary-models">
+<h2>Evolutionary Models<a class="headerlink" href="#evolutionary-models" title="Link to this heading"></a></h2>
+<section id="hmm">
+<h3>HMM<a class="headerlink" href="#hmm" title="Link to this heading"></a></h3>
+<p>Hidden Markov Models capture position-specific amino acid preferences from MSAs:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aide_predict</span> <span class="kn">import</span> <span class="n">HMMWrapper</span><span class="p">,</span> <span class="n">ProteinSequences</span>
+
+<span class="c1"># Load MSA</span>
+<span class="n">msa</span> <span class="o">=</span> <span class="n">ProteinSequences</span><span class="o">.</span><span class="n">from_fasta</span><span class="p">(</span><span class="s2">&quot;protein_family.a3m&quot;</span><span class="p">)</span>
+
+<span class="c1"># Create and fit model</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">HMMWrapper</span><span class="p">(</span><span class="n">threshold</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>  <span class="c1"># bit score threshold</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">msa</span><span class="p">)</span>
+
+<span class="c1"># Score new sequences</span>
+<span class="n">sequences</span> <span class="o">=</span> <span class="n">ProteinSequences</span><span class="o">.</span><span class="n">from_fasta</span><span class="p">(</span><span class="s2">&quot;variants.fasta&quot;</span><span class="p">)</span>
+<span class="n">scores</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">sequences</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>HMMs are fast and interpretable but don’t capture dependencies between positions.</p>
+</section>
+<section id="evmutation">
+<h3>EVMutation<a class="headerlink" href="#evmutation" title="Link to this heading"></a></h3>
+<p><a class="reference external" href="https://pubmed.ncbi.nlm.nih.gov/28092658/">EVMutation</a> analyzes co-evolution patterns in MSAs to capture epistatic effects:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aide_predict</span> <span class="kn">import</span> <span class="n">EVMutationWrapper</span>
+
+<span class="c1"># Load MSA and wild type</span>
+<span class="n">wt</span> <span class="o">=</span> <span class="n">ProteinSequence</span><span class="o">.</span><span class="n">from_a3m</span><span class="p">(</span><span class="s2">&quot;protein_family.a3m&quot;</span><span class="p">)</span>
+
+<span class="c1"># Create and fit model</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">EVMutationWrapper</span><span class="p">(</span>
+    <span class="n">wt</span><span class="o">=</span><span class="n">wt</span><span class="p">,</span>
+    <span class="n">theta</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span>  <span class="c1"># Sequence weighting parameter</span>
+    <span class="n">protocol</span><span class="o">=</span><span class="s2">&quot;standard&quot;</span>  <span class="c1"># or &quot;complex&quot; or &quot;mean_field&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Fit using MSA</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+
+<span class="c1"># Score mutations</span>
+<span class="n">mutants</span> <span class="o">=</span> <span class="n">wt</span><span class="o">.</span><span class="n">saturation_mutagenesis</span><span class="p">()</span>
+<span class="n">scores</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">mutants</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>EVMutation captures pairwise dependencies between positions, making it effective for predicting epistatic effects where multiple mutations interact.</p>
+</section>
+<section id="eve">
+<h3>EVE<a class="headerlink" href="#eve" title="Link to this heading"></a></h3>
+<p><a class="reference external" href="https://www.nature.com/articles/s41586-021-04043-8">EVE</a> constructs a posterior latent distribution over an MSA and scores how “in-distribution” a sequence is:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aide_predict</span> <span class="kn">import</span> <span class="n">EVEWrapper</span>
+
+<span class="c1"># Load MSA and wild type</span>
+<span class="n">wt</span> <span class="o">=</span> <span class="n">ProteinSequence</span><span class="o">.</span><span class="n">from_a3m</span><span class="p">(</span><span class="s2">&quot;protein_family.a3m&quot;</span><span class="p">)</span>
+
+<span class="c1"># Create model with custom parameters</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">EVEWrapper</span><span class="p">(</span>
+    <span class="n">wt</span><span class="o">=</span><span class="n">wt</span><span class="p">,</span>
+    <span class="n">encoder_z_dim</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>  <span class="c1"># Dimensionality of latent space</span>
+    <span class="n">training_steps</span><span class="o">=</span><span class="mi">400000</span>  <span class="c1"># Number of training steps</span>
+<span class="p">)</span>
+
+<span class="c1"># Fit using MSA</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+
+<span class="c1"># Score mutations</span>
+<span class="n">mutants</span> <span class="o">=</span> <span class="n">wt</span><span class="o">.</span><span class="n">saturation_mutagenesis</span><span class="p">()</span>
+<span class="n">scores</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">mutants</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="contributing">
+<h2>Contributing<a class="headerlink" href="#contributing" title="Link to this heading"></a></h2>
+<p>If you have a zero-shot method you would like to have added, please reach out:</p>
+<p>evan.komp (at) nrel.gov</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="protein_model.html" class="btn btn-neutral float-left" title="ProteinModelWrapper" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="supervised.html" class="btn btn-neutral float-right" title="Supervised Learning" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Gregg T. Beckham.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

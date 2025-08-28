@@ -1,0 +1,237 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Position-Specific Models &mdash; aide 1.1.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=e50f1ef7"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Contributing Models to AIDE" href="contributing_models.html" />
+    <link rel="prev" title="Caching Model Outputs" href="caching.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            aide
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installing AIDE</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_examples.html">API examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="data_structures.html">Data Structures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model_compatibility.html">Model Compatibility</a></li>
+<li class="toctree-l1"><a class="reference internal" href="protein_model.html">ProteinModelWrapper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="zero_shot.html">Zero-Shot Prediction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="supervised.html">Supervised Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="saturation_mutagenesis.html">Saturation Mutagenesis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pipelines.html">Building ML Pipelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caching.html">Caching Model Outputs</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Position-Specific Models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-position-specific-models">Using Position-Specific Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#output-shapes">Output Shapes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#position-specificity-for-variable-length-sequences">Position Specificity for Variable Length Sequences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#implementation-notes">Implementation Notes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contributing_models.html">Contributing Models to AIDE</a></li>
+<li class="toctree-l1"><a class="reference internal" href="structure_pred.html">Structure Prediction with SoloSeq</a></li>
+<li class="toctree-l1"><a class="reference internal" href="msa_search.html">Generating MSAs with MMseqs2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="badass.html">Protein Optimization with BADASS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="roadmap.html">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="resource_test.html">Resource testing</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">aide_predict</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">aide</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Position-Specific Models</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/user_guide/position_specific.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="position-specific-models">
+<h1>Position-Specific Models<a class="headerlink" href="#position-specific-models" title="Link to this heading"></a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>Some protein models can generate outputs for each amino acid position in a sequence. These models use the <code class="docutils literal notranslate"><span class="pre">PositionSpecificMixin</span></code> to handle position selection and output formatting. EG. lanmguage models or one hot encodings. You might want to do this if only a few positions are changing among variants or you have a specific hypothesis about the importance of certain positions.</p>
+</section>
+<section id="using-position-specific-models">
+<h2>Using Position-Specific Models<a class="headerlink" href="#using-position-specific-models" title="Link to this heading"></a></h2>
+<p>Position-specific models have three key parameters that control their output. Flatten and pool are mutually exclusive.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aide_predict</span> <span class="kn">import</span> <span class="n">ESM2Embedding</span>
+
+<span class="c1"># Basic usage - outputs pooled across all positions</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">ESM2Embedding</span><span class="p">(</span>
+    <span class="n">positions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># Consider all positions</span>
+    <span class="n">pool</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span>      <span class="c1"># Average across positions</span>
+    <span class="n">flatten</span><span class="o">=</span><span class="kc">False</span>    <span class="c1"># because pooling by mean</span>
+<span class="p">)</span>
+
+<span class="c1"># Position-specific - get embeddings for specific positions</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">ESM2Embedding</span><span class="p">(</span>
+    <span class="n">positions</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>  <span class="c1"># Only these positions</span>
+    <span class="n">pool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>          <span class="c1"># Keep positions separate</span>
+    <span class="n">flatten</span><span class="o">=</span><span class="kc">True</span>         <span class="c1"># Flatten features for each position so we get a single vector</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="output-shapes">
+<h2>Output Shapes<a class="headerlink" href="#output-shapes" title="Link to this heading"></a></h2>
+<p>The output shape depends on the parameter combination:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Example with ESM2 (1280-dimensional embeddings)</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">ProteinSequences</span><span class="o">.</span><span class="n">from_fasta</span><span class="p">(</span><span class="s2">&quot;sequences.fasta&quot;</span><span class="p">)</span>
+
+<span class="c1"># Default: pooled across positions</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">ESM2Embedding</span><span class="p">(</span><span class="n">pool</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>  <span class="c1"># Shape: (n_sequences, 1280)</span>
+
+<span class="c1"># Selected positions, no pooling</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">ESM2Embedding</span><span class="p">(</span>
+    <span class="n">positions</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+    <span class="n">pool</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">)</span>
+<span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>  <span class="c1"># Shape: (n_sequences, 3, 1280)</span>
+
+<span class="c1"># Selected positions, no pooling, flattened</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">ESM2Embedding</span><span class="p">(</span>
+    <span class="n">positions</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+    <span class="n">pool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">flatten</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+<span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>  <span class="c1"># Shape: (n_sequences, 3*1280)</span>
+</pre></div>
+</div>
+</section>
+<section id="position-specificity-for-variable-length-sequences">
+<h2>Position Specificity for Variable Length Sequences<a class="headerlink" href="#position-specificity-for-variable-length-sequences" title="Link to this heading"></a></h2>
+<p>In some cases models can be position specific even if not all sequences are the same length, such as when working with homologs. However, to map positions between sequences properly, we need to:</p>
+<ol class="arabic simple">
+<li><p>Know the positions of interest in a reference sequence (usually wild type)</p></li>
+<li><p>Align all sequences</p></li>
+<li><p>Map the reference positions to positions in the alignment</p></li>
+</ol>
+<p>AIDE provides tools to handle this workflow:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Start with unaligned sequences</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">ProteinSequences</span><span class="o">.</span><span class="n">from_fasta</span><span class="p">(</span><span class="s2">&quot;sequences.fasta&quot;</span><span class="p">)</span>
+<span class="n">wt</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="s1">&#39;wt&#39;</span><span class="p">]</span>
+<span class="n">wt_positions</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>  <span class="c1"># 0-indexed positions of interest in wild type</span>
+
+<span class="c1"># Align sequences</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">align_all</span><span class="p">()</span>
+<span class="n">wt</span><span class="o">.</span><span class="n">msa</span> <span class="o">=</span> <span class="n">X</span>
+
+<span class="c1"># Get alignment mapping and convert positions</span>
+<span class="n">alignment_mapping</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">get_alignment_mapping</span><span class="p">()</span>
+<span class="n">wt_alignment_mapping</span> <span class="o">=</span> <span class="n">alignment_mapping</span><span class="p">[</span><span class="n">wt</span><span class="o">.</span><span class="n">id</span><span class="p">]</span>  <span class="c1"># or use str(hash(wt)) if no ID</span>
+<span class="n">aligned_positions</span> <span class="o">=</span> <span class="n">wt_alignment_mapping</span><span class="p">[</span><span class="n">wt_positions</span><span class="p">]</span>
+
+<span class="c1"># Now use these positions in any position-specific model</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">MSATransformerEmbedding</span><span class="p">(</span>
+    <span class="n">positions</span><span class="o">=</span><span class="n">aligned_positions</span><span class="p">,</span>
+    <span class="n">pool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">wt</span><span class="o">=</span><span class="n">wt</span><span class="p">,</span>  <span class="c1"># used to get the alignment to align incoming sequence to. Alternative, wt can be None if all seqs in X have the msa attribute set to X </span>
+
+<span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+<span class="n">embeddings</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="implementation-notes">
+<h2>Implementation Notes<a class="headerlink" href="#implementation-notes" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>If <code class="docutils literal notranslate"><span class="pre">positions</span></code> is specified but <code class="docutils literal notranslate"><span class="pre">pool=True</span></code>, the model will first select the positions then pool across them</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">flatten=True</span></code> only applies when <code class="docutils literal notranslate"><span class="pre">pool=False</span></code> and there are multiple dimensions</p></li>
+<li><p>Models will raise an error if <code class="docutils literal notranslate"><span class="pre">positions</span></code> are specified but the sequences are not aligned or of fixed length</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="caching.html" class="btn btn-neutral float-left" title="Caching Model Outputs" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="contributing_models.html" class="btn btn-neutral float-right" title="Contributing Models to AIDE" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Gregg T. Beckham.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

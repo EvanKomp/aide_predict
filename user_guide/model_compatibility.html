@@ -1,0 +1,299 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Model Compatibility &mdash; aide 1.1.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=e50f1ef7"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="ProteinModelWrapper" href="protein_model.html" />
+    <link rel="prev" title="Data Structures" href="data_structures.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            aide
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installing AIDE</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_examples.html">API examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="data_structures.html">Data Structures</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Model Compatibility</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#understanding-model-requirements">Understanding Model Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#checking-model-compatibility">Checking Model Compatibility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#model-categories">Model Categories</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#zero-shot-predictors">1. Zero-Shot Predictors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#embedding-models">2. Embedding Models</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#importance-of-data-structure">Importance of Data Structure</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="protein_model.html">ProteinModelWrapper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="zero_shot.html">Zero-Shot Prediction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="supervised.html">Supervised Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="saturation_mutagenesis.html">Saturation Mutagenesis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pipelines.html">Building ML Pipelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caching.html">Caching Model Outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="position_specific.html">Position-Specific Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing_models.html">Contributing Models to AIDE</a></li>
+<li class="toctree-l1"><a class="reference internal" href="structure_pred.html">Structure Prediction with SoloSeq</a></li>
+<li class="toctree-l1"><a class="reference internal" href="msa_search.html">Generating MSAs with MMseqs2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="badass.html">Protein Optimization with BADASS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="roadmap.html">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="resource_test.html">Resource testing</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">aide_predict</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">aide</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Model Compatibility</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/user_guide/model_compatibility.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="model-compatibility">
+<h1>Model Compatibility<a class="headerlink" href="#model-compatibility" title="Link to this heading"></a></h1>
+<section id="understanding-model-requirements">
+<h2>Understanding Model Requirements<a class="headerlink" href="#understanding-model-requirements" title="Link to this heading"></a></h2>
+<p>AIDE models have different requirements and capabilities that determine whether they can be used with your data. Key considerations include:</p>
+<ul class="simple">
+<li><p>Whether the model requires training data (supervised vs zero-shot)</p></li>
+<li><p>Whether sequences must be aligned or of fixed length</p></li>
+<li><p>Whether the model requires a Multiple Sequence Alignment (MSA)</p></li>
+<li><p>Whether the model requires or can use structural information</p></li>
+<li><p>Whether the model needs a wild-type sequence for comparison</p></li>
+<li><p>Whether the model can handle variable-length sequences</p></li>
+</ul>
+</section>
+<section id="checking-model-compatibility">
+<h2>Checking Model Compatibility<a class="headerlink" href="#checking-model-compatibility" title="Link to this heading"></a></h2>
+<p>AIDE provides a utility function to check which models are compatible with your data:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aide_predict.utils.checks</span> <span class="kn">import</span> <span class="n">check_model_compatibility</span>
+<span class="kn">from</span> <span class="nn">aide_predict</span> <span class="kn">import</span> <span class="n">ProteinSequences</span><span class="p">,</span> <span class="n">ProteinSequence</span>
+
+<span class="c1"># Example setup</span>
+<span class="n">sequences</span> <span class="o">=</span> <span class="n">ProteinSequences</span><span class="o">.</span><span class="n">from_fasta</span><span class="p">(</span><span class="s2">&quot;my_sequences.fasta&quot;</span><span class="p">)</span>
+<span class="n">msa</span> <span class="o">=</span> <span class="n">ProteinSequences</span><span class="o">.</span><span class="n">from_fasta</span><span class="p">(</span><span class="s2">&quot;family_msa.fasta&quot;</span><span class="p">)</span>
+<span class="n">wt</span> <span class="o">=</span> <span class="n">ProteinSequence</span><span class="p">(</span><span class="s2">&quot;MKLLVLGLPGAGKGT&quot;</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;wild_type&quot;</span><span class="p">)</span>
+<span class="n">wt</span><span class="o">.</span><span class="n">msa</span> <span class="o">=</span> <span class="n">msa</span> 
+
+<span class="c1"># Check compatibility</span>
+<span class="n">compatibility</span> <span class="o">=</span> <span class="n">check_model_compatibility</span><span class="p">(</span>
+    <span class="n">training_sequences</span><span class="o">=</span><span class="n">sequences</span><span class="p">,</span>  <span class="c1"># Optional: sequences for supervised learning</span>
+    <span class="n">testing_sequences</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>        <span class="c1"># Optional: test sequences if different from training</span>
+    <span class="n">wt</span><span class="o">=</span><span class="n">wt</span>                          <span class="c1"># Optional: wild-type sequence, may have structure, MSA</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Compatible models:&quot;</span><span class="p">,</span> <span class="n">compatibility</span><span class="p">[</span><span class="s2">&quot;compatible&quot;</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Incompatible models:&quot;</span><span class="p">,</span> <span class="n">compatibility</span><span class="p">[</span><span class="s2">&quot;incompatible&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>The compatibility checker performs several validation steps:</p>
+<ul class="simple">
+<li><p>Verifies if structure information is available (either in sequences or wild-type)</p></li>
+<li><p>Checks if MSAs are available and properly aligned</p></li>
+<li><p>Validates that sequence lengths match requirements</p></li>
+<li><p>Ensures wild-type sequences are available when needed</p></li>
+<li><p>Verifies that per-sequence MSAs match sequence lengths when required</p></li>
+</ul>
+<p>You can also check which tools are available in your current installation:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aide_predict.utils.checks</span> <span class="kn">import</span> <span class="n">get_supported_tools</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">get_supported_tools</span><span class="p">())</span>
+</pre></div>
+</div>
+</section>
+<section id="model-categories">
+<h2>Model Categories<a class="headerlink" href="#model-categories" title="Link to this heading"></a></h2>
+<p>AIDE models fall into several categories:</p>
+<section id="zero-shot-predictors">
+<h3>1. Zero-Shot Predictors<a class="headerlink" href="#zero-shot-predictors" title="Link to this heading"></a></h3>
+<p>These models don’t require training data but may have other requirements:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># ESM2 - Requires only sequences</span>
+<span class="kn">from</span> <span class="nn">aide_predict</span> <span class="kn">import</span> <span class="n">ESM2LikelihoodWrapper</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">ESM2LikelihoodWrapper</span><span class="p">(</span><span class="n">wt</span><span class="o">=</span><span class="n">wt</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>  <span class="c1"># No training needed</span>
+<span class="n">scores</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">sequences</span><span class="p">)</span>
+
+<span class="c1"># MSATransformer - Requires MSA for the WT</span>
+<span class="kn">from</span> <span class="nn">aide_predict</span> <span class="kn">import</span> <span class="n">MSATransformerLikelihoodWrapper</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">MSATransformerLikelihoodWrapper</span><span class="p">(</span><span class="n">wt</span><span class="o">=</span><span class="n">wt</span><span class="p">)</span> 
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span> 
+<span class="n">scores</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">sequences</span><span class="p">)</span>
+
+<span class="c1"># SaProt - Can use structural information</span>
+<span class="kn">from</span> <span class="nn">aide_predict</span> <span class="kn">import</span> <span class="n">SaProtLikelihoodWrapper</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">SaProtLikelihoodWrapper</span><span class="p">(</span><span class="n">wt</span><span class="o">=</span><span class="n">wt</span><span class="p">)</span> <span class="c1"># wt must have structure</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+<span class="n">scores</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">sequences</span><span class="p">)</span>  <span class="c1"># Will use structure if available</span>
+</pre></div>
+</div>
+<p>Other zero-shot predictors include:</p>
+<ul class="simple">
+<li><p><strong>HMM</strong>: Creates Hidden Markov Models from MSAs</p></li>
+<li><p><strong>EVMutation</strong>: Uses evolutionary couplings from MSAs</p></li>
+<li><p><strong>VESPA</strong>: Pre-trained model for variant effect prediction</p></li>
+<li><p><strong>EVE</strong>: Evolutionary model using latent space representations</p></li>
+<li><p><strong>SSEmb</strong>: Structure and sequence-based variant effect predictor</p></li>
+</ul>
+</section>
+<section id="embedding-models">
+<h3>2. Embedding Models<a class="headerlink" href="#embedding-models" title="Link to this heading"></a></h3>
+<p>These models convert sequences into numerical features for downstream ML:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Simple one-hot encoding</span>
+<span class="kn">from</span> <span class="nn">aide_predict</span> <span class="kn">import</span> <span class="n">OneHotProteinEmbedding</span>
+<span class="n">embedder</span> <span class="o">=</span> <span class="n">OneHotProteinEmbedding</span><span class="p">()</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">embedder</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">sequences</span><span class="p">)</span>
+
+<span class="c1"># Advanced language model embeddings</span>
+<span class="kn">from</span> <span class="nn">aide_predict</span> <span class="kn">import</span> <span class="n">ESM2Embedding</span>
+<span class="n">embedder</span> <span class="o">=</span> <span class="n">ESM2Embedding</span><span class="p">(</span><span class="n">pool</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># pool=True for sequence-level embeddings</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">embedder</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">sequences</span><span class="p">)</span>
+
+<span class="c1"># K-mer based embeddings</span>
+<span class="kn">from</span> <span class="nn">aide_predict</span> <span class="kn">import</span> <span class="n">KmerEmbedding</span>
+<span class="n">embedder</span> <span class="o">=</span> <span class="n">KmerEmbedding</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">embedder</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">sequences</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Other embedding models include:</p>
+<ul class="simple">
+<li><p><strong>MSATransformerEmbedding</strong>: Produces embeddings using MSAs</p></li>
+<li><p><strong>SaProtEmbedding</strong>: Structure-aware protein language model embeddings</p></li>
+<li><p><strong>OneHotAlignedEmbedding</strong>: One-hot encodings for aligned sequences</p></li>
+</ul>
+</section>
+</section>
+<section id="importance-of-data-structure">
+<h2>Importance of Data Structure<a class="headerlink" href="#importance-of-data-structure" title="Link to this heading"></a></h2>
+<p>The compatibility of models depends heavily on the structure of your data:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Data Characteristic</p></th>
+<th class="head"><p>Compatible Models</p></th>
+<th class="head"><p>Incompatible Models</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Fixed-length sequences</p></td>
+<td><p>All models</p></td>
+<td><p>-</p></td>
+</tr>
+<tr class="row-odd"><td><p>Variable-length sequences</p></td>
+<td><p>Models without <code class="docutils literal notranslate"><span class="pre">RequiresFixedLengthMixin</span></code></p></td>
+<td><p>Models with <code class="docutils literal notranslate"><span class="pre">RequiresFixedLengthMixin</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Has MSA</p></td>
+<td><p>All models</p></td>
+<td><p>-</p></td>
+</tr>
+<tr class="row-odd"><td><p>No MSA</p></td>
+<td><p>Models without MSA requirements</p></td>
+<td><p>MSATransformer, EVMutation, EVE</p></td>
+</tr>
+<tr class="row-even"><td><p>Has structure</p></td>
+<td><p>All models</p></td>
+<td><p>-</p></td>
+</tr>
+<tr class="row-odd"><td><p>No structure</p></td>
+<td><p>Models without structure requirements</p></td>
+<td><p>SaProt, SSEmb</p></td>
+</tr>
+<tr class="row-even"><td><p>Has wild-type</p></td>
+<td><p>All models</p></td>
+<td><p>-</p></td>
+</tr>
+<tr class="row-odd"><td><p>No wild-type</p></td>
+<td><p>Models without WT requirements</p></td>
+<td><p>Models with <code class="docutils literal notranslate"><span class="pre">RequiresWTToFunctionMixin</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<p>Using the appropriate data structure for your specific modeling task ensures that AIDE can provide the most accurate predictions.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="data_structures.html" class="btn btn-neutral float-left" title="Data Structures" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="protein_model.html" class="btn btn-neutral float-right" title="ProteinModelWrapper" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Gregg T. Beckham.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
