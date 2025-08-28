@@ -25,7 +25,7 @@ While we will maintain the codebase and address bugs identified by the community
 ## Major update v2
 __Undetermined__
 
-The component specification and software engineering exercise conducted in AIDE for different types of predictors would also be helpful for the variable and dispirate __generator__ methods available, eg. methods for producing producing new sequences. These broadly categorize into:
+The component specification and software engineering exercise conducted in AIDE for different types of predictors would also be helpful for the variable and dispirate __generator__ methods available, eg. methods for producing new sequences. These broadly categorize into:
 - Unconditional generators
 - Conditional generators (eg. infilling, homolog aware, structure or other property conditioning)
     - ProteinMPNN
