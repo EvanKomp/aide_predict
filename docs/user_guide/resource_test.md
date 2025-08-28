@@ -1,6 +1,7 @@
 ---
 title: Resource benchmarking
 ---
+# Resource testing
 
 See below for the cost it takes to run each tool. This test was run with a Dual socket Intel Xeon Sapphire Rapids 52 core CPU. When the model supports GPU, one NVIDIA H100 was provided.
 
