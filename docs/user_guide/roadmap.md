@@ -2,7 +2,7 @@
 title: Roadmap
 ---
 
-# Roadmaps
+# Roadmap
 
 ## Additional predictors from maintainers
 __Quarter 2, 2026__
@@ -15,6 +15,7 @@ We have the following predictors planned to be wrapped:
   - Type 3 dependencies (sub environment)
 2. NOMELT (as a zero shot predictor)
   - Temperatute specific scores
+  - Type 3 dependencies
 3. ESM3 (Zero shot prediction and embedder)
   - Structure aware if available
   - For now, the annotation data mode will not be considered. This will require an additional attribute of the ProteinSequence class (in addition to sequence, structure, msa data types already supported).
@@ -31,6 +32,4 @@ The component specification and software engineering exercise conducted in AIDE 
     - ProteinMPNN
     - NOMELT
     - Tranception
-    - 
-- Score optimizers, eg. BADASS (already included in the package) which use a scoring function (AIDE predictor) to bias generation.
-    - This type may even be able to be wrapped with Conditional Generators for tandem generation and filtering.
+- Score optimizers (black box or maybe gradient aware), eg. BADASS (already included in the package) which use a scoring function (AIDE predictor) to bias generation.

@@ -7,6 +7,8 @@ See below for the cost it takes to run each tool. This test was run with a Dual 
 
 The test system was a GFP (238) amino acids, MSA depth (when applicable) was 201. Times measure the total time to fit the model (when applicable) and run prediction on 50 variants. Missing values are either because the core model does not support that type of prediction or because AIDE's wrapper does not support it.
 
+NOTE: The cost of some of these (*) is significantly impacted by hyperparameters.
+
 ## Zero shot predictors
 
 | Model Name | Marginal Method | GPU Total Time (s) | CPU Total Time (s) |
@@ -23,7 +25,7 @@ The test system was a GFP (238) amino acids, MSA depth (when applicable) was 201
 | SaProtLikelihoodWrapper | mutant_marginal | 7.326 | 220.906 |
 | SaProtLikelihoodWrapper | masked_marginal | 14.814 | 429.626 |
 | VESPAWrapper | - | 244.852 | - |
-| EVEWrapper | - | 925.930 | - |
+| EVEWrapper * | - | 925.930 | - |
 | SSEmbWrapper | - | 192.999 | - |
 
 ## Embedders
