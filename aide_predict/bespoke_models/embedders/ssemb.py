@@ -176,14 +176,14 @@ class SSEmbEmbedding(
             for i, seq in enumerate(batch):
                 seq_idx = batch_start + i
                 seq_id = seq.id if seq.id else f"seq_{seq_idx}"
+                seq_id = seq_id.replace("/", "_").replace(" ", "_")
                 sequence_ids.append(seq_id)
                 seq_to_idx[seq_id] = seq_idx
                 
                 # Get structure path
                 if seq.structure is None:
-                    if not hasattr(self, '_wt_structure_path'):
-                        raise ValueError(f"Sequence {seq_id} has no structure and no WT structure is available")
-                    structure_path = self._wt_structure_path
+                    assert self.wt.structure
+                    structure_path = self.wt.structure.pdb_file
                     logger.warning(f"Using WT structure for sequence {seq_id}")
                 else:
                     structure_path = seq.structure.pdb_file

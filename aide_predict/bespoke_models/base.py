@@ -432,17 +432,17 @@ class ProteinModelWrapper(TransformerMixin, BaseEstimator):
             X, y = hook(self, X, y)
         
         # Handle MSA requirements, structure checks, etc.
+        if self.requires_msa_for_fit:
+            if empty_X:
+                if self.wt is not None and self.wt.has_msa:
+                    warnings.warn("No input sequences provided, but the wild type sequence has an MSA. Attempting to use the wild type sequence MSA.")
+                    X = self.wt.msa
+                else:
+                    raise ValueError("No input sequences provided and the wild type sequence does not have an MSA. Cannot fit model.")
+
+            X = self._enforce_aligned(X)
+
         if not empty_X:
-            if self.requires_msa_for_fit:
-                if empty_X:
-                    if self.wt is not None and self.wt.has_msa:
-                        warnings.warn("No input sequences provided, but the wild type sequence has an MSA. Attempting to use the wild type sequence MSA.")
-                        X = self.wt.msa
-                    else:
-                        raise ValueError("No input sequences provided and the wild type sequence does not have an MSA. Cannot fit model.")
-
-                X = self._enforce_aligned(X)
-
             if self.requires_structure:
                 if any(seq.structure is None for seq in X) and self.wt is None:
                     raise ValueError("This model requires structure information, at least one of the sequences does not have it, and there is no avialable WT structure.")

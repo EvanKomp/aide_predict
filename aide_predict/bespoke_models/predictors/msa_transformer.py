@@ -47,6 +47,7 @@ class MSATransformerLikelihoodWrapper(RequiresMSAPerSequenceMixin, LikelihoodTra
                  batch_size: int = 32,
                  device: str = 'cpu',
                  n_msa_seqs: int = 360,
+                 use_cache: bool = False,
                  wt: Optional[Union[str, ProteinSequence]] = None):
         """
         Initialize the MSATransformerLikelihoodWrapper.
@@ -67,6 +68,7 @@ class MSATransformerLikelihoodWrapper(RequiresMSAPerSequenceMixin, LikelihoodTra
                          flatten=flatten,
                          pool=pool,
                          batch_size=batch_size,
+                         use_cache=use_cache,
                          device=device,
                          wt=wt)
         self.n_msa_seqs = n_msa_seqs

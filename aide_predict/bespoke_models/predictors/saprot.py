@@ -95,6 +95,7 @@ class SaProtLikelihoodWrapper(RequiresStructureMixin, LikelihoodTransformerBase)
         flatten: bool = True,
         wt: str = None,
         batch_size: int = 2,
+        use_cache: bool = False,
         device: str = 'cpu',
         foldseek_path: str = 'foldseek'
     ):
@@ -104,6 +105,7 @@ class SaProtLikelihoodWrapper(RequiresStructureMixin, LikelihoodTransformerBase)
             positions=positions,
             pool=pool,
             flatten=flatten,
+            use_cache=use_cache,
             wt=wt,
             batch_size=batch_size,
             device=device

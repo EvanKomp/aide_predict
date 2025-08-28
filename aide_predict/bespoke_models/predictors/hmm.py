@@ -121,6 +121,7 @@ class HMMWrapper(CanRegressMixin, RequiresMSAForFitMixin, ProteinModelWrapper):
         Raises:
             ValueError: If the input sequences are not aligned.
         """
+
         if not X.aligned:
             raise ValueError("Input sequences must be aligned for HMM building.")
 
