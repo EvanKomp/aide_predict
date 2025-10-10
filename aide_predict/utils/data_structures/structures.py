@@ -6,29 +6,29 @@
 * License: MIT
 '''
 import os
-from typing import Optional, Dict, List, Union
-import warnings
-from dataclasses import dataclass
-import glob
 import re
+import glob
 import json
+from dataclasses import dataclass
+from typing import Optional, Dict, List
+import numpy as np
+from Bio.PDB import PDBParser, MMCIFParser, Structure, Chain
+from Bio.PDB.DSSP import dssp_dict_from_pdb_file
+from typing import Union
 from ..constants import AA_MAP
 
 THREE_TO_ONE_AA = {v: k for k, v in AA_MAP.items()}
 
-import numpy as np
-from Bio.PDB import PDBParser, Structure, Chain
-from Bio.PDB.DSSP import dssp_dict_from_pdb_file
 
 @dataclass(eq=True)
 class ProteinStructure:
-    pdb_file: str
+    structure_file: str  # Renamed from pdb_file to be more general
     chain: str = 'A'
     plddt_file: Optional[str] = None
 
     def __post_init__(self):
-        if not os.path.exists(self.pdb_file):
-            raise FileNotFoundError(f"PDB file not found: {self.pdb_file}")
+        if not os.path.exists(self.structure_file):
+            raise FileNotFoundError(f"Structure file not found: {self.structure_file}")
         
         if self.plddt_file and not os.path.exists(self.plddt_file):
             raise FileNotFoundError(f"pLDDT file not found: {self.plddt_file}")
@@ -36,22 +36,64 @@ class ProteinStructure:
         self._sequence: Optional[str] = None
         self._plddt: Optional[np.ndarray] = None
         self._dssp: Optional[Dict[str, str]] = None
+        self._file_format: Optional[str] = None
+
+    @property
+    def file_format(self) -> str:
+        """
+        Determine the file format based on file extension.
+        
+        Returns:
+            str: 'pdb' or 'cif'
+        """
+        if self._file_format is None:
+            ext = os.path.splitext(self.structure_file)[1].lower()
+            if ext in ['.cif', '.mmcif']:
+                self._file_format = 'cif'
+            elif ext in ['.pdb', '.ent']:
+                self._file_format = 'pdb'
+            else:
+                # Try to determine from content if extension is ambiguous
+                try:
+                    with open(self.structure_file, 'r') as f:
+                        first_line = f.readline().strip()
+                    if first_line.startswith('data_'):
+                        self._file_format = 'cif'
+                    else:
+                        self._file_format = 'pdb'
+                except:
+                    # Default to PDB if we can't determine
+                    self._file_format = 'pdb'
+        return self._file_format
+
+    def _get_parser(self):
+        """
+        Get the appropriate parser based on file format.
+        
+        Returns:
+            Parser: Either PDBParser or MMCIFParser
+        """
+        if self.file_format == 'cif':
+            return MMCIFParser(QUIET=True)
+        else:
+            return PDBParser(QUIET=True)
 
     def get_sequence(self) -> str:
         """
-        Get the amino acid sequence from the PDB file.
+        Get the amino acid sequence from the structure file.
 
         Returns:
             str: The amino acid sequence.
         """
         if self._sequence is None:
-            parser = PDBParser()
-            structure = parser.get_structure("protein", self.pdb_file)
+            parser = self._get_parser()
+            structure = parser.get_structure("protein", self.structure_file)
             chain = structure[0][self.chain]
             self._sequence = "".join(
                 THREE_TO_ONE_AA[residue.resname]
                 for residue in chain
-                if residue.id[0] == " ")
+                if residue.id[0] == " " and residue.resname in THREE_TO_ONE_AA
+            )
         return self._sequence
 
     def get_plddt(self) -> Optional[np.ndarray]:
@@ -70,12 +112,20 @@ class ProteinStructure:
     def get_dssp(self) -> Dict[str, str]:
         """
         Get the DSSP secondary structure assignments.
+        
+        Note: DSSP requires PDB format. If using CIF, consider converting first
+        or using alternative secondary structure assignment methods.
 
         Returns:
             Dict[str, str]: Dictionary of DSSP assignments.
         """
         if self._dssp is None:
-            self._dssp = dssp_dict_from_pdb_file(self.pdb_file)[0]
+            if self.file_format == 'cif':
+                # DSSP typically works with PDB format
+                # You might want to implement CIF->PDB conversion or use alternative methods
+                raise NotImplementedError("DSSP analysis directly from CIF files is not yet supported. "
+                                        "Consider converting to PDB format first.")
+            self._dssp = dssp_dict_from_pdb_file(self.structure_file)[0]
         return self._dssp
 
     def validate_sequence(self, protein_sequence: str) -> bool:
@@ -98,8 +148,8 @@ class ProteinStructure:
         Returns:
             Structure: The complete protein structure.
         """
-        parser = PDBParser()
-        return parser.get_structure("protein", self.pdb_file)
+        parser = self._get_parser()
+        return parser.get_structure("protein", self.structure_file)
 
     def get_chain(self) -> Chain:
         """
@@ -128,6 +178,7 @@ class ProteinStructure:
 
         This method prioritizes the top-ranked relaxed structure. If no relaxed structures
         are available, it selects the top-ranked unrelaxed structure.
+        Now supports both PDB and CIF formats.
 
         Args:
             folder_path (str): Path to the folder containing AlphaFold2 predictions.
@@ -137,38 +188,71 @@ class ProteinStructure:
             ProteinStructure: A new ProteinStructure object.
 
         Raises:
-            FileNotFoundError: If no suitable PDB file is found in the folder.
+            FileNotFoundError: If no suitable structure file is found in the folder.
         """
         def get_rank(filename):
             match = re.search(r'rank_(\d+)', filename)
             return int(match.group(1)) if match else float('inf')
 
-        # Search for relaxed PDB files
-        relaxed_pdbs = glob.glob(os.path.join(folder_path, '*relaxed*.pdb'))
-        if relaxed_pdbs:
-            pdb_file = min(relaxed_pdbs, key=get_rank)
+        # Search for relaxed structure files (both PDB and CIF)
+        relaxed_files = []
+        for ext in ['*.pdb', '*.cif', '*.mmcif']:
+            relaxed_files.extend(glob.glob(os.path.join(folder_path, f'*relaxed*{ext}')))
+        
+        if relaxed_files:
+            structure_file = min(relaxed_files, key=get_rank)
         else:
-            # If no relaxed PDFs, search for ranked PDBs
-            ranked_pdbs = glob.glob(os.path.join(folder_path, '*rank_*.pdb'))
-            if ranked_pdbs:
-                pdb_file = min(ranked_pdbs, key=get_rank)
+            # If no relaxed files, search for ranked files
+            ranked_files = []
+            for ext in ['*.pdb', '*.cif', '*.mmcif']:
+                ranked_files.extend(glob.glob(os.path.join(folder_path, f'*rank*{ext}')))
+            
+            if ranked_files:
+                structure_file = min(ranked_files, key=get_rank)
             else:
-                raise FileNotFoundError(f"No suitable PDB file found in {folder_path}")
+                raise FileNotFoundError(f"No suitable structure file found in {folder_path}")
 
         # Search for corresponding pLDDT file
-        plddt_file = pdb_file.replace('.pdb', '.json')
-        plddt_file = plddt_file.replace('_unrelaxed_', '_scores_')
-        plddt_file = plddt_file.replace('_relaxed_', '_scores_')
+        base_name = os.path.splitext(structure_file)[0]
+        plddt_file = base_name.replace('_unrelaxed', '_scores').replace('_relaxed', '_scores') + '.json'
+        
         if not os.path.exists(plddt_file):
-            raise FileNotFoundError(f"pLDDT file not found: {plddt_file}")
+            # Try alternative naming conventions
+            alt_plddt = structure_file.replace('.pdb', '.json').replace('.cif', '.json')
+            alt_plddt = alt_plddt.replace('_unrelaxed_', '_scores_').replace('_relaxed_', '_scores_')
+            if os.path.exists(alt_plddt):
+                plddt_file = alt_plddt
+            else:
+                plddt_file = None  # Don't raise error, just set to None
 
-        return cls(pdb_file, chain, plddt_file)
+        return cls(structure_file, chain, plddt_file)
+
+    # Backward compatibility properties
+    @property
+    def pdb_file(self) -> str:
+        """
+        Backward compatibility property for pdb_file.
+        
+        Returns:
+            str: The structure file path.
+        """
+        return self.structure_file
+    
+    @pdb_file.setter
+    def pdb_file(self, value: str) -> None:
+        """
+        Backward compatibility setter for pdb_file.
+        
+        Args:
+            value (str): The structure file path.
+        """
+        self.structure_file = value
     
     def __hash__(self) -> int:
-        return hash((self.pdb_file, self.chain, self.plddt_file))
+        return hash((self.structure_file, self.chain, self.plddt_file))
 
     def __repr__(self) -> str:
-        return f"ProteinStructure(pdb_file='{self.pdb_file}', chain='{self.chain}')"
+        return f"ProteinStructure(structure_file='{self.structure_file}', chain='{self.chain}', format='{self.file_format}')"
     
 
 class StructureMapper:
@@ -204,7 +288,7 @@ class StructureMapper:
         """
         for item in os.listdir(self.structure_folder):
             item_path = os.path.join(self.structure_folder, item)
-            if item.endswith('.pdb'):
+            if item.endswith('.pdb') or item.endswith('.cif') or item.endswith('.mmcif'):
                 structure_id = os.path.splitext(item)[0]
                 self.structure_map[structure_id] = ProteinStructure(item_path)
             elif os.path.isdir(item_path):

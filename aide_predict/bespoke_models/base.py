@@ -962,7 +962,9 @@ class PositionSpecificMixin:
         # Handle ragged arrays (different shapes)
         if self._is_ragged_array(result):
             if not self.pool:
-                raise ValueError("Pooling must be enabled to handle ragged arrays.")
+                # return here ... the output is not useful for direct downtream use in eg sklearn but the user may want this
+                logger.warning("Output is a ragged array and no pooling was specified. Returning list of arrays.")
+                return result
             else:
                 # apply pooling to each array in the list
                 result = [pool_func(a, axis=-2) for a in result]
