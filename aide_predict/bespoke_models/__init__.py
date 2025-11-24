@@ -20,6 +20,7 @@ from .embedders.msa_transformer import MSATransformerEmbedding
 from .embedders.saprot import SaProtEmbedding
 from .embedders.kmer import KmerEmbedding
 from .embedders.ssemb import SSEmbEmbedding
+from .embedders.aa_properties import AAPropertiesEmbedding
 
 
 TOOLS = [
@@ -40,4 +41,5 @@ TOOLS = [
     SaProtEmbedding,
     KmerEmbedding,
     SSEmbEmbedding,
+    AAPropertiesEmbedding,
 ]
