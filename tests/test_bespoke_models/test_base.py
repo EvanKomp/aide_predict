@@ -258,7 +258,7 @@ class TestProteinModelWrapper:
         with pytest.raises(ValueError):
             full_dim_model.transform(seqs)
         
-        # Test with ragged array output without pooling
+        # Test with ragged array output without pooling and with pisitions asked for
         class RaggedModel(TestModel):
             def _transform(self, X):
                 # Return a list of arrays with different shapes

@@ -924,6 +924,7 @@ class PositionSpecificMixin:
         self.gap_fill_value = gap_fill_value
         # Temporary storage for alignment mapping during transform
         self._alignment_mapping = None
+        self._alignment_width = None
         
     def _is_ragged_array(self, arr):
         """Check if the input is a ragged array (list of arrays with different shapes)."""
@@ -945,20 +946,16 @@ class PositionSpecificMixin:
         
         # Handle aligned sequences if enabled
         if self.handle_aligned and X.has_gaps:
+            # Store original alignment width for later remapping
+            self._alignment_width = X.width
             # Store mapping in instance for post-transform hook
             self._alignment_mapping = X.get_alignment_mapping()
             # Convert mapping to have integer keys ascending from 0
             self._alignment_mapping = {i: m for i, m in enumerate(self._alignment_mapping.values())}
             X = X.with_no_gaps()
-            
-            # Validate behavior is well-defined
-            if self.positions is None and not self.pool:
-                raise ValueError(
-                    "Cannot return position-specific embeddings for sequences with gaps "
-                    "unless positions are specified or pooling is enabled."
-                )
         else:
             self._alignment_mapping = None
+            self._alignment_width = None
             
         return X
 
@@ -1021,13 +1018,16 @@ class PositionSpecificMixin:
         if result is None or len(result) == 0:
             return result
         
-        # Remap to aligned positions if we have a mapping and positions were specified
-        if self._alignment_mapping is not None and self.positions is not None:
+        # Remap to aligned positions if we stripped gaps earlier
+        # If positions is None, remap to all positions in the alignment
+        if self._alignment_mapping is not None:
+            positions_to_map = self.positions if self.positions is not None else list(range(self._alignment_width))
             result = self._remap_to_aligned_positions(
-                result, self._alignment_mapping, self.positions, self.gap_fill_value
+                result, self._alignment_mapping, positions_to_map, self.gap_fill_value
             )
             # Clean up temporary storage
             self._alignment_mapping = None
+            self._alignment_width = None
         
         if self.pool:
             # get the pool function
@@ -1040,6 +1040,12 @@ class PositionSpecificMixin:
 
         # Handle ragged arrays (different shapes)
         if self._is_ragged_array(result):
+            # If positions were specified, ragged output is not acceptable
+            if self.positions is not None:
+                raise ValueError(
+                    f"Model returned ragged output (inconsistent shapes) but specific positions {self.positions} "
+                    "were requested. Cannot extract consistent position-specific embeddings from ragged output."
+                )
             if not self.pool:
                 # return here ... the output is not useful for direct downtream use in eg sklearn but the user may want this
                 logger.warning("Output is a ragged array and no pooling was specified. Returning list of arrays.")
