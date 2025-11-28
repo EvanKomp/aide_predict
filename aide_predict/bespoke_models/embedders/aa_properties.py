@@ -5,10 +5,11 @@
 * Company: National Renewable Energy Lab, Bioeneergy Science and Technology
 * License: MIT
 
-Simple amino acid property embedder for testing position-specific functionality.
+Amino acid property embedder using AAindex database for physicochemical properties.
 '''
 import numpy as np
-from typing import List, Union, Optional
+from typing import List, Union, Optional, Dict, Tuple
+from aaindex import aaindex1
 
 from aide_predict.bespoke_models.base import (
     ProteinModelWrapper, 
@@ -22,32 +23,81 @@ from aide_predict.utils.common import MessageBool
 import logging
 logger = logging.getLogger(__name__)
 
-AVAILABLE = MessageBool(True, "AAPropertiesEmbedding is always available")
+# Default AAindex indices to use for each property
+DEFAULT_AAINDEX_PROPERTIES = [
+    ('KYTJ820101', 'hydrophobicity'),      # Kyte-Doolittle hydropathy index
+    ('KLEP840101', 'charge'),              # Net charge
+    ('FASG760104', 'pKa_amino_terminus'),  # pKa N-terminus
+    ('FASG760105', 'pKa_carboxyl_terminus'), # pKa C-terminus
+    ('GRAR740103', 'volume'),              # Volume
+    ('GRAR740102', 'polarity'),            # Polarity
+    ('FASG760101', 'molecular_weight'),    # Molecular weight
+    ('ZIMJ680104', 'isoelectric_point'),   # Isoelectric point
+    ('ZIMJ680102', 'bulkiness'),           # Bulkiness (related to aromaticity/structure)
+]
 
 
-# Simple physicochemical properties for the 20 standard amino acids
-AA_PROPERTIES = {
-    'A': [1.8, 0.0, 0.0],   # Alanine: hydrophobicity, charge, size
-    'C': [2.5, 0.0, 0.0],   # Cysteine
-    'D': [-3.5, -1.0, 0.0], # Aspartic acid
-    'E': [-3.5, -1.0, 0.5], # Glutamic acid
-    'F': [2.8, 0.0, 1.0],   # Phenylalanine
-    'G': [-0.4, 0.0, -1.0], # Glycine
-    'H': [-3.2, 0.5, 0.5],  # Histidine
-    'I': [4.5, 0.0, 0.5],   # Isoleucine
-    'K': [-3.9, 1.0, 0.5],  # Lysine
-    'L': [3.8, 0.0, 0.5],   # Leucine
-    'M': [1.9, 0.0, 0.5],   # Methionine
-    'N': [-3.5, 0.0, 0.0],  # Asparagine
-    'P': [-1.6, 0.0, 0.0],  # Proline
-    'Q': [-3.5, 0.0, 0.5],  # Glutamine
-    'R': [-4.5, 1.0, 1.0],  # Arginine
-    'S': [-0.8, 0.0, -0.5], # Serine
-    'T': [-0.7, 0.0, 0.0],  # Threonine
-    'V': [4.2, 0.0, 0.0],   # Valine
-    'W': [-0.9, 0.0, 1.5],  # Tryptophan
-    'Y': [-1.3, 0.0, 1.0],  # Tyrosine
-}
+def _check_aaindex_available() -> MessageBool:
+    """Check if AAindex is available and can be accessed."""
+    try:
+        from aaindex import aaindex1
+        # Try to access a known index to verify it works
+        _ = aaindex1['KYTJ820101']
+        return MessageBool(True, "AAindex is available")
+    except Exception as e:
+        return MessageBool(False, f"AAindex initialization failed: {str(e)}")
+
+
+AVAILABLE = _check_aaindex_available()
+
+
+def _build_aa_property_lookup(
+    aaindex_ids: List[Tuple[str, str]],
+    include_aromatic: bool = True
+) -> Tuple[Dict[str, np.ndarray], List[str]]:
+    """
+    Build a lookup table for amino acid properties from AAindex.
+    
+    Args:
+        aaindex_ids: List of tuples (aaindex_id, property_name)
+        include_aromatic: Whether to include a boolean aromatic property
+        
+    Returns:
+        Tuple of (lookup_dict, property_names) where:
+            - lookup_dict maps amino acid letter to property vector
+            - property_names is the list of property names in order
+    """
+    # Standard amino acids
+    amino_acids = 'ACDEFGHIKLMNPQRSTVWY'
+    aromatic_aas = {'F', 'W', 'Y'}  # Phenylalanine, Tryptophan, Tyrosine
+    
+    property_names = [name for _, name in aaindex_ids]
+    if include_aromatic:
+        property_names.append('aromatic')
+    
+    # Build lookup table
+    lookup = {}
+    for aa in amino_acids:
+        properties = []
+        for aaindex_id, _ in aaindex_ids:
+            try:
+                record = aaindex1[aaindex_id]
+                value = record.values.get(aa)
+                if value is None:
+                    logger.warning(f"No value for {aa} in {aaindex_id}, using 0.0")
+                    value = 0.0
+                properties.append(float(value))
+            except Exception as e:
+                logger.warning(f"Error getting {aaindex_id} for {aa}: {e}, using 0.0")
+                properties.append(0.0)
+        
+        # Add aromatic boolean as 1.0 or 0.0
+        if include_aromatic:
+            properties.append(1.0 if aa in aromatic_aas else 0.0)
+        
+        lookup[aa] = np.array(properties, dtype=np.float32)
+    
+    return lookup, property_names
 
 
 class AAPropertiesEmbedding(
@@ -57,15 +107,22 @@ class AAPropertiesEmbedding(
     ProteinModelWrapper
 ):
     """
-    A simple amino acid property embedder for testing position-specific functionality.
+    An amino acid property embedder using AAindex database.
     
-    This embedder converts each amino acid to a 3-dimensional vector based on:
-    - Hydrophobicity (Kyte-Doolittle scale approximation)
-    - Charge (at physiological pH)
-    - Size (relative volume)
+    This embedder converts each amino acid to a vector of physicochemical properties
+    from the AAindex database. By default, it uses:
+    - Hydrophobicity (Kyte-Doolittle scale)
+    - Net charge
+    - pKa of amino terminus
+    - pKa of carboxyl terminus
+    - Volume
+    - Polarity
+    - Molecular weight
+    - Isoelectric point
+    - Bulkiness
+    - Aromatic (boolean: 1.0 for F/W/Y, 0.0 otherwise)
     
-    This is a simple, fast embedder that can handle aligned sequences with gaps
-    and is useful for testing the PositionSpecificMixin functionality.
+    Custom properties can be specified by providing a list of (aaindex_id, property_name) tuples.
     
     Attributes:
         positions (Optional[List[int]]): Specific positions to encode. If None, all positions are encoded.
@@ -73,6 +130,10 @@ class AAPropertiesEmbedding(
         flatten (bool): Whether to flatten the output array.
         handle_aligned (bool): Whether to handle aligned sequences with gaps.
         gap_fill_value (float): Value to use for gap positions.
+        aaindex_properties (List[Tuple[str, str]]): List of (aaindex_id, property_name) tuples.
+        include_aromatic (bool): Whether to include aromatic boolean property.
+        aa_property_lookup_ (Dict[str, np.ndarray]): Lookup table for amino acid properties.
+        property_names_ (List[str]): Names of the properties in order.
     """
     
     _available = AVAILABLE
@@ -86,6 +147,8 @@ class AAPropertiesEmbedding(
         handle_aligned: bool = True,
         gap_fill_value: float = 0.0,
         wt: Optional[Union[str, ProteinSequence]] = None,
+        aaindex_properties: Optional[List[Tuple[str, str]]] = None,
+        include_aromatic: bool = True,
         **kwargs
     ):
         """
@@ -99,7 +162,15 @@ class AAPropertiesEmbedding(
             handle_aligned (bool): Whether to handle aligned sequences with gaps.
             gap_fill_value (float): Value to use for gap positions.
             wt (Optional[Union[str, ProteinSequence]]): The wild type sequence, if any.
+            aaindex_properties (Optional[List[Tuple[str, str]]]): List of (aaindex_id, property_name) tuples.
+                If None, uses DEFAULT_AAINDEX_PROPERTIES.
+            include_aromatic (bool): Whether to include a boolean aromatic property (F, W, Y = 1.0, others = 0.0).
         """
+        if aaindex_properties is None:
+            aaindex_properties = DEFAULT_AAINDEX_PROPERTIES
+        self.aaindex_properties = aaindex_properties
+        self.include_aromatic = include_aromatic
+        
         super().__init__(
             metadata_folder=metadata_folder,
             wt=wt,
@@ -110,11 +181,10 @@ class AAPropertiesEmbedding(
             gap_fill_value=gap_fill_value,
             **kwargs
         )
-        self.embedding_dim_ = 3  # 3 properties per amino acid
 
     def _fit(self, X: ProteinSequences, y: Optional[np.ndarray] = None) -> 'AAPropertiesEmbedding':
         """
-        Fit the embedder (no actual fitting needed as properties are predefined).
+        Fit the embedder by building the amino acid property lookup table.
 
         Args:
             X (ProteinSequences): The input protein sequences.
@@ -123,6 +193,13 @@ class AAPropertiesEmbedding(
         Returns:
             AAPropertiesEmbedding: The fitted embedder.
         """
+        # Build lookup table from AAindex
+        self.aa_property_lookup_, self.property_names_ = _build_aa_property_lookup(
+            self.aaindex_properties,
+            include_aromatic=self.include_aromatic
+        )
+        self.embedding_dim_ = len(self.property_names_)
+        
         self.fitted_ = True
         return self
 
@@ -142,16 +219,19 @@ class AAPropertiesEmbedding(
             seq_str = str(seq).upper()
             seq_len = len(seq_str)
             
-            # Create embedding matrix: (seq_len, 3)
-            embedding = np.zeros((1, seq_len, 3), dtype=np.float32)
+            # Create embedding matrix: (1, seq_len, n_properties)
+            embedding = np.zeros((1, seq_len, self.embedding_dim_), dtype=np.float32)
             
             for i, aa in enumerate(seq_str):
-                if aa in AA_PROPERTIES:
-                    embedding[0, i, :] = AA_PROPERTIES[aa]
+                if aa in self.aa_property_lookup_:
+                    embedding[0, i, :] = self.aa_property_lookup_[aa]
                 else:
-                    # Unknown amino acid - use zeros
-                    logger.warning(f"Unknown amino acid '{aa}' in sequence {seq.id}, using zeros")
-                    embedding[0, i, :] = [0.0, 0.0, 0.0]
+                    # Unknown amino acid (including gaps) - use zeros or gap_fill_value
+                    if aa == '-':
+                        embedding[0, i, :] = self.gap_fill_value
+                    else:
+                        logger.warning(f"Unknown amino acid '{aa}' in sequence {seq.id}, using zeros")
+                        embedding[0, i, :] = 0.0
             
             all_embeddings.append(embedding)
         
@@ -168,17 +248,16 @@ class AAPropertiesEmbedding(
         Returns:
             List[str]: Output feature names.
         """
-        if not hasattr(self, 'fitted_'):
+        if not hasattr(self, 'fitted_') or not self.fitted_:
             raise ValueError("Model has not been fitted yet. Call fit() before using this method.")
         
         positions = self.positions
-        property_names = ['hydrophobicity', 'charge', 'size']
         
         if self.pool:
-            return [f"AAProps_{prop}" for prop in property_names]
+            return [f"AAProps_{prop}" for prop in self.property_names_]
         elif self.flatten:
             if positions is None:
                 raise ValueError("Cannot return feature names for flattened embeddings without specifying positions")
-            return [f"pos{p}_{prop}" for p in positions for prop in property_names]
+            return [f"pos{p}_{prop}" for p in positions for prop in self.property_names_]
         else:
             raise ValueError("Cannot return feature names for non-flattened non-pooled embeddings.")
