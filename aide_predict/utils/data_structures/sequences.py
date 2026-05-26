@@ -160,6 +160,38 @@ class ProteinSequence(str):
         """Return a new ProteinSequence with all gaps removed."""
         return ProteinSequence("".join(c for c in self if c not in GAP_CHARACTERS),
                                id=self._id, structure=self._structure, msa=self._msa)
+
+    def with_target_chain(self, new_chain: str, auto_context: bool = True) -> 'ProteinSequence':
+        """
+        Return a new ProteinSequence pointing at a different chain of the same structure.
+
+        Clones the attached ProteinStructure (so the original is not mutated),
+        switches its primary chain via ``ProteinStructure.set_target_chain``,
+        and wraps the new chain's amino-acid string in a fresh ProteinSequence.
+
+        Args:
+            new_chain: The chain ID to become the new primary chain.
+            auto_context: Forwarded to ``ProteinStructure.set_target_chain``;
+                when True, populates ``context_chains`` with the other chains
+                in the file.
+
+        Returns:
+            ProteinSequence: A new instance with the new chain's sequence and
+            a cloned structure pointing at that chain.
+
+        Raises:
+            ValueError: If no structure is attached.
+        """
+        if self._structure is None:
+            raise ValueError("with_target_chain requires an attached ProteinStructure.")
+        cloned = ProteinStructure(
+            structure_file=self._structure.structure_file,
+            chain=self._structure.chain,
+            plddt_file=self._structure.plddt_file,
+            context_chains=self._structure.context_chains,
+        )
+        cloned.set_target_chain(new_chain, auto_context=auto_context)
+        return ProteinSequence(cloned.get_sequence(), id=self._id, structure=cloned)
     
     @property
     def as_array(self) -> np.ndarray:

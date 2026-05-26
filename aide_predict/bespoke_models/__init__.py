@@ -13,6 +13,7 @@ from .predictors.saprot import SaProtLikelihoodWrapper
 from .predictors.vespa import VESPAWrapper
 from .predictors.eve import EVEWrapper
 from .predictors.ssemb import SSEmbWrapper
+from .predictors.esm_if import ESMIFLikelihoodWrapper
 
 from .embedders.esm2 import ESM2Embedding
 from .embedders.ohe import OneHotAlignedEmbedding, OneHotProteinEmbedding
@@ -32,6 +33,7 @@ TOOLS = [
     VESPAWrapper,
     EVEWrapper,
     SSEmbWrapper,
+    ESMIFLikelihoodWrapper,
 
     # embedders
     ESM2Embedding,

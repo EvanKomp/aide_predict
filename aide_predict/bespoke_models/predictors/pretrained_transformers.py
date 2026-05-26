@@ -299,33 +299,30 @@ class LikelihoodTransformerBase(PositionSpecificMixin, RequiresFixedLengthMixin,
 
     def _compute_mutant_marginal(self, X: ProteinSequences) -> List[np.ndarray]:
         """
-        Compute mutant marginal log likelihoods.
+        Score each variant by the model's per-position log-likelihood of its
+        own amino acid given its own context, with no WT subtraction and no
+        restriction to mutated positions.
+
+        Matches ProteinGym's convention (compute_fitness_esm_if1.py) and is
+        the natural joint-likelihood interpretation for autoregressive
+        structure-conditioned models — from the variant's perspective there
+        is no privileged "mutated position"; the score is the full-sequence
+        likelihood under the model.
 
         Args:
             X (ProteinSequences): Input protein sequences.
 
         Returns:
-            List[np.ndarray]: List of mutant marginal log likelihoods for each sequence.
+            List[np.ndarray]: One ``(1, L)`` array per variant containing
+            per-position ``log p(variant_aa_i | variant_context_<i)``. Pooled
+            by the default ``nanmean`` in ``_post_process_likelihoods`` to
+            yield one scalar per variant.
         """
         log_probs = self._compute_log_likelihoods_batches(X)
         self._validate_log_probs(log_probs, X)
-        
+
         log_likelihoods = [self._index_log_probs(l, ProteinSequences([X[i]])) for i, l in enumerate(log_probs)]
         self._validate_marginals(log_likelihoods, X)
-        
-        if self.wt is not None:
-            if not X.aligned or X.width != len(self.wt):
-                pass  # Compare to WT in post-processing
-            else:
-                wt_likelihoods = [self._index_log_probs(l, ProteinSequences([self.wt])) for l in log_probs]
-                self._validate_marginals(wt_likelihoods, ProteinSequences([self.wt] * len(X)))
-                
-                log_likelihoods = [ll - wl for ll, wl in zip(log_likelihoods, wt_likelihoods)]
-                for i, (seq, ll) in enumerate(zip(X, log_likelihoods)):
-                    mutation_positions = np.array(seq.mutated_positions(self.wt))
-                    mutation_mask = np.isin(np.arange(len(seq)), mutation_positions).reshape(1,-1)
-                    ll[~mutation_mask] = np.nan
-        
         return log_likelihoods
 
     def _compute_wildtype_marginal(self, X: ProteinSequences) -> List[np.ndarray]:
@@ -431,8 +428,8 @@ class LikelihoodTransformerBase(PositionSpecificMixin, RequiresFixedLengthMixin,
             log_likelihoods = np.vstack([ll[:, self.positions] for ll in log_likelihoods])
         
         if self.pool:
-            # if all values are nana, that means it is equal to wildtype and nanmean will fail, return
-            # zero for that case
+            # If all values are NaN (variant identical to WT under wildtype_marginal),
+            # nanmean would warn — substitute 0.0 (a sensible "no-change" score).
             new_log_likelihoods = []
             for ll in log_likelihoods:
                 if np.all(np.isnan(ll)):
@@ -440,16 +437,6 @@ class LikelihoodTransformerBase(PositionSpecificMixin, RequiresFixedLengthMixin,
                 else:
                     new_log_likelihoods.append(np.nanmean(ll))
             log_likelihoods = np.array(new_log_likelihoods)
-            
-            # Handle the edge case for mutant marginal with variable length sequences
-            if self.marginal_method == MarginalMethod.MUTANT.value and self.wt is not None and not X.aligned and X.width != len(self.wt):
-                # Compute WT log likelihood
-                wt_log_probs = self._compute_log_likelihoods_batches(ProteinSequences([self.wt]))[0]
-                wt_likelihood = self._index_log_probs(wt_log_probs, ProteinSequences([self.wt]))
-                wt_pooled = np.nanmean(wt_likelihood)
-                
-                # Subtract WT pooled likelihood from each pooled mutant likelihood
-                log_likelihoods = log_likelihoods - wt_pooled
         else:
             log_likelihoods = np.vstack(log_likelihoods)
     

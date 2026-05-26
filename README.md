@@ -90,6 +90,13 @@ You can always check which modules are installed/available to you by running `ge
    - Requires Structure
    - Requires independant SSEmb environment, see Installation.
 
+9. [ESM-IF1*](https://proceedings.mlr.press/v162/hsu22a.html)
+   - Structure-conditioned autoregressive language model (GVP-Transformer) that scores variants given a backbone. Wildtype and mutant marginals are supported; `masked_marginal` is refused since the model has no bidirectional mask-scoring mode.
+   - Requires wild-type sequence and structure during inference
+   - Requires fixed-length sequences
+   - Supports multichain complexes via `ProteinStructure.context_chains` (set explicitly, or via `set_target_chain` / `with_target_chain`, or implicitly through `StructureMapper.get_protein_sequences(..., auto_context=True)`).
+   - Requires additional dependencies (see `requirements_files/requirements-esm-if.txt`, which adds `torch-geometric`, `torch-scatter`, `torch-cluster`, and pins `biotite<1.0` due to a fair-esm compatibility issue).
+
 ### Embeddings for Downstream ML
 
 1. One Hot Protein Embedding
