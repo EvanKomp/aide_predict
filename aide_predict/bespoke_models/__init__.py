@@ -14,6 +14,7 @@ from .predictors.vespa import VESPAWrapper
 from .predictors.eve import EVEWrapper
 from .predictors.ssemb import SSEmbWrapper
 from .predictors.esm_if import ESMIFLikelihoodWrapper
+from .composites.zscore import ZScoreRescaledScorer
 
 from .embedders.esm2 import ESM2Embedding
 from .embedders.ohe import OneHotAlignedEmbedding, OneHotProteinEmbedding
@@ -34,6 +35,9 @@ TOOLS = [
     EVEWrapper,
     SSEmbWrapper,
     ESMIFLikelihoodWrapper,
+
+    # composites
+    ZScoreRescaledScorer,
 
     # embedders
     ESM2Embedding,
