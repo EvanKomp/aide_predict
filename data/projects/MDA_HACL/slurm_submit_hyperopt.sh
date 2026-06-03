@@ -6,7 +6,7 @@
 #SBATCH --gres=gpu:h100:1
 #SBATCH --mem=80G
 #SBATCH --nodes=1
-#SBATCH --time=24:00:00            # 24h per task; bump if 100 trials don't finish
+#SBATCH --time=48:00:00            # partition max; fresh 100-trial run (24h timed out before)
 #SBATCH --cpus-per-task=30
 #SBATCH --qos=high
 #SBATCH --array=0-4                # one task per metric (see METRICS[] below)
@@ -72,16 +72,18 @@ echo "  device:     cuda:0"
 echo "  started:    $(date)"
 echo "============================================================"
 
-# NOTE: NO --fresh. We want to resume any partial study.sqlite from an earlier
-# timed-out run. new_opt_05.py uses load_if_exists=True and only runs
-# (n_trials_total - n_completed) more trials, so resubmission picks up where
-# the wall-clock killed the previous job. Pass --fresh manually if you ever
-# need to start from scratch.
+# --fresh: deletes any existing study.sqlite and starts a clean 100-trial run.
+#   Required here because we are re-optimising under the NEW acquisition σ
+#   (within-ref epi+ale); resuming an old tot_std study would mix objectives.
+# --acq-sigma within_epi_ale: the β-grid objective ranks by the mode-consistent
+#   within-reference σ. MUST match slurm_submit.sh's scoring --acq-sigma.
 python code/round3/new_opt_05.py \
     --scope all-substrates \
     --objective-metric "${METRIC}" \
     --output-dir "${OUT_DIR}" \
-    --device cuda:0
+    --device cuda:0 \
+    --fresh \
+    --acq-sigma within_epi_ale
 
 echo "============================================================"
 echo "task ${SLURM_ARRAY_TASK_ID} (${METRIC}) finished: $(date)"

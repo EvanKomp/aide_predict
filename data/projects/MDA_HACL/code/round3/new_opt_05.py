@@ -367,7 +367,9 @@ def _evaluate_beta_grid_for_mode(
     """Score one mode_df under each β; return (best_bnn, best_beta, per_beta, null_val)."""
     y_true = mode_df["log_fc"].values.astype(np.float64)
     y_pred = mode_df["y_pred"].values.astype(np.float64)
-    tot_std = mode_df["tot_std"].values.astype(np.float64)
+    # UCB acquisition σ (mode-consistent: excludes between-reference variance);
+    # built by aggregate_and_null_per_fold per its acq_sigma. Was tot_std.
+    acq_std = mode_df["acq_std"].values.astype(np.float64)
     subs = mode_df["substrate"].values
     pos = mode_df["position"].values
     null_pred = mode_df["null_pred"].values.astype(np.float64)
@@ -376,7 +378,7 @@ def _evaluate_beta_grid_for_mode(
     best = -math.inf
     best_beta = float(betas[0])
     for beta in betas:
-        score = y_pred + float(beta) * tot_std
+        score = y_pred + float(beta) * acq_std
         val = _eval_metric(metric, y_true, score, subs, pos)
         per_beta[float(beta)] = float(val) if not math.isnan(val) else float("nan")
         if not math.isnan(val) and val > best:
@@ -659,6 +661,7 @@ def create_objective(
     null_emb: str,
     null_metric: str,
     narrow_map: Optional[Dict[str, dict]],
+    acq_sigma: str = "within_epi_ale",
 ):
     """Return the Optuna objective function (maximise direction).
 
@@ -733,6 +736,7 @@ def create_objective(
                 substrate_embedding_type=null_emb,
                 distance_metric=null_metric,
                 distance_weight_temperature=float(params.get("distance_weight_temperature", 1.0)),
+                acq_sigma=acq_sigma,
             )
             if len(mode_df) == 0:
                 per_mode_results[mode_name] = {
@@ -1254,6 +1258,12 @@ def parse_args() -> argparse.Namespace:
                         help="SQLite path for resumable studies")
     parser.add_argument("--fresh", action="store_true",
                         help="Delete existing study DB and start fresh")
+    parser.add_argument("--acq-sigma", type=str, default="within_epi_ale",
+                        choices=["within_epi_ale", "within_epi", "total"],
+                        help="UCB acquisition σ for the β-grid objective. "
+                             "'within_*' drop the between-reference variance so β "
+                             "is mode-consistent; 'total' = old tot_std behavior. "
+                             "Must match what new_05b_bnn2_score.py uses at CV time.")
     parser.add_argument("--output-dir", type=str, default=None)
     parser.add_argument("--config", type=str, default=None)
     parser.add_argument("--device", type=str, default=None)
@@ -1403,6 +1413,7 @@ def main():
             ucb_betas=ucb_betas,
             null_emb=null_emb, null_metric=null_metric,
             narrow_map=narrow_map,
+            acq_sigma=args.acq_sigma,
         )
         study.optimize(objective, n_trials=n_remaining,
                        show_progress_bar=True)
@@ -1441,6 +1452,7 @@ def main():
     best_hyperparams["best_beta"] = best_trial.user_attrs.get("best_beta")
     best_hyperparams["best_reference_mode"] = best_trial.user_attrs.get("best_reference_mode")
     best_hyperparams["objective_metric"] = args.objective_metric
+    best_hyperparams["acq_sigma"] = args.acq_sigma
     best_hyperparams["objective_value"] = float(best_trial.value)
     best_hyperparams["raw_objective"] = best_trial.user_attrs.get("raw_objective")
     best_hyperparams["null_objective"] = best_trial.user_attrs.get("null_objective")

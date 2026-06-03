@@ -6,7 +6,7 @@
 #SBATCH --gres=gpu:h100:1
 #SBATCH --mem=80G
 #SBATCH --nodes=1
-#SBATCH --time=20:00:00            # 5 metrics × ~2-3h CV each, sequential
+#SBATCH --time=24:00:00            # 5 metrics × ~2-3h CV each, sequential
 #SBATCH --cpus-per-task=30
 #SBATCH --qos=high
 
@@ -65,7 +65,10 @@ for entry in "${RUNS[@]}"; do
         --run-id "$run_id" \
         --device cuda:0
 
-    # (2) analysis + plot
+    # (2) analysis + plot.
+    # --acq-sigma within_epi_ale: rank UCB by the mode-consistent within-ref σ.
+    # MUST match the σ the hyperopt optimised under (slurm_submit_hyperopt.sh).
     python code/round3/new_05b_bnn2_score.py \
-        --run-dir "$run_dir"
+        --run-dir "$run_dir" \
+        --acq-sigma within_epi_ale
 done
