@@ -1,0 +1,320 @@
+# Round 3: Multi-Substrate Activity Prediction via BNN
+# Configuration file — all hyperparameter ranges, feature flags, and settings
+#
+# Convention for tunable parameters:
+#   value:  used by training scripts (02, 03, 05) — the active setting
+#   search: used by opt scripts (opt_02, opt_03, opt_05, new_opt_05) — the
+#           search space. Set search to null to fix that param at its value.
+#
+# Search space forms:
+#   search: [v1, v2, ...]                          # categorical list (ALL opt scripts)
+#   search:                                        # distribution dict (new_opt_05.py ONLY)
+#     type: uniform|loguniform|int|categorical
+#     low:  <float/int>
+#     high: <float/int>
+#   NOTE: dict-form search spaces are consumed only by new_opt_05.py. The
+#   legacy opt_05_bnn2.py will error on a dict-form entry — stick with list
+#   form if you need the legacy opt.
+#
+# After hyperopt, update "value" with the best config found.
+
+# ---- Compute ----
+compute:
+  device: "cuda:0"                          # "cpu", "cuda", "cuda:1", "mps", or "auto"
+  esm2_batch_size: 4                        # batch size for ESM2 forward passes
+  saprot_batch_size: 2                      # batch size for SaProt forward passes
+
+# ---- Data ----
+data:
+  # Input paths (relative to project root MDA_HACL/)
+  formaldehyde_ssm_csv: "data/experimental/ssm_data.csv"
+  multi_substrate_ssm_xlsx: "data/round3/all_ssm_data.xlsx"
+  supplemental_ssm_xlsx: #"data/round3/all_data2.xlsx"
+  structure_file: "structure/mda_hacl_b4fe6_relaxed_rank_001_alphafold2_ptm_model_3_seed_000.pdb"
+
+  # Output paths (relative to project root MDA_HACL/)
+  output_dir: "data/round3/processed"
+
+  # Target transform
+  epsilon: 0.01  # log10(fold_change + epsilon)
+
+  # Position offset: 0-indexed = 1-indexed_position - position_offset - 1
+  position_offset: 10
+
+  # WT sequence length (for validation)
+  wt_sequence_length: 565
+
+  # Active substrate sheet names (must match xlsx sheet names exactly)
+  active_substrate_sheets:
+    - "Formaldehyde"
+    - "Acetaldehyde"
+    - "Acetone"
+    - "Glycoaldehyde"
+    - "Phenylacetaldehyde"
+    - "Pyruvate"
+
+  # Inactive substrates (no data sheets in xlsx; synthetic all-zero rows)
+  inactive_substrates:
+    - "Methylglyoxal"
+    - "4-Hydroxybutan-2-one"
+    - "Glyoxylic acid"
+
+  # Pyruvate uses V83P as reference instead of WT
+  pyruvate_ref_mutation: "V83P"
+
+  # Multi-substrate SSM positions (1-indexed, for validation only).
+  # Synthetic inactive-substrate rows are generated at whatever positions are
+  # actually present in loaded active data — toggling supplemental_ssm_xlsx
+  # above does not require editing this list.
+  multi_substrate_positions:
+    - 83
+    - 399
+    - 403
+    - 407
+    - 420
+    - 425
+    - 556
+    - 561
+    - 566
+    - 567
+    - 568
+    - 569
+    - 570
+    - 571
+    - 572
+
+  # Include inactive substrates in multi_substrate_ssm.csv
+  include_inactive_substrates: true
+
+# ---- Embeddings (precomputed, not searched) ----
+embeddings:
+  esm2:
+    model_name: "esm2_t33_650M_UR50D"
+    layer: "last"
+    pool: "position"                  # residue-level
+  saprot:
+    marginal: "wildtype"
+  substrate:                          # precompute ALL, hyperopt selects which to use
+    morgan_bits: 2048
+    morgan_radius: 2
+    maccs: true
+    mordred_2d: true
+    molformer: true                   # MoLFormer-XL (768-dim, pretrained on ~110M molecules)
+
+# ---- Preprocessing (per feature group) ----
+# Each feature group has its own scaler and PCA.
+# BNN1 uses esm_wt + esm_mut; BNN2 uses all groups.
+preprocessing:
+  esm_wt:
+    scaler:
+      value: standard
+      search: ["none", "standard", "robust"]
+    pca:
+      value: 0.99                 # null = no PCA; int = n components; float 0<x<1 = variance fraction
+      search: null
+  esm_mut:
+    scaler:
+      value: standard
+      search: ["none", "standard", "robust"]
+    pca:
+      value: 0.99
+      search: null
+  x_substrate:                        # applies to BOTH target and ref substrate embeddings
+    scaler:
+      value: "none"
+      search: ["none", "standard"]
+    pca:
+      value: null
+      search: null
+  x_aa:
+    scaler:
+      value: "none"
+      search: null
+    pca:
+      value: null
+      search: null                    # already low-dim from BNN1 latent; don't search
+  saprot_zs:
+    scaler:
+      value: "none"
+      search: ["none", "standard"]
+
+# ---- BNN1 ----
+bnn1:
+  task: "regression"                  # "classification" for phase A
+  hidden_dims:
+    value: [128, 64]
+    search: [[64], [128, 64], [256, 128, 64]]
+  prior_std:
+    value: 1.0
+    search: [0.1, 0.5, 1.0]
+  dropout_rate:
+    value: 0.2
+    search: [0.1, 0.2, 0.3]          # was [0.0, 0.1, 0.2] — 0.2 hit ceiling, extended up; 0.0 dropped
+  activation:
+    value: "silu"
+    search: null                      # fixed; don't search over activations
+  latent_layer: -1                    # which hidden layer to extract as embedding
+  training:
+    n_epochs:
+      value: 300
+      search: null                    # fixed
+    learning_rate:
+      value: 0.001
+      search: [0.0001, 0.005, 0.001, 0.005]  # was [0.0001, 0.0005, 0.001] — 0.001 hit ceiling, extended up; 0.0001 dropped
+    batch_size:
+      value: 64
+      search: null                    # fixed
+    kl_anneal_epochs:
+      value: 30
+      search: [10, 20, 30, 50]                   # fixed
+    kl_weight:
+      value: 1.0
+      search: null                    # fixed at 1.0 (= standard ELBO: trainer divides by n_data internally)
+    early_stopping_patience:
+      value: 20
+      search: null                    # fixed
+    n_inference_samples:
+      value: 10
+      search: null                    # fixed
+  lds:
+    use_lds: false       # set false to disable; not searched
+    n_bins: 50
+    kernel_size: 5
+    sigma: 2.0
+
+# ---- BNN2 ----
+bnn2:
+  pairwise:                              # pairwise expansion settings
+    ref_substrates: "all"                # "all" = include inactives as refs (project default); use "active_only" to restrict
+    exclude_self_ref:
+      value: true                        # exclude ref == target pairs
+      search: null                       # [true, false]
+    inference_aggregation:
+      value: "nearest"                   # "nearest", "distance_weighted", or "mean"
+      search: ["nearest", "distance_weighted", "mean"]
+    distance_weight_temperature:
+      value: 1.0                         # only for "distance_weighted"; lower = sharper focus on close refs
+      search: null                       # [0.25, 0.5, 1.0, 2.0]
+  features:                              # toggle individual feature groups
+    fc_ref:
+      value: true                        # fold-change on reference substrate (core to delta learning)
+      search: null                       # [true, false]
+    ref_distance:
+      value: true                        # chemical distance between target & ref substrate
+      search: null                       # [true, false]
+    x_target_substrate:
+      value: true                        # target substrate embedding
+      search: null                       # [true, false]
+    x_ref_substrate:
+      value: true                        # ref substrate embedding
+      search: null                       # [true, false]
+    x_aa:
+      value: false
+      search: null                       # [true, false]
+    esm_wt:
+      value: true
+      search: null                       # [true, false]
+    esm_mut:
+      value: true
+      search: null                       # [true, false]
+    saprot_zs:
+      value: true
+      search: null                       # [true, false]
+  substrate_embedding_type:
+    value: "maccs"
+    search: ["morgan", "maccs", "mordred", "molformer"]
+  x_aa_freeze:
+    value: "full"
+    search: null
+  hidden_dims:
+    value: [128, 64]
+    search: [[64], [128, 64], [256, 128, 64]]
+  prior_std:
+    value: 0.5
+    # dict-form: continuous distribution (consumed by new_opt_05.py only)
+    search:
+      type: loguniform
+      low: 0.05
+      high: 2.0
+  dropout_rate:
+    value: 0.1
+    search:
+      type: uniform
+      low: 0.0
+      high: 0.5
+  activation:
+    value: "silu"
+    search: null                      # ["silu", "relu", "gelu"]
+  training:
+    n_epochs:
+      value: 500
+      search: null                    # fixed; early stopping controls effective length
+    learning_rate:
+      value: 0.0005
+      search:
+        type: loguniform
+        low: 1.0e-5
+        high: 1.0e-2
+    batch_size:
+      value: 32
+      search: null                    # [16, 32, 64] — smaller = more gradient noise (implicit regularization)
+    kl_anneal_epochs:
+      value: 30
+      search:
+        type: int
+        low: 5
+        high: 100
+
+    kl_weight:
+      value: 1.0
+      search: null                    # [0.5, 1.0, 2.0, 5.0] — >1 = cold posterior, stronger regularization
+    early_stopping_patience:
+      value: 50
+      search: null                    # fixed; must be consistent across trials for fair comparison
+    n_inference_samples:
+      value: 20
+      search: null                    # fixed; affects eval cost, not model quality
+    clip_grad_norm:
+      value: 5.0
+      search:
+        type: loguniform
+        low: 0.5
+        high: 20.0
+    null_reg_weight:
+      value: 0.01
+      search: [0.0, 0.01, 0.05, 0.1, 0.2]
+    log_var_floor:
+      value: -4.0                     # σ_min≈0.14; prevents variance collapse and val NLL explosion
+      search: [-6, -4, -2]                    # [-6, -4, -2] — trades calibration sharpness vs stability
+    prediction_floor:
+      value: -2.0                     # clamp predicted mu at detection floor (absolute space, after fc_ref)
+      search: null                    # not searched; this is a physical constraint
+  loss_type:
+    value: "gaussian_nll"
+    search: ["gaussian_nll", "mse", "hurdle"]                      # ["gaussian_nll", "mse", "hurdle"] — hurdle explicitly models floor
+  lds:
+    use_lds:
+      value: false
+      search: [true, false]                    # [true, false] — upweights rare high-activity mutations
+    n_bins: 50
+    kernel_size: 5
+    sigma: 2.0
+  hurdle:                           # sub-params only (used when loss_type == "hurdle")
+    floor_threshold: -1.99      # y <= this treated as floor; log10(0.01)=-2.0, with margin
+    inference_threshold: 0.5    # soft mixture center; p > this → mostly regression
+    floor_value: -2.0           # floor prediction value for P(active)≈0 samples
+
+# ---- Cross Validation ----
+cv:
+  n_folds: 5
+  n_hyperopt_trials: 100              # Optuna trials per split strategy
+  seed: 42
+  optimization_objective: "ndcg"     # "crps", "mae", "spearman", "regret", "hit_rate", "ndcg", "enrichment"
+  regret_top_k: 10                   # for regret/hit_rate/ndcg/enrichment: select top-k per substrate
+  enrichment_threshold: 0.0          # for "enrichment": activity threshold (log_fc > this = active)
+
+# ---- Selection ----
+selection:
+  n_per_substrate: 10
+  strategy: "ucb"                    # "ucb", "mean", "thompson"
+  ucb_kappa: 2.0

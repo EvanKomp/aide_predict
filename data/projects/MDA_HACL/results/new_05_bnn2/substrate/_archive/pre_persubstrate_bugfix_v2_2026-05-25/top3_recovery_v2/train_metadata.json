@@ -1,0 +1,158 @@
+{
+  "split_type": "substrate",
+  "run_id": "top3_recovery_v2",
+  "target_substrate": null,
+  "held_out_substrates": [
+    "Acetaldehyde",
+    "Acetone",
+    "Formaldehyde",
+    "Glycoaldehyde",
+    "Phenylacetaldehyde",
+    "Pyruvate"
+  ],
+  "training_substrates_kept": [
+    "4-Hydroxybutan-2-one",
+    "Acetaldehyde",
+    "Acetone",
+    "Formaldehyde",
+    "Glycoaldehyde",
+    "Glyoxylic acid",
+    "Methylglyoxal",
+    "Phenylacetaldehyde",
+    "Pyruvate"
+  ],
+  "training_substrates_subsample": [
+    "4-Hydroxybutan-2-one",
+    "Acetaldehyde",
+    "Acetone",
+    "Formaldehyde",
+    "Glycoaldehyde",
+    "Glyoxylic acid",
+    "Methylglyoxal",
+    "Phenylacetaldehyde",
+    "Pyruvate"
+  ],
+  "training_pool_includes_inactives": true,
+  "active_substrates": [
+    "Acetaldehyde",
+    "Acetone",
+    "Formaldehyde",
+    "Glycoaldehyde",
+    "Phenylacetaldehyde",
+    "Pyruvate"
+  ],
+  "inactive_substrates": [
+    "4-Hydroxybutan-2-one",
+    "Glyoxylic acid",
+    "Methylglyoxal"
+  ],
+  "n_folds": 6,
+  "n_pairwise_rows": 9574,
+  "null_model_embedding": "maccs",
+  "null_model_distance_metric": "cosine",
+  "null_model_metric_correlation": 0.44612226229246077,
+  "null_model_metric_selection": [
+    {
+      "embedding": "morgan",
+      "metric": "cosine",
+      "rho": 0.22141947280624377,
+      "pvalue": 0.19435275209071068
+    },
+    {
+      "embedding": "morgan",
+      "metric": "euclidean",
+      "rho": -0.08596047692687024,
+      "pvalue": 0.6181421951436092
+    },
+    {
+      "embedding": "morgan",
+      "metric": "manhattan",
+      "rho": -0.08596047692687024,
+      "pvalue": 0.6181421951436092
+    },
+    {
+      "embedding": "morgan",
+      "metric": "correlation",
+      "rho": 0.2295337165156558,
+      "pvalue": 0.17809007137569094
+    },
+    {
+      "embedding": "maccs",
+      "metric": "cosine",
+      "rho": 0.44612226229246077,
+      "pvalue": 0.006388260662522891
+    },
+    {
+      "embedding": "maccs",
+      "metric": "euclidean",
+      "rho": 0.17936729670853693,
+      "pvalue": 0.2952187369339716
+    },
+    {
+      "embedding": "maccs",
+      "metric": "manhattan",
+      "rho": 0.17936729670853693,
+      "pvalue": 0.2952187369339716
+    },
+    {
+      "embedding": "maccs",
+      "metric": "correlation",
+      "rho": 0.40356110291070063,
+      "pvalue": 0.014657852883873125
+    },
+    {
+      "embedding": "mordred",
+      "metric": "cosine",
+      "rho": 0.2581231641937443,
+      "pvalue": 0.1285181690696718
+    },
+    {
+      "embedding": "mordred",
+      "metric": "euclidean",
+      "rho": 0.016245513830375518,
+      "pvalue": 0.925078046527922
+    },
+    {
+      "embedding": "mordred",
+      "metric": "manhattan",
+      "rho": 0.04873654149112655,
+      "pvalue": 0.7777388056743963
+    },
+    {
+      "embedding": "mordred",
+      "metric": "correlation",
+      "rho": 0.2581231641937443,
+      "pvalue": 0.1285181690696718
+    },
+    {
+      "embedding": "molformer",
+      "metric": "cosine",
+      "rho": 0.363074340843948,
+      "pvalue": 0.029522100023605957
+    },
+    {
+      "embedding": "molformer",
+      "metric": "euclidean",
+      "rho": 0.4030434621726498,
+      "pvalue": 0.014797491556205163
+    },
+    {
+      "embedding": "molformer",
+      "metric": "manhattan",
+      "rho": 0.44507550589251016,
+      "pvalue": 0.006528312159898239
+    },
+    {
+      "embedding": "molformer",
+      "metric": "correlation",
+      "rho": 0.363074340843948,
+      "pvalue": 0.029522100023605957
+    }
+  ],
+  "seed": 42,
+  "bnn1_model_dir": null,
+  "x_aa_enabled": false,
+  "n_singleshot_repeats": null,
+  "distance_weight_temperature": 1.0,
+  "substrate_embedding_type": "molformer"
+}

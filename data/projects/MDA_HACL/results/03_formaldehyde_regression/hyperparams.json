@@ -1,0 +1,26 @@
+{
+  "hidden_dims": [
+    128,
+    64
+  ],
+  "prior_std": 1.0,
+  "dropout_rate": 0.2,
+  "activation": "silu",
+  "learning_rate": 0.001,
+  "kl_weight": 1.0,
+  "batch_size": 64,
+  "kl_anneal_epochs": 30,
+  "n_epochs": 300,
+  "early_stopping_patience": 20,
+  "n_inference_samples": 10,
+  "esm_wt_scaler": "standard",
+  "esm_wt_pca": 0.99,
+  "esm_mut_scaler": "standard",
+  "esm_mut_pca": 0.99,
+  "lds": {
+    "use_lds": false,
+    "n_bins": 50,
+    "kernel_size": 5,
+    "sigma": 2.0
+  }
+}

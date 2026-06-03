@@ -1,0 +1,157 @@
+# Run from the MDA_HACL project root:
+#   cd /kfs2/projects/proteinml/repos/aide_predict/data/projects/MDA_HACL
+#
+# ─── Metric & held-out scope (read this once) ───────────────────────────────
+# Per-position metrics (NDCG, Spearman, MAE, top-1 recovery, top-3 recovery)
+# are substrate-first two-step pooled: group by (substrate, position),
+# average within each substrate's positions, then average across substrates.
+# Each held-out substrate is weighted equally.
+#
+# Substrate-split CV holds out only ACTIVE substrates by default.
+# Inactive substrates have constant log_fc=-2 across all mutations and would
+# either NaN-out (NDCG/Spearman) or produce degenerate ranking values
+# (MAE/top-k) if held out. They stay in the training set as ordinary
+# training/reference candidates — never as test targets.
+#
+# Run order (now that the metric definitions changed):
+#   (0) hyperopt → produces best_hyperparams.json
+#   (1) comprehensive run → uses (0) → produces main_full_data
+#   (2) sensitivity sweep → uses (0) → produces sweep dir
+# Existing run dirs from before the metric change should be re-scored, not
+# trusted as-is. The relevant rescore commands are at the bottom.
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Two-stage wide → narrow workflow:
+#   0a) wide search on the cheap single-fold (Formaldehyde) — emits
+#       working_range.json describing the "good" hyperparameter region.
+#   0b) narrow search on full all-substrates CV, intersected with (0a)'s
+#       working_range via --narrow-from. Spends the expensive 6-fold budget
+#       inside the region (0a) already identified.
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 0a) Hyperopt — formaldehyde-only SMOKE / wide stage. Fast iteration
+#     (~6× faster per trial than all-substrates) over the full search space.
+#     Output: results/new_opt_05/formaldehyde_all_per_position_ndcg_mean_v2/
+#     Produces: best_hyperparams.json AND working_range.json (consumed by 0b).
+#
+#     NOTE: ``--scope formaldehyde`` automatically drops the "formaldehyde"
+#     reference mode (you can't reference the held-out target). The other
+#     three modes (nearest, avg_all, distance_weighted) are evaluated.
+# ─────────────────────────────────────────────────────────────────────────────
+python code/round3/new_opt_05.py \
+    --scope formaldehyde \
+    --objective-metric per_position_ndcg_mean \
+    --n-trials 30 \
+    --output-dir /kfs2/projects/proteinml/repos/aide_predict/data/projects/MDA_HACL/results/new_opt_05/formaldehyde_all_per_position_ndcg_mean_v2 \
+    --device cuda:0
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 0b) Hyperopt — full all-substrates (6 active folds per trial), NARROWED to
+#     the good region from (0a). Run after (0a) finishes. Output:
+#     results/new_opt_05/all-substrates_all_per_position_ndcg_mean_v2/
+#
+#     ``--narrow-from`` intersects the wide search space with the
+#     working_range.json written by (0a). This is the "wide → narrow"
+#     two-stage workflow: cheap smoke finds the rough region, the
+#     expensive full-CV budget refines inside it.
+#
+#     Sanity check before launch: open
+#       results/new_opt_05/formaldehyde_all_per_position_ndcg_mean_v2/working_range.json
+#     and verify ``confident: true`` (or at least a non-empty ``params``).
+#     If (0a) didn't converge confidently, drop ``--narrow-from`` and run
+#     the wide all-substrates search instead. The narrowing relies on the
+#     prior that Formaldehyde-good hyperparams generalise to the other 5
+#     actives — usually true here, but the bounds can collapse if (0a)'s
+#     good trials clustered too tightly (script logs a warning if so).
+#
+#     The "_v2" suffix keeps the pre-metric-fix study at
+#     ``all-substrates_all_per_position_ndcg_mean/`` intact for comparison.
+# ─────────────────────────────────────────────────────────────────────────────
+python code/round3/new_opt_05.py \
+    --scope all-substrates \
+    --objective-metric per_position_ndcg_mean \
+    --n-trials 60 \
+    --narrow-from /kfs2/projects/proteinml/repos/aide_predict/data/projects/MDA_HACL/results/new_opt_05/formaldehyde_all_per_position_ndcg_mean_v2/working_range.json \
+    --output-dir /kfs2/projects/proteinml/repos/aide_predict/data/projects/MDA_HACL/results/new_opt_05/all-substrates_all_per_position_ndcg_mean_v2 \
+    --device cuda:0
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 1) Comprehensive single run — full training data, all reference modes,
+#    all metrics. Output: results/new_05_bnn2/substrate/main_full_data/
+#
+#    Update the --hyperparams path to the v2 study output once (0b) finishes.
+# ─────────────────────────────────────────────────────────────────────────────
+python code/round3/new_05_bnn2_train.py \
+    --split substrate \
+    --hyperparams results/new_opt_05/all_substrates_spearman_rho_v2/best_hyperparams.json \
+    --run-id spearman_rho \
+    --device cuda:0
+
+python code/round3/new_05b_bnn2_score.py \
+    --run-dir results/new_05_bnn2/substrate/main_full_data
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 2) Sensitivity sweep — train×score for each (held-out target, k, subset).
+#    Output: results/new_05_bnn2/sensitivity/main/
+#
+#    Held-out targets: actives only (Acetaldehyde, Acetone, Formaldehyde,
+#    Glycoaldehyde, Phenylacetaldehyde, Pyruvate). Training pool for each
+#    held-out target = (all 9 substrates − target) = 8 candidates, freely
+#    mixing actives and inactives. k ranges 2..8.
+#
+#    With defaults (--max-samples-per-k 10, --exhaustive-threshold 30):
+#      per-target runs = 28 + 10 + 10 + 10 + 28 + 8 + 1 = 95
+#      total = 95 × 6 targets ≈ 570 runs.
+#
+#    NOTE on syntax: arguments AFTER the bare `--` separator are forwarded
+#    verbatim to new_05_bnn2_train.py for every sub-run (argparse.REMAINDER).
+#    This is how we pipe --hyperparams through to the inner trainer.
+#
+#    NOTE on output dir: a named, stable path lets you resume / extend the
+#    sweep across sessions. Do NOT reuse the legacy untimestamped dir
+#    `results/new_05_bnn2/sensitivity/` directly — it holds pre-redesign
+#    metrics (inactives forced into every fold) and the script will refuse
+#    to write into it.
+# ─────────────────────────────────────────────────────────────────────────────
+python code/round3/new_05c_bnn2_sensitivity.py \
+    --output-dir /kfs2/projects/proteinml/repos/aide_predict/data/projects/MDA_HACL/results/new_05_bnn2/sensitivity/main \
+    --device cuda:0 \
+    -- \
+    --hyperparams results/new_opt_05/all-substrates_all_per_position_ndcg_mean_v2/best_hyperparams.json
+
+
+# Smoke-test first (single held-out target, ~95 runs) before committing the
+# full ~570-run sweep:
+#
+python code/round3/new_05c_bnn2_sensitivity.py \
+    --held-out-substrates '["Acetaldehyde"]' \
+    --output-dir /kfs2/projects/proteinml/repos/aide_predict/data/projects/MDA_HACL/results/new_05_bnn2/sensitivity/smoke_acetaldehyde \
+    --device cuda:0 \
+    -- \
+    --hyperparams results/new_opt_05/all-substrates_all_per_position_ndcg_mean_v2/best_hyperparams.json
+
+
+# Dry-run to inspect the planned subset list (with inactives mixed in)
+# before launching:
+#
+python code/round3/new_05c_bnn2_sensitivity.py \
+    --dry-run \
+    -- --hyperparams results/new_opt_05/all-substrates_all_per_position_ndcg_mean_v2/best_hyperparams.json
+
+
+# ─── Rescore-only utilities (no retraining; uses existing predictions) ──────
+# Use after the metric definitions change to refresh metrics.json + plots.
+# Skip these on a fresh study/main run — they're only needed for stale dirs.
+#
+python code/round3/new_05b_bnn2_score.py \
+    --run-dir results/new_05_bnn2/substrate/main_full_data
+
+python code/round3/new_05c_bnn2_sensitivity.py \
+    --summary-only \
+    --output-dir /kfs2/projects/proteinml/repos/aide_predict/data/projects/MDA_HACL/results/new_05_bnn2/sensitivity/20260505_154502

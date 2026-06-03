@@ -1,0 +1,119 @@
+{
+  "hidden_dims": [
+    64
+  ],
+  "prior_std": 0.6239536949187833,
+  "dropout_rate": 0.22007624686980065,
+  "activation": "silu",
+  "x_aa_freeze": "full",
+  "substrate_embedding_type": "molformer",
+  "learning_rate": 5.9750279999602906e-05,
+  "kl_weight": 1.0,
+  "batch_size": 32,
+  "kl_anneal_epochs": 68,
+  "n_epochs": 52,
+  "early_stopping_patience": 50,
+  "n_inference_samples": 20,
+  "clip_grad_norm": 1.578882634722245,
+  "lds": {
+    "use_lds": false,
+    "n_bins": 50,
+    "kernel_size": 5,
+    "sigma": 2.0
+  },
+  "x_substrate_scaler": "none",
+  "x_substrate_pca": null,
+  "saprot_zs_scaler": "none",
+  "esm_wt_scaler": "standard",
+  "esm_wt_pca": 0.99,
+  "esm_mut_scaler": "robust",
+  "esm_mut_pca": 0.99,
+  "loss_type": "mse",
+  "null_reg_weight": 0.0,
+  "log_var_floor": -6,
+  "prediction_floor": -2.0,
+  "hurdle": {
+    "floor_threshold": -1.99,
+    "floor_value": -2.0,
+    "inference_threshold": 0.5
+  },
+  "distance_weight_temperature": 1.0,
+  "n_singleshot_repeats": 10,
+  "best_beta": 0.0,
+  "best_reference_mode": "formaldehyde",
+  "objective_metric": "top3_recovery",
+  "null_objective": 0.3333333333333333,
+  "delta": 0.0,
+  "scope": "all-substrates",
+  "reference_modes_evaluated": [
+    "formaldehyde",
+    "nearest",
+    "avg_all",
+    "distance_weighted"
+  ],
+  "per_beta_objective": {
+    "0.0": 0.3333333333333333,
+    "0.5": 0.0,
+    "1.0": 0.0,
+    "1.5": 0.0,
+    "2.0": 0.0
+  },
+  "per_mode_results": {
+    "formaldehyde": {
+      "status": "ok",
+      "best_bnn": 0.3333333333333333,
+      "best_beta": 0.0,
+      "per_beta": {
+        "0.0": 0.3333333333333333,
+        "0.5": 0.0,
+        "1.0": 0.0,
+        "1.5": 0.0,
+        "2.0": 0.0
+      },
+      "null": 0.3333333333333333,
+      "n_rows": 990
+    },
+    "nearest": {
+      "status": "ok",
+      "best_bnn": 0.3333333333333333,
+      "best_beta": 0.0,
+      "per_beta": {
+        "0.0": 0.3333333333333333,
+        "0.5": 0.0,
+        "1.0": 0.0,
+        "1.5": 0.0,
+        "2.0": 0.0
+      },
+      "null": 0.0,
+      "n_rows": 1198
+    },
+    "avg_all": {
+      "status": "ok",
+      "best_bnn": 0.0,
+      "best_beta": 0.0,
+      "per_beta": {
+        "0.0": 0.0,
+        "0.5": 0.0,
+        "1.0": 0.0,
+        "1.5": 0.0,
+        "2.0": 0.0
+      },
+      "null": 0.0,
+      "n_rows": 1198
+    },
+    "distance_weighted": {
+      "status": "ok",
+      "best_bnn": 0.3333333333333333,
+      "best_beta": 0.0,
+      "per_beta": {
+        "0.0": 0.3333333333333333,
+        "0.5": 0.0,
+        "1.0": 0.0,
+        "1.5": 0.0,
+        "2.0": 0.0
+      },
+      "null": 0.0,
+      "n_rows": 1198
+    }
+  }
+}

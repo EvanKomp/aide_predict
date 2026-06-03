@@ -1,0 +1,6478 @@
+{
+  "held_out": [
+    "Acetaldehyde",
+    "Acetone",
+    "Formaldehyde",
+    "Glycoaldehyde",
+    "Phenylacetaldehyde",
+    "Pyruvate"
+  ],
+  "active_substrates": [
+    "Acetaldehyde",
+    "Acetone",
+    "Formaldehyde",
+    "Glycoaldehyde",
+    "Phenylacetaldehyde",
+    "Pyruvate"
+  ],
+  "inactive_substrates": [
+    "4-Hydroxybutan-2-one",
+    "Glyoxylic acid",
+    "Methylglyoxal"
+  ],
+  "candidate_pool": [
+    "4-Hydroxybutan-2-one",
+    "Acetaldehyde",
+    "Acetone",
+    "Formaldehyde",
+    "Glycoaldehyde",
+    "Glyoxylic acid",
+    "Methylglyoxal",
+    "Phenylacetaldehyde",
+    "Pyruvate"
+  ],
+  "sweep_axis_includes_inactives": true,
+  "max_samples_per_k": 10,
+  "exhaustive_threshold": 30,
+  "seed": 42,
+  "plan": [
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone"
+      ],
+      "run_id": "S=Acetaldehyde_k=2_h=0484e3"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde"
+      ],
+      "run_id": "S=Acetaldehyde_k=2_h=ea208c"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Glycoaldehyde"
+      ],
+      "run_id": "S=Acetaldehyde_k=2_h=4b0849"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Acetaldehyde_k=2_h=77e0d9"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Acetaldehyde_k=2_h=cf831f"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetaldehyde_k=2_h=2f2851"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=2_h=66d863"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetone",
+        "Formaldehyde"
+      ],
+      "run_id": "S=Acetaldehyde_k=2_h=679e55"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetone",
+        "Glycoaldehyde"
+      ],
+      "run_id": "S=Acetaldehyde_k=2_h=7da5d0"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetone",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Acetaldehyde_k=2_h=58c2ea"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetone",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Acetaldehyde_k=2_h=d80294"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetone",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetaldehyde_k=2_h=748595"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetone",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=2_h=88fcaf"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 2,
+      "subset": [
+        "Formaldehyde",
+        "Glycoaldehyde"
+      ],
+      "run_id": "S=Acetaldehyde_k=2_h=5b2c79"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 2,
+      "subset": [
+        "Formaldehyde",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Acetaldehyde_k=2_h=d53e82"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 2,
+      "subset": [
+        "Formaldehyde",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Acetaldehyde_k=2_h=c87764"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 2,
+      "subset": [
+        "Formaldehyde",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetaldehyde_k=2_h=c9a9a9"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 2,
+      "subset": [
+        "Formaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=2_h=2edb14"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 2,
+      "subset": [
+        "Glycoaldehyde",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Acetaldehyde_k=2_h=a32fa3"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 2,
+      "subset": [
+        "Glycoaldehyde",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Acetaldehyde_k=2_h=cd7add"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 2,
+      "subset": [
+        "Glycoaldehyde",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetaldehyde_k=2_h=405f71"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 2,
+      "subset": [
+        "Glycoaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=2_h=420711"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 2,
+      "subset": [
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Acetaldehyde_k=2_h=fab426"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 2,
+      "subset": [
+        "Glyoxylic acid",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetaldehyde_k=2_h=31fb0c"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 2,
+      "subset": [
+        "Glyoxylic acid",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=2_h=f39c92"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 2,
+      "subset": [
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetaldehyde_k=2_h=4fb2fa"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 2,
+      "subset": [
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=2_h=47c9ae"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 2,
+      "subset": [
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=2_h=4f1ab3"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 3,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Acetaldehyde_k=3_h=0ecdd1"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 3,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Acetaldehyde_k=3_h=7c7f22"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 3,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Acetaldehyde_k=3_h=d8de1d"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 3,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetaldehyde_k=3_h=f73f22"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 3,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=3_h=9f1b0c"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 3,
+      "subset": [
+        "Acetone",
+        "Formaldehyde",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Acetaldehyde_k=3_h=c9cdf8"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 3,
+      "subset": [
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Acetaldehyde_k=3_h=c7da96"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 3,
+      "subset": [
+        "Acetone",
+        "Glycoaldehyde",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetaldehyde_k=3_h=f4589e"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 3,
+      "subset": [
+        "Acetone",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetaldehyde_k=3_h=9e99ee"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 3,
+      "subset": [
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Acetaldehyde_k=3_h=acf14e"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 4,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde"
+      ],
+      "run_id": "S=Acetaldehyde_k=4_h=e1843b"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 4,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Acetaldehyde_k=4_h=c1a626"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 4,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Acetaldehyde_k=4_h=8c7d37"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 4,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=4_h=640dc5"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 4,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetaldehyde_k=4_h=a93d68"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 4,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Acetaldehyde_k=4_h=3cf9ee"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 4,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=4_h=738ab2"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 4,
+      "subset": [
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetaldehyde_k=4_h=76df58"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 4,
+      "subset": [
+        "Acetone",
+        "Formaldehyde",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=4_h=658ae6"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 4,
+      "subset": [
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=4_h=18dd37"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 5,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Acetaldehyde_k=5_h=b7aa7b"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 5,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetaldehyde_k=5_h=3ae3ef"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 5,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetaldehyde_k=5_h=44e904"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 5,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetaldehyde_k=5_h=9e3a87"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 5,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=5_h=45d7f9"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 5,
+      "subset": [
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetaldehyde_k=5_h=671b7a"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 5,
+      "subset": [
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=5_h=dc4f93"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 5,
+      "subset": [
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=5_h=150ef3"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 5,
+      "subset": [
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetaldehyde_k=5_h=fc3a3f"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 5,
+      "subset": [
+        "Acetone",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=5_h=07dbbd"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Acetaldehyde_k=6_h=ba2a31"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetaldehyde_k=6_h=31a89a"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=6_h=9e4cc4"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetaldehyde_k=6_h=3b459b"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=6_h=2a7564"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=6_h=32da39"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetaldehyde_k=6_h=01ac00"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=6_h=112301"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=6_h=7615c7"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=6_h=cd7914"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetaldehyde_k=6_h=be2392"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=6_h=07257f"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=6_h=ab6ecb"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=6_h=7a2bfe"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=6_h=2acde5"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetaldehyde_k=6_h=3ae08b"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=6_h=fae661"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=6_h=8f0159"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=6_h=b7a186"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=6_h=bbe897"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=6_h=05254c"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 6,
+      "subset": [
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetaldehyde_k=6_h=bc37be"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 6,
+      "subset": [
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=6_h=369088"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 6,
+      "subset": [
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=6_h=4c5f49"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 6,
+      "subset": [
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=6_h=d101c8"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 6,
+      "subset": [
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=6_h=b463f5"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 6,
+      "subset": [
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=6_h=7b2692"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 6,
+      "subset": [
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=6_h=3e233c"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetaldehyde_k=7_h=0ef919"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=7_h=1d9b32"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=7_h=bfca79"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=7_h=db2ded"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=7_h=f4609c"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=7_h=6e46b4"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=7_h=f1c0a7"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 7,
+      "subset": [
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=7_h=b232af"
+    },
+    {
+      "target_substrate": "Acetaldehyde",
+      "k": 8,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetaldehyde_k=8_h=2018a9"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde"
+      ],
+      "run_id": "S=Acetone_k=2_h=5cb5d2"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde"
+      ],
+      "run_id": "S=Acetone_k=2_h=ea208c"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Glycoaldehyde"
+      ],
+      "run_id": "S=Acetone_k=2_h=4b0849"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Acetone_k=2_h=77e0d9"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Acetone_k=2_h=cf831f"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetone_k=2_h=2f2851"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=2_h=66d863"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 2,
+      "subset": [
+        "Acetaldehyde",
+        "Formaldehyde"
+      ],
+      "run_id": "S=Acetone_k=2_h=f80bd7"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 2,
+      "subset": [
+        "Acetaldehyde",
+        "Glycoaldehyde"
+      ],
+      "run_id": "S=Acetone_k=2_h=e2b69d"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 2,
+      "subset": [
+        "Acetaldehyde",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Acetone_k=2_h=62d7a3"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 2,
+      "subset": [
+        "Acetaldehyde",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Acetone_k=2_h=c1f38c"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 2,
+      "subset": [
+        "Acetaldehyde",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetone_k=2_h=fbf332"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 2,
+      "subset": [
+        "Acetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=2_h=bd71fd"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 2,
+      "subset": [
+        "Formaldehyde",
+        "Glycoaldehyde"
+      ],
+      "run_id": "S=Acetone_k=2_h=5b2c79"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 2,
+      "subset": [
+        "Formaldehyde",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Acetone_k=2_h=d53e82"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 2,
+      "subset": [
+        "Formaldehyde",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Acetone_k=2_h=c87764"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 2,
+      "subset": [
+        "Formaldehyde",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetone_k=2_h=c9a9a9"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 2,
+      "subset": [
+        "Formaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=2_h=2edb14"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 2,
+      "subset": [
+        "Glycoaldehyde",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Acetone_k=2_h=a32fa3"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 2,
+      "subset": [
+        "Glycoaldehyde",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Acetone_k=2_h=cd7add"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 2,
+      "subset": [
+        "Glycoaldehyde",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetone_k=2_h=405f71"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 2,
+      "subset": [
+        "Glycoaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=2_h=420711"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 2,
+      "subset": [
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Acetone_k=2_h=fab426"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 2,
+      "subset": [
+        "Glyoxylic acid",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetone_k=2_h=31fb0c"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 2,
+      "subset": [
+        "Glyoxylic acid",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=2_h=f39c92"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 2,
+      "subset": [
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetone_k=2_h=4fb2fa"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 2,
+      "subset": [
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=2_h=47c9ae"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 2,
+      "subset": [
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=2_h=4f1ab3"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 3,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Acetone_k=3_h=aba9d4"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 3,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Acetone_k=3_h=d8de1d"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 3,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetone_k=3_h=071c30"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 3,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=3_h=9f1b0c"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 3,
+      "subset": [
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glycoaldehyde"
+      ],
+      "run_id": "S=Acetone_k=3_h=fb4c78"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 3,
+      "subset": [
+        "Acetaldehyde",
+        "Glycoaldehyde",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetone_k=3_h=71f21a"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 3,
+      "subset": [
+        "Acetaldehyde",
+        "Glyoxylic acid",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=3_h=44cd3e"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 3,
+      "subset": [
+        "Acetaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetone_k=3_h=91520e"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 3,
+      "subset": [
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetone_k=3_h=077ddb"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 3,
+      "subset": [
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetone_k=3_h=f4c54a"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 4,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glycoaldehyde"
+      ],
+      "run_id": "S=Acetone_k=4_h=027cdb"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 4,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Acetone_k=4_h=958130"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 4,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetone_k=4_h=b7c9a8"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 4,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Glyoxylic acid",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=4_h=1c9731"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 4,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=4_h=738ab2"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 4,
+      "subset": [
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Acetone_k=4_h=5d2560"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 4,
+      "subset": [
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetone_k=4_h=1a4e1e"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 4,
+      "subset": [
+        "Acetaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=4_h=44b681"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 4,
+      "subset": [
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Acetone_k=4_h=bde6db"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 4,
+      "subset": [
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=4_h=15e9da"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 5,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Acetone_k=5_h=bb0788"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 5,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=5_h=4499f9"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 5,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetone_k=5_h=6e49b2"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 5,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=5_h=5402e4"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 5,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=5_h=a39dfd"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 5,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=5_h=6ab680"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 5,
+      "subset": [
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=5_h=c7862f"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 5,
+      "subset": [
+        "Acetaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=5_h=48894f"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 5,
+      "subset": [
+        "Acetaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=5_h=f50ef3"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 5,
+      "subset": [
+        "Acetaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=5_h=5329ff"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Acetone_k=6_h=3ddb07"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetone_k=6_h=a0b082"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=6_h=17a822"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetone_k=6_h=16d0bb"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=6_h=590d2f"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=6_h=0b34f1"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetone_k=6_h=abf791"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=6_h=7b8603"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=6_h=e88514"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=6_h=45ca98"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetone_k=6_h=abb70c"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=6_h=715209"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=6_h=5a7929"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=6_h=160ad5"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=6_h=955d32"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetone_k=6_h=3ae08b"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=6_h=fae661"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=6_h=8f0159"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=6_h=b7a186"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=6_h=bbe897"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=6_h=05254c"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 6,
+      "subset": [
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetone_k=6_h=55cf7d"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 6,
+      "subset": [
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=6_h=094581"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 6,
+      "subset": [
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=6_h=530536"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 6,
+      "subset": [
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=6_h=93b52f"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 6,
+      "subset": [
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=6_h=36f75c"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 6,
+      "subset": [
+        "Acetaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=6_h=57bcf1"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 6,
+      "subset": [
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=6_h=3e233c"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Acetone_k=7_h=70e335"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=7_h=33c1ee"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=7_h=f28226"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=7_h=a69906"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=7_h=32929e"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=7_h=eb80d0"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=7_h=f1c0a7"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 7,
+      "subset": [
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=7_h=5ca720"
+    },
+    {
+      "target_substrate": "Acetone",
+      "k": 8,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Acetone_k=8_h=16063a"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde"
+      ],
+      "run_id": "S=Formaldehyde_k=2_h=5cb5d2"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone"
+      ],
+      "run_id": "S=Formaldehyde_k=2_h=0484e3"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Glycoaldehyde"
+      ],
+      "run_id": "S=Formaldehyde_k=2_h=4b0849"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Formaldehyde_k=2_h=77e0d9"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Formaldehyde_k=2_h=cf831f"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Formaldehyde_k=2_h=2f2851"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=2_h=66d863"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone"
+      ],
+      "run_id": "S=Formaldehyde_k=2_h=37eb6c"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetaldehyde",
+        "Glycoaldehyde"
+      ],
+      "run_id": "S=Formaldehyde_k=2_h=e2b69d"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetaldehyde",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Formaldehyde_k=2_h=62d7a3"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetaldehyde",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Formaldehyde_k=2_h=c1f38c"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetaldehyde",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Formaldehyde_k=2_h=fbf332"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=2_h=bd71fd"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetone",
+        "Glycoaldehyde"
+      ],
+      "run_id": "S=Formaldehyde_k=2_h=7da5d0"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetone",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Formaldehyde_k=2_h=58c2ea"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetone",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Formaldehyde_k=2_h=d80294"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetone",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Formaldehyde_k=2_h=748595"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetone",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=2_h=88fcaf"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 2,
+      "subset": [
+        "Glycoaldehyde",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Formaldehyde_k=2_h=a32fa3"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 2,
+      "subset": [
+        "Glycoaldehyde",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Formaldehyde_k=2_h=cd7add"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 2,
+      "subset": [
+        "Glycoaldehyde",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Formaldehyde_k=2_h=405f71"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 2,
+      "subset": [
+        "Glycoaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=2_h=420711"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 2,
+      "subset": [
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Formaldehyde_k=2_h=fab426"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 2,
+      "subset": [
+        "Glyoxylic acid",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Formaldehyde_k=2_h=31fb0c"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 2,
+      "subset": [
+        "Glyoxylic acid",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=2_h=f39c92"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 2,
+      "subset": [
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Formaldehyde_k=2_h=4fb2fa"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 2,
+      "subset": [
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=2_h=47c9ae"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 2,
+      "subset": [
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=2_h=4f1ab3"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 3,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Glycoaldehyde"
+      ],
+      "run_id": "S=Formaldehyde_k=3_h=f99208"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 3,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Formaldehyde_k=3_h=b83909"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 3,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=3_h=461241"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 3,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Glycoaldehyde"
+      ],
+      "run_id": "S=Formaldehyde_k=3_h=f2fda7"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 3,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Formaldehyde_k=3_h=7c7f22"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 3,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Formaldehyde_k=3_h=cd50ac"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 3,
+      "subset": [
+        "Acetaldehyde",
+        "Glycoaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=3_h=b35b15"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 3,
+      "subset": [
+        "Acetaldehyde",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=3_h=6e7cfc"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 3,
+      "subset": [
+        "Acetone",
+        "Glycoaldehyde",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Formaldehyde_k=3_h=f4589e"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 3,
+      "subset": [
+        "Acetone",
+        "Glycoaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=3_h=fe74c8"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 4,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Formaldehyde_k=4_h=df24ff"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 4,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Glyoxylic acid",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=4_h=1c9731"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 4,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Formaldehyde_k=4_h=bd30a4"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 4,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Formaldehyde_k=4_h=b25fe8"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 4,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Formaldehyde_k=4_h=bb030e"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 4,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Formaldehyde_k=4_h=34e243"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 4,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=4_h=738ab2"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 4,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Glycoaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=4_h=e51495"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 4,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Formaldehyde_k=4_h=b78aec"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 4,
+      "subset": [
+        "Acetaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Formaldehyde_k=4_h=7268b8"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 5,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Formaldehyde_k=5_h=f7c8dd"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 5,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Formaldehyde_k=5_h=8d6e45"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 5,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=5_h=4803ef"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 5,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=5_h=c84223"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 5,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Formaldehyde_k=5_h=6b4c5f"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 5,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=5_h=c81c8f"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 5,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Glycoaldehyde",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=5_h=f9bf25"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 5,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=5_h=435b8d"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 5,
+      "subset": [
+        "Acetaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=5_h=48894f"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 5,
+      "subset": [
+        "Acetone",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=5_h=07dbbd"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Formaldehyde_k=6_h=b6e657"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Formaldehyde_k=6_h=7dacf4"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=6_h=7d9f04"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Formaldehyde_k=6_h=b96286"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=6_h=1629ff"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Glycoaldehyde",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=6_h=99f250"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Formaldehyde_k=6_h=9f6f8d"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=6_h=e2b4cb"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=6_h=05bac2"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=6_h=111da2"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Formaldehyde_k=6_h=abb70c"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=6_h=715209"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=6_h=5a7929"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=6_h=160ad5"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=6_h=955d32"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Formaldehyde_k=6_h=be2392"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=6_h=07257f"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=6_h=ab6ecb"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=6_h=7a2bfe"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=6_h=2acde5"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=6_h=05254c"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 6,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Formaldehyde_k=6_h=98706f"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 6,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=6_h=c5eb35"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 6,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=6_h=15eca6"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 6,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=6_h=d092cb"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 6,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=6_h=acea81"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 6,
+      "subset": [
+        "Acetaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=6_h=57bcf1"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 6,
+      "subset": [
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=6_h=7b2692"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Formaldehyde_k=7_h=6bef2a"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=7_h=01f195"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=7_h=28e9e6"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=7_h=b6d687"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=7_h=481014"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=7_h=eb80d0"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=7_h=6e46b4"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 7,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=7_h=1fd9bd"
+    },
+    {
+      "target_substrate": "Formaldehyde",
+      "k": 8,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Formaldehyde_k=8_h=507fa3"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde"
+      ],
+      "run_id": "S=Glycoaldehyde_k=2_h=5cb5d2"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone"
+      ],
+      "run_id": "S=Glycoaldehyde_k=2_h=0484e3"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde"
+      ],
+      "run_id": "S=Glycoaldehyde_k=2_h=ea208c"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Glycoaldehyde_k=2_h=77e0d9"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Glycoaldehyde_k=2_h=cf831f"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Glycoaldehyde_k=2_h=2f2851"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=2_h=66d863"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone"
+      ],
+      "run_id": "S=Glycoaldehyde_k=2_h=37eb6c"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetaldehyde",
+        "Formaldehyde"
+      ],
+      "run_id": "S=Glycoaldehyde_k=2_h=f80bd7"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetaldehyde",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Glycoaldehyde_k=2_h=62d7a3"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetaldehyde",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Glycoaldehyde_k=2_h=c1f38c"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetaldehyde",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Glycoaldehyde_k=2_h=fbf332"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=2_h=bd71fd"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetone",
+        "Formaldehyde"
+      ],
+      "run_id": "S=Glycoaldehyde_k=2_h=679e55"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetone",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Glycoaldehyde_k=2_h=58c2ea"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetone",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Glycoaldehyde_k=2_h=d80294"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetone",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Glycoaldehyde_k=2_h=748595"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetone",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=2_h=88fcaf"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 2,
+      "subset": [
+        "Formaldehyde",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Glycoaldehyde_k=2_h=d53e82"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 2,
+      "subset": [
+        "Formaldehyde",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Glycoaldehyde_k=2_h=c87764"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 2,
+      "subset": [
+        "Formaldehyde",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Glycoaldehyde_k=2_h=c9a9a9"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 2,
+      "subset": [
+        "Formaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=2_h=2edb14"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 2,
+      "subset": [
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Glycoaldehyde_k=2_h=fab426"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 2,
+      "subset": [
+        "Glyoxylic acid",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Glycoaldehyde_k=2_h=31fb0c"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 2,
+      "subset": [
+        "Glyoxylic acid",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=2_h=f39c92"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 2,
+      "subset": [
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Glycoaldehyde_k=2_h=4fb2fa"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 2,
+      "subset": [
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=2_h=47c9ae"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 2,
+      "subset": [
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=2_h=4f1ab3"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 3,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone"
+      ],
+      "run_id": "S=Glycoaldehyde_k=3_h=94a11b"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 3,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde"
+      ],
+      "run_id": "S=Glycoaldehyde_k=3_h=eed0ab"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 3,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde"
+      ],
+      "run_id": "S=Glycoaldehyde_k=3_h=ac303b"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 3,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Glycoaldehyde_k=3_h=7394b3"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 3,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Glycoaldehyde_k=3_h=d8de1d"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 3,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde"
+      ],
+      "run_id": "S=Glycoaldehyde_k=3_h=5e54d3"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 3,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Glycoaldehyde_k=3_h=4b1314"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 3,
+      "subset": [
+        "Acetone",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=3_h=24350b"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 3,
+      "subset": [
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Glycoaldehyde_k=3_h=f4c54a"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 3,
+      "subset": [
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=3_h=032cc3"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 4,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Glycoaldehyde_k=4_h=97fd54"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 4,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Glycoaldehyde_k=4_h=b7c9a8"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 4,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Glyoxylic acid",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=4_h=fc3279"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 4,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Glycoaldehyde_k=4_h=a45947"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 4,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Glycoaldehyde_k=4_h=3cf9ee"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 4,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Glycoaldehyde_k=4_h=177da0"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 4,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=4_h=f37bbc"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 4,
+      "subset": [
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=4_h=f462a8"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 4,
+      "subset": [
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=4_h=38597c"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 4,
+      "subset": [
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=4_h=15e9da"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 5,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Glycoaldehyde_k=5_h=8729b0"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 5,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Glycoaldehyde_k=5_h=494bad"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 5,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=5_h=16b55b"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 5,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=5_h=b2ca24"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 5,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=5_h=9e2061"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 5,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=5_h=fd9394"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 5,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=5_h=44e9cc"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 5,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Glycoaldehyde_k=5_h=4b3ae5"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 5,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=5_h=e8a519"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 5,
+      "subset": [
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=5_h=26fbae"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Glycoaldehyde_k=6_h=1d44aa"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Glycoaldehyde_k=6_h=b5e8cc"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=6_h=fb32bd"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Glycoaldehyde_k=6_h=11e59f"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=6_h=f80ac6"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=6_h=19ea0f"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Glycoaldehyde_k=6_h=9f6f8d"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=6_h=e2b4cb"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=6_h=05bac2"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=6_h=111da2"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Glycoaldehyde_k=6_h=abf791"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=6_h=7b8603"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=6_h=e88514"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=6_h=45ca98"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=6_h=955d32"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Glycoaldehyde_k=6_h=01ac00"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=6_h=112301"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=6_h=7615c7"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=6_h=cd7914"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=6_h=2acde5"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=6_h=bbe897"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 6,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Glycoaldehyde_k=6_h=0f63a7"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 6,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=6_h=72adc4"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 6,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=6_h=16ecec"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 6,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=6_h=118003"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 6,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=6_h=acea81"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 6,
+      "subset": [
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=6_h=36f75c"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 6,
+      "subset": [
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=6_h=b463f5"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Glycoaldehyde_k=7_h=70cae7"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=7_h=84b49f"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=7_h=435b55"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=7_h=1884c4"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=7_h=481014"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=7_h=32929e"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=7_h=f4609c"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 7,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=7_h=69da37"
+    },
+    {
+      "target_substrate": "Glycoaldehyde",
+      "k": 8,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Glycoaldehyde_k=8_h=770cd1"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=2_h=5cb5d2"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=2_h=0484e3"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=2_h=ea208c"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Glycoaldehyde"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=2_h=4b0849"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=2_h=77e0d9"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=2_h=cf831f"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=2_h=66d863"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=2_h=37eb6c"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetaldehyde",
+        "Formaldehyde"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=2_h=f80bd7"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetaldehyde",
+        "Glycoaldehyde"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=2_h=e2b69d"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetaldehyde",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=2_h=62d7a3"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetaldehyde",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=2_h=c1f38c"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=2_h=bd71fd"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetone",
+        "Formaldehyde"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=2_h=679e55"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetone",
+        "Glycoaldehyde"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=2_h=7da5d0"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetone",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=2_h=58c2ea"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetone",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=2_h=d80294"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 2,
+      "subset": [
+        "Acetone",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=2_h=88fcaf"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 2,
+      "subset": [
+        "Formaldehyde",
+        "Glycoaldehyde"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=2_h=5b2c79"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 2,
+      "subset": [
+        "Formaldehyde",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=2_h=d53e82"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 2,
+      "subset": [
+        "Formaldehyde",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=2_h=c87764"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 2,
+      "subset": [
+        "Formaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=2_h=2edb14"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 2,
+      "subset": [
+        "Glycoaldehyde",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=2_h=a32fa3"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 2,
+      "subset": [
+        "Glycoaldehyde",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=2_h=cd7add"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 2,
+      "subset": [
+        "Glycoaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=2_h=420711"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 2,
+      "subset": [
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=2_h=fab426"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 2,
+      "subset": [
+        "Glyoxylic acid",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=2_h=f39c92"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 2,
+      "subset": [
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=2_h=47c9ae"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 3,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=3_h=d8de1d"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 3,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Glycoaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=3_h=c71cc6"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 3,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=3_h=a5aabc"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 3,
+      "subset": [
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=3_h=ec9329"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 3,
+      "subset": [
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=3_h=059aa1"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 3,
+      "subset": [
+        "Acetaldehyde",
+        "Glyoxylic acid",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=3_h=44cd3e"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 3,
+      "subset": [
+        "Acetaldehyde",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=3_h=2393fe"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 3,
+      "subset": [
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=3_h=ea7451"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 3,
+      "subset": [
+        "Formaldehyde",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=3_h=43ec01"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 3,
+      "subset": [
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=3_h=1a63e1"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 4,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=4_h=832784"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 4,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=4_h=a4c545"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 4,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=4_h=b3b444"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 4,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=4_h=60dfdd"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 4,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=4_h=cf30d5"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 4,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=4_h=eacabc"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 4,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=4_h=0a2765"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 4,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=4_h=8c275c"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 4,
+      "subset": [
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=4_h=00ecc8"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 4,
+      "subset": [
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=4_h=63de68"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 5,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=5_h=5faa9e"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 5,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=5_h=18c0d0"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 5,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=5_h=184768"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 5,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=5_h=16b55b"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 5,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=5_h=633030"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 5,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=5_h=5458ef"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 5,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=5_h=e47341"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 5,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=5_h=e4f2f9"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 5,
+      "subset": [
+        "Acetaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=5_h=48894f"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 5,
+      "subset": [
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=5_h=5b2858"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=6_h=83bd36"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=6_h=44dccf"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=6_h=f06dd0"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=6_h=1d44aa"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=6_h=fb32bd"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=6_h=f80ac6"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=6_h=b6e657"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=6_h=7d9f04"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=6_h=1629ff"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=6_h=e2b4cb"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=6_h=3ddb07"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=6_h=17a822"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=6_h=590d2f"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=6_h=7b8603"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=6_h=715209"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=6_h=ba2a31"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=6_h=9e4cc4"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=6_h=2a7564"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=6_h=112301"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=6_h=07257f"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=6_h=fae661"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 6,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=6_h=2817d9"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 6,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=6_h=ddf8f5"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 6,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=6_h=837bc4"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 6,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=6_h=72adc4"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 6,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=6_h=c5eb35"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 6,
+      "subset": [
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=6_h=094581"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 6,
+      "subset": [
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=6_h=369088"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=7_h=b0c9a7"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=7_h=2a3031"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=7_h=d1a84a"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=7_h=84b49f"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=7_h=01f195"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=7_h=33c1ee"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=7_h=1d9b32"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 7,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=7_h=da9856"
+    },
+    {
+      "target_substrate": "Phenylacetaldehyde",
+      "k": 8,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Pyruvate"
+      ],
+      "run_id": "S=Phenylacetaldehyde_k=8_h=c5fbd6"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=2_h=5cb5d2"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone"
+      ],
+      "run_id": "S=Pyruvate_k=2_h=0484e3"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=2_h=ea208c"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Glycoaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=2_h=4b0849"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Pyruvate_k=2_h=77e0d9"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Pyruvate_k=2_h=cf831f"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 2,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=2_h=2f2851"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 2,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone"
+      ],
+      "run_id": "S=Pyruvate_k=2_h=37eb6c"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 2,
+      "subset": [
+        "Acetaldehyde",
+        "Formaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=2_h=f80bd7"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 2,
+      "subset": [
+        "Acetaldehyde",
+        "Glycoaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=2_h=e2b69d"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 2,
+      "subset": [
+        "Acetaldehyde",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Pyruvate_k=2_h=62d7a3"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 2,
+      "subset": [
+        "Acetaldehyde",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Pyruvate_k=2_h=c1f38c"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 2,
+      "subset": [
+        "Acetaldehyde",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=2_h=fbf332"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 2,
+      "subset": [
+        "Acetone",
+        "Formaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=2_h=679e55"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 2,
+      "subset": [
+        "Acetone",
+        "Glycoaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=2_h=7da5d0"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 2,
+      "subset": [
+        "Acetone",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Pyruvate_k=2_h=58c2ea"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 2,
+      "subset": [
+        "Acetone",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Pyruvate_k=2_h=d80294"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 2,
+      "subset": [
+        "Acetone",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=2_h=748595"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 2,
+      "subset": [
+        "Formaldehyde",
+        "Glycoaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=2_h=5b2c79"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 2,
+      "subset": [
+        "Formaldehyde",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Pyruvate_k=2_h=d53e82"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 2,
+      "subset": [
+        "Formaldehyde",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Pyruvate_k=2_h=c87764"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 2,
+      "subset": [
+        "Formaldehyde",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=2_h=c9a9a9"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 2,
+      "subset": [
+        "Glycoaldehyde",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Pyruvate_k=2_h=a32fa3"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 2,
+      "subset": [
+        "Glycoaldehyde",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Pyruvate_k=2_h=cd7add"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 2,
+      "subset": [
+        "Glycoaldehyde",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=2_h=405f71"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 2,
+      "subset": [
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Pyruvate_k=2_h=fab426"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 2,
+      "subset": [
+        "Glyoxylic acid",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=2_h=31fb0c"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 2,
+      "subset": [
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=2_h=4fb2fa"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 3,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone"
+      ],
+      "run_id": "S=Pyruvate_k=3_h=94a11b"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 3,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=3_h=eed0ab"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 3,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Glycoaldehyde",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=3_h=c402ff"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 3,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=3_h=f73f22"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 3,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=3_h=071c30"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 3,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Pyruvate_k=3_h=eba7a9"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 3,
+      "subset": [
+        "Acetaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Pyruvate_k=3_h=a1419a"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 3,
+      "subset": [
+        "Acetaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=3_h=91520e"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 3,
+      "subset": [
+        "Acetone",
+        "Glycoaldehyde",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Pyruvate_k=3_h=b1b775"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 3,
+      "subset": [
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=3_h=077ddb"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 4,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Pyruvate_k=4_h=958130"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 4,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Pyruvate_k=4_h=aed15c"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 4,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=4_h=e1843b"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 4,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Pyruvate_k=4_h=b02fff"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 4,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Pyruvate_k=4_h=3cf9ee"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 4,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=4_h=8ee15c"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 4,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Pyruvate_k=4_h=eacabc"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 4,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Pyruvate_k=4_h=8c275c"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 4,
+      "subset": [
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Pyruvate_k=4_h=99ed5e"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 4,
+      "subset": [
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=4_h=7e3b6d"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 5,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Pyruvate_k=5_h=895d53"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 5,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=5_h=ba5eac"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 5,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Pyruvate_k=5_h=f7c8dd"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 5,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=5_h=128b03"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 5,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=5_h=c8b216"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 5,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=5_h=a7027d"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 5,
+      "subset": [
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=5_h=cf3eb7"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 5,
+      "subset": [
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Pyruvate_k=5_h=8bd832"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 5,
+      "subset": [
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=5_h=671b7a"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 5,
+      "subset": [
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=5_h=f52840"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid"
+      ],
+      "run_id": "S=Pyruvate_k=6_h=83bd36"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Pyruvate_k=6_h=44dccf"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=6_h=cf266e"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Pyruvate_k=6_h=1d44aa"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=6_h=b5e8cc"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=6_h=11e59f"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Pyruvate_k=6_h=b6e657"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=6_h=7dacf4"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=6_h=b96286"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=6_h=9f6f8d"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Pyruvate_k=6_h=3ddb07"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=6_h=a0b082"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=6_h=16d0bb"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=6_h=abf791"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=6_h=abb70c"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Pyruvate_k=6_h=ba2a31"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=6_h=31a89a"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=6_h=3b459b"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=6_h=01ac00"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=6_h=be2392"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 6,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=6_h=3ae08b"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 6,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Pyruvate_k=6_h=2817d9"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 6,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=6_h=120b6a"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 6,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=6_h=0e67b6"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 6,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=6_h=0f63a7"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 6,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=6_h=98706f"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 6,
+      "subset": [
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=6_h=55cf7d"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 6,
+      "subset": [
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=6_h=bc37be"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal"
+      ],
+      "run_id": "S=Pyruvate_k=7_h=b0c9a7"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=7_h=834948"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=7_h=2a85f0"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=7_h=70cae7"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=7_h=6bef2a"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=7_h=70e335"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 7,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=7_h=0ef919"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 7,
+      "subset": [
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=7_h=5c22b2"
+    },
+    {
+      "target_substrate": "Pyruvate",
+      "k": 8,
+      "subset": [
+        "4-Hydroxybutan-2-one",
+        "Acetaldehyde",
+        "Acetone",
+        "Formaldehyde",
+        "Glycoaldehyde",
+        "Glyoxylic acid",
+        "Methylglyoxal",
+        "Phenylacetaldehyde"
+      ],
+      "run_id": "S=Pyruvate_k=8_h=a4b217"
+    }
+  ]
+}

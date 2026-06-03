@@ -1,0 +1,69 @@
+# Auto-generated from new_opt_05.py — drop into config.yaml
+# Source study: new_opt_05__all-substrates__all__top3_recovery
+# Scope: all-substrates  reference_mode: all  metric: top3_recovery
+# Good trials: 20/100  confident=True
+
+clip_grad_norm:
+  search:
+    type: loguniform
+    low: 0.524064
+    high: 17.7823
+  # orig=0.5..20.0  median_good=13.5917  n_good=20  confident=True
+
+dropout_rate:
+  search:
+    type: uniform
+    low: 0.0587362
+    high: 0.267004
+  # orig=0.0..0.5  median_good=0.118431  n_good=20  confident=True
+
+esm_mut_scaler:
+  search: ["standard", "robust", "none"]  # freq={'standard': 9, 'robust': 9, 'none': 2}
+
+esm_wt_scaler:
+  search: ["none", "standard"]  # freq={'none': 9, 'standard': 11}
+
+hidden_dims:
+  search: [[128, 64], [256, 128, 64]]  # freq={'[128, 64]': 1, '[256, 128, 64]': 19}
+
+kl_anneal_epochs:
+  search:
+    type: int
+    low: 14
+    high: 41
+  # orig=5..100  median_good=22  n_good=20  confident=True
+
+learning_rate:
+  search:
+    type: loguniform
+    low: 1.16773e-05
+    high: 0.000160996
+  # orig=1e-05..0.01  median_good=2.32881e-05  n_good=20  confident=True
+
+log_var_floor:
+  search: [-6.0, -4.0]  # min=-6.0  max=-4.0  median=-4.0  freq={'-4': 17, '-6': 3}
+
+loss_type:
+  search: ["mse"]  # freq={'mse': 20}
+
+null_reg_weight:
+  search: [0.0, 0.01, 0.05, 0.1]  # min=0.0  max=0.1  median=0.025  freq={'0.1': 9, '0.0': 10, '0.05': 1}
+
+prior_std:
+  search:
+    type: loguniform
+    low: 0.0769266
+    high: 0.495165
+  # orig=0.05..2.0  median_good=0.160585  n_good=20  confident=True
+
+saprot_zs_scaler:
+  search: ["standard"]  # freq={'standard': 20}
+
+substrate_embedding_type:
+  search: ["maccs", "mordred"]  # freq={'maccs': 4, 'mordred': 16}
+
+use_lds:
+  search: [true]  # freq={'True': 20}
+
+x_substrate_scaler:
+  search: ["none"]  # freq={'none': 20}

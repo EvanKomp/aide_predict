@@ -1,0 +1,319 @@
+bnn1:
+  activation:
+    search: null
+    value: silu
+  dropout_rate:
+    search:
+    - 0.1
+    - 0.2
+    - 0.3
+    value: 0.2
+  hidden_dims:
+    search:
+    - - 64
+    - - 128
+      - 64
+    - - 256
+      - 128
+      - 64
+    value:
+    - 128
+    - 64
+  latent_layer: -1
+  lds:
+    kernel_size: 5
+    n_bins: 50
+    sigma: 2.0
+    use_lds: false
+  prior_std:
+    search:
+    - 0.1
+    - 0.5
+    - 1.0
+    value: 1.0
+  task: regression
+  training:
+    batch_size:
+      search: null
+      value: 64
+    early_stopping_patience:
+      search: null
+      value: 20
+    kl_anneal_epochs:
+      search:
+      - 10
+      - 20
+      - 30
+      - 50
+      value: 30
+    kl_weight:
+      search: null
+      value: 1.0
+    learning_rate:
+      search:
+      - 0.0001
+      - 0.005
+      - 0.001
+      - 0.005
+      value: 0.001
+    n_epochs:
+      search: null
+      value: 300
+    n_inference_samples:
+      search: null
+      value: 10
+bnn2:
+  activation:
+    search: null
+    value: silu
+  dropout_rate:
+    search:
+      high: 0.5
+      low: 0.0
+      type: uniform
+    value: 0.1
+  features:
+    esm_mut:
+      search: null
+      value: true
+    esm_wt:
+      search: null
+      value: true
+    fc_ref:
+      search: null
+      value: true
+    ref_distance:
+      search: null
+      value: true
+    saprot_zs:
+      search: null
+      value: true
+    x_aa:
+      search: null
+      value: false
+    x_ref_substrate:
+      search: null
+      value: true
+    x_target_substrate:
+      search: null
+      value: true
+  hidden_dims:
+    search:
+    - - 64
+    - - 128
+      - 64
+    - - 256
+      - 128
+      - 64
+    value:
+    - 128
+    - 64
+  hurdle:
+    floor_threshold: -1.99
+    floor_value: -2.0
+    inference_threshold: 0.5
+  lds:
+    kernel_size: 5
+    n_bins: 50
+    sigma: 2.0
+    use_lds:
+      search:
+      - true
+      - false
+      value: false
+  loss_type:
+    search:
+    - gaussian_nll
+    - mse
+    - hurdle
+    value: gaussian_nll
+  pairwise:
+    distance_weight_temperature:
+      search: null
+      value: 1.0
+    exclude_self_ref:
+      search: null
+      value: true
+    inference_aggregation:
+      search:
+      - nearest
+      - distance_weighted
+      - mean
+      value: nearest
+    ref_substrates: all
+  prior_std:
+    search:
+      high: 2.0
+      low: 0.05
+      type: loguniform
+    value: 0.5
+  substrate_embedding_type:
+    search:
+    - morgan
+    - maccs
+    - mordred
+    - molformer
+    value: maccs
+  training:
+    batch_size:
+      search: null
+      value: 32
+    clip_grad_norm:
+      search:
+        high: 20.0
+        low: 0.5
+        type: loguniform
+      value: 5.0
+    early_stopping_patience:
+      search: null
+      value: 50
+    kl_anneal_epochs:
+      search:
+        high: 100
+        low: 5
+        type: int
+      value: 30
+    kl_weight:
+      search: null
+      value: 1.0
+    learning_rate:
+      search:
+        high: 0.01
+        low: 1.0e-05
+        type: loguniform
+      value: 0.0005
+    log_var_floor:
+      search:
+      - -6
+      - -4
+      - -2
+      value: -4.0
+    n_epochs:
+      search: null
+      value: 500
+    n_inference_samples:
+      search: null
+      value: 20
+    null_reg_weight:
+      search:
+      - 0.0
+      - 0.01
+      - 0.05
+      - 0.1
+      - 0.2
+      value: 0.01
+    prediction_floor:
+      search: null
+      value: -2.0
+  x_aa_freeze:
+    search: null
+    value: full
+compute:
+  device: cuda:0
+  esm2_batch_size: 4
+  saprot_batch_size: 2
+cv:
+  enrichment_threshold: 0.0
+  n_folds: 5
+  n_hyperopt_trials: 100
+  optimization_objective: ndcg
+  regret_top_k: 10
+  seed: 42
+data:
+  active_substrate_sheets:
+  - Formaldehyde
+  - Acetaldehyde
+  - Acetone
+  - Glycoaldehyde
+  - Phenylacetaldehyde
+  - Pyruvate
+  epsilon: 0.01
+  formaldehyde_ssm_csv: data/experimental/ssm_data.csv
+  inactive_substrates:
+  - Methylglyoxal
+  - 4-Hydroxybutan-2-one
+  - Glyoxylic acid
+  include_inactive_substrates: true
+  multi_substrate_positions:
+  - 83
+  - 399
+  - 403
+  - 407
+  - 420
+  - 425
+  - 556
+  - 561
+  - 566
+  - 567
+  - 568
+  - 569
+  - 570
+  - 571
+  - 572
+  multi_substrate_ssm_xlsx: data/round3/all_ssm_data.xlsx
+  output_dir: data/round3/processed
+  position_offset: 10
+  pyruvate_ref_mutation: V83P
+  structure_file: structure/mda_hacl_b4fe6_relaxed_rank_001_alphafold2_ptm_model_3_seed_000.pdb
+  supplemental_ssm_xlsx: null
+  wt_sequence_length: 565
+embeddings:
+  esm2:
+    layer: last
+    model_name: esm2_t33_650M_UR50D
+    pool: position
+  saprot:
+    marginal: wildtype
+  substrate:
+    maccs: true
+    molformer: true
+    mordred_2d: true
+    morgan_bits: 2048
+    morgan_radius: 2
+preprocessing:
+  esm_mut:
+    pca:
+      search: null
+      value: 0.99
+    scaler:
+      search:
+      - none
+      - standard
+      - robust
+      value: standard
+  esm_wt:
+    pca:
+      search: null
+      value: 0.99
+    scaler:
+      search:
+      - none
+      - standard
+      - robust
+      value: standard
+  saprot_zs:
+    scaler:
+      search:
+      - none
+      - standard
+      value: none
+  x_aa:
+    pca:
+      search: null
+      value: null
+    scaler:
+      search: null
+      value: none
+  x_substrate:
+    pca:
+      search: null
+      value: null
+    scaler:
+      search:
+      - none
+      - standard
+      value: none
+selection:
+  n_per_substrate: 10
+  strategy: ucb
+  ucb_kappa: 2.0

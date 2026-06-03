@@ -1,0 +1,2 @@
+python new_05_bnn2_train.py --split substrate --hyperparams results/new_opt_05/all_substrates_per_position_ndcg_mean/best_hyperparams.json
+python new_05b_bnn2_score.py --run-dir results/new_05_bnn2/substrate/<run_id>
