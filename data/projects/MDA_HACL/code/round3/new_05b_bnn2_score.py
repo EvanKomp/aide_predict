@@ -135,7 +135,7 @@ def aggregate_and_null_per_fold(
     distance_metric: str,
     distance_weight_temperature: float,
     formaldehyde_substrate: str = FORMALDEHYDE_SUBSTRATE,
-    acq_sigma: str = "within_epi_ale",
+    acq_sigma: str = "within_epi",
 ) -> pd.DataFrame:
     """Run aggregation + null computation for one reference mode, per fold,
     then concatenate the results.
@@ -1884,7 +1884,7 @@ def parse_args() -> argparse.Namespace:
                         help="JSON list of βs for the sweep plots/arrays, e.g. "
                              f"'[0.0, 0.5, 1.0]'. Default: {list(DEFAULT_BETA_GRID)} "
                              "(mirrors the hyperopt --ucb-betas grid).")
-    parser.add_argument("--acq-sigma", type=str, default="within_epi_ale",
+    parser.add_argument("--acq-sigma", type=str, default="within_epi",
                         choices=["within_epi_ale", "within_epi", "total"],
                         help="σ used by the UCB β-ranking (NOT the reported "
                              "uncertainty). 'within_epi' (default) = epistemic-only, "

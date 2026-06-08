@@ -66,9 +66,9 @@ for entry in "${RUNS[@]}"; do
         --device cuda:0
 
     # (2) analysis + plot.
-    # --acq-sigma within_epi_ale: rank UCB by the mode-consistent within-ref σ.
+    # --acq-sigma within_epi: rank UCB by the mode-consistent epistemic-only σ.
     # MUST match the σ the hyperopt optimised under (slurm_submit_hyperopt.sh).
     python code/round3/new_05b_bnn2_score.py \
         --run-dir "$run_dir" \
-        --acq-sigma within_epi_ale
+        --acq-sigma within_epi
 done

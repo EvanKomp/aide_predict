@@ -75,15 +75,16 @@ echo "============================================================"
 # --fresh: deletes any existing study.sqlite and starts a clean 100-trial run.
 #   Required here because we are re-optimising under the NEW acquisition σ
 #   (within-ref epi+ale); resuming an old tot_std study would mix objectives.
-# --acq-sigma within_epi_ale: the β-grid objective ranks by the mode-consistent
-#   within-reference σ. MUST match slurm_submit.sh's scoring --acq-sigma.
+# --acq-sigma within_epi: the β-grid objective ranks by the mode-consistent
+#   epistemic-only within-reference σ (drops aleatoric too). MUST match
+#   slurm_submit.sh's scoring --acq-sigma.
 python code/round3/new_opt_05.py \
     --scope all-substrates \
     --objective-metric "${METRIC}" \
     --output-dir "${OUT_DIR}" \
     --device cuda:0 \
     --fresh \
-    --acq-sigma within_epi_ale
+    --acq-sigma within_epi
 
 echo "============================================================"
 echo "task ${SLURM_ARRAY_TASK_ID} (${METRIC}) finished: $(date)"

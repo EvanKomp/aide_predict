@@ -1258,7 +1258,7 @@ def parse_args() -> argparse.Namespace:
                         help="SQLite path for resumable studies")
     parser.add_argument("--fresh", action="store_true",
                         help="Delete existing study DB and start fresh")
-    parser.add_argument("--acq-sigma", type=str, default="within_epi_ale",
+    parser.add_argument("--acq-sigma", type=str, default="within_epi",
                         choices=["within_epi_ale", "within_epi", "total"],
                         help="UCB acquisition σ for the β-grid objective. "
                              "'within_*' drop the between-reference variance so β "
