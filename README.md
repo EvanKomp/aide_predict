@@ -36,6 +36,7 @@ You can always check which modules are installed/available to you by running `ge
 
 ### Data Structures and Utilities
 - Protein Sequence and Structure data structures
+  - `ProteinStructure` supports multichain complexes: a primary chain plus `context_chains` supplied to structure-aware models (e.g. ESM-IF1) as 3D context. Use `set_target_chain` / `with_target_chain` to switch the scored chain and auto-populate context.
 - `StructureMapper` - A utility for mapping a folder of PDB structures to sequences
 
 ### Prediction Models
@@ -96,6 +97,12 @@ You can always check which modules are installed/available to you by running `ge
    - Requires fixed-length sequences
    - Supports multichain complexes via `ProteinStructure.context_chains` (set explicitly, or via `set_target_chain` / `with_target_chain`, or implicitly through `StructureMapper.get_protein_sequences(..., auto_context=True)`).
    - Requires additional dependencies (see `requirements_files/requirements-esm-if.txt`, which adds `torch-geometric`, `torch-scatter`, `torch-cluster`, and pins `biotite<1.0` due to a fair-esm compatibility issue).
+
+### Composite / Ensemble Utilities
+
+1. `ZScoreRescaledScorer`
+   - Wraps any per-variant scorer and rescales its log-ratios within an amino-acid group (destination residue or substitution type) — the z-score ("Z") ranking from the [MULTI-evolve](https://www.science.org/doi/10.1126/science.adr8628) ensemble. Behaves as a single scikit-learn transformer (`fit`/`transform`), and `score_table` returns the per-mutation DataFrame.
+   - See the "Ensemble Variant Nomination" user guide for a full structure + sequence first-round scan. Lower-level primitives (`per_variant_mutation_info`, `zscore_by_aa_group`) live in `aide_predict.utils.scoring`.
 
 ### Embeddings for Downstream ML
 

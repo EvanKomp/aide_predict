@@ -24,6 +24,7 @@ User Guide
    user_guide/zero_shot.md
    user_guide/supervised.md
    user_guide/saturation_mutagenesis.md
+   user_guide/multi_evolve_ensemble.md
    user_guide/pipelines.md
    user_guide/caching.md
    user_guide/position_specific.md
