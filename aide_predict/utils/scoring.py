@@ -80,7 +80,13 @@ def per_variant_mutation_info(
             row["mut_aa"] = str(seq[p])
             row["mutation"] = f"{row['wt_aa']}{row['position']}{row['mut_aa']}"
         rows.append(row)
-    return pd.DataFrame(rows)
+    df = pd.DataFrame(rows)
+    # pandas can coerce None -> NaN when inferring object columns (notably for a
+    # mixed str/None column under pandas >= 3.0). Keep the documented contract
+    # that unset string fields are None, not NaN.
+    for col in ("variant_id", "mutation", "wt_aa", "mut_aa"):
+        df[col] = df[col].astype(object).where(df[col].notna(), None)
+    return df
 
 
 def zscore_by_aa_group(
