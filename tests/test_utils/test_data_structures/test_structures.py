@@ -235,6 +235,42 @@ END
         with pytest.raises(ValueError, match="not found"):
             s.set_target_chain('Z')
 
+    @pytest.fixture
+    def temp_pdb_missing_atom(self):
+        # Chain A residue 1 (ALA) is missing its CA atom -> the CA row of the
+        # backbone tensor must be NaN.
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.pdb', delete=False) as f:
+            f.write("""ATOM      1  N   ALA A   1       0.000   0.000   0.000  1.00  0.00           N
+ATOM      2  C   ALA A   1       2.009   1.362   0.000  1.00  0.00           C
+ATOM      3  O   ALA A   1       1.702   2.144   0.907  1.00  0.00           O
+ATOM      4  N   GLY A   2       2.831   1.687  -0.987  1.00  0.00           N
+ATOM      5  CA  GLY A   2       3.396   3.037  -1.009  1.00  0.00           C
+ATOM      6  C   GLY A   2       2.362   4.089  -1.408  1.00  0.00           C
+ATOM      7  O   GLY A   2       2.730   5.261  -1.509  1.00  0.00           O
+TER       8      GLY A   2
+END
+""")
+        yield f.name
+        os.unlink(f.name)
+
+    def test_get_chain_coords_nan_for_missing_atom(self, temp_pdb_missing_atom):
+        s = ProteinStructure(temp_pdb_missing_atom, chain='A')
+        coords = s.get_chain_coords('A')
+        assert coords.shape == (2, 3, 3)
+        # Residue 1 missing CA -> CA row (index 1) is all NaN; N and C present.
+        assert np.all(np.isnan(coords[0, 1]))
+        assert not np.any(np.isnan(coords[0, 0]))   # N present
+        assert not np.any(np.isnan(coords[0, 2]))   # C present
+        # Residue 2 (GLY) is complete.
+        assert not np.any(np.isnan(coords[1]))
+
+    def test_get_chain_coords_empty_for_non_protein_chain(self, temp_pdb_with_ligand_chain):
+        # Chain Z holds only HETATM records -> no canonical residues -> empty tensor.
+        s = ProteinStructure(temp_pdb_with_ligand_chain, chain='A', context_chains=('Z',))
+        coords = s.get_chain_coords('Z')
+        assert coords.shape == (0, 3, 3)
+        assert coords.dtype == np.float32
+
 
 class TestStructureMapper:
     @pytest.fixture
@@ -359,3 +395,12 @@ END
         mapper = StructureMapper(temp_multichain_folder)
         seqs = mapper.get_protein_sequences(target_chain='A', auto_context=False)
         assert seqs[0].structure.context_chains is None
+
+    def test_get_protein_sequences_json_map_fallback(self, temp_multichain_folder, tmp_path):
+        # The JSON map doesn't list "complex", so it falls back to chain 'A'.
+        mapper = StructureMapper(temp_multichain_folder)
+        json_path = tmp_path / "chain_map.json"
+        json_path.write_text(json.dumps({"some_other_structure": "B"}))
+        seqs = mapper.get_protein_sequences(target_chain=str(json_path))
+        assert seqs[0].structure.chain == 'A'
+        assert str(seqs[0]) == 'AG'

@@ -237,3 +237,27 @@ class TestEdgeCases:
         assert df.iloc[0]["n_mutations"] == 0
         # z_logratio NaN, logratio = inner's prediction (0.0 for our mock)
         assert pd.isna(df.iloc[0]["z_logratio"])
+
+
+class TestInnerOutputValidation:
+    """_call_inner rejects inner scorers that don't produce one scalar per variant."""
+
+    def test_non_1d_output_raises(self, wt):
+        class _ThreeDimScorer(_MockScorer):
+            def transform(self, X):
+                return np.ones((len(X), 2, 2))   # not one scalar per variant
+
+        comp = ZScoreRescaledScorer(inner_scorer=_ThreeDimScorer(wt=wt, pool=True), wt=wt)
+        ssm = wt.saturation_mutagenesis()
+        with pytest.raises(ValueError, match="one scalar per variant"):
+            comp.fit(ssm)
+
+    def test_wrong_count_output_raises(self, wt):
+        class _WrongCountScorer(_MockScorer):
+            def transform(self, X):
+                return np.ones(len(X) + 1)        # wrong number of scores
+
+        comp = ZScoreRescaledScorer(inner_scorer=_WrongCountScorer(wt=wt, pool=True), wt=wt)
+        ssm = wt.saturation_mutagenesis()
+        with pytest.raises(ValueError, match="scores for"):
+            comp.fit(ssm)

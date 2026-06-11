@@ -157,3 +157,31 @@ class TestZScoreByAAGroup:
         assert pd.isna(df_out.iloc[5]["z_score"])
         # The first 5 rows ARE z-scored (P group has 5 samples).
         assert df_out.iloc[:5]["z_score"].notna().all()
+
+    def test_integer_score_column(self):
+        # An integer-dtype score column exercises the non-float branch of the
+        # NaN filter (vals.dtype.kind != "f").
+        df = pd.DataFrame([{"score": s, "wt_aa": "A", "mut_aa": "P"} for s in [1, 2, 3, 4, 5]])
+        assert df["score"].dtype.kind == "i"
+        df_out, stats = zscore_by_aa_group(df, score_col="score")
+        assert ("P",) in stats
+        # Group centered: mean of z-scores ~ 0.
+        np.testing.assert_allclose(df_out["z_score"].mean(), 0.0, atol=1e-9)
+
+    def test_zero_variance_group_skipped(self):
+        # All-identical scores -> std == 0 -> group is skipped, z stays NaN.
+        df = pd.DataFrame([{"score": 7.0, "wt_aa": "A", "mut_aa": "P"} for _ in range(5)])
+        df_out, stats = zscore_by_aa_group(df, score_col="score")
+        assert ("P",) not in stats
+        assert df_out["z_score"].isna().all()
+
+    def test_nan_score_with_valid_key_skipped(self):
+        # A row with a valid group key but a NaN score is skipped at apply time
+        # (its z stays NaN) while the rest of the group is z-scored normally.
+        rows = [{"score": float(s), "wt_aa": "A", "mut_aa": "P"} for s in [1, 2, 3, 4, 5]]
+        rows.append({"score": np.nan, "wt_aa": "A", "mut_aa": "P"})
+        df = pd.DataFrame(rows)
+        df_out, stats = zscore_by_aa_group(df, score_col="score")
+        assert ("P",) in stats
+        assert pd.isna(df_out.iloc[5]["z_score"])
+        assert df_out.iloc[:5]["z_score"].notna().all()
