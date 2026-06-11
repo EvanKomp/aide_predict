@@ -6,64 +6,64 @@
 clip_grad_norm:
   search:
     type: loguniform
-    low: 0.854404
-    high: 5.77839
-  # orig=0.5..20.0  median_good=1.29465  n_good=20  confident=True
+    low: 0.857667
+    high: 13.7401
+  # orig=0.5..20.0  median_good=1.42037  n_good=20  confident=True
 
 dropout_rate:
   search:
     type: uniform
-    low: 0.081259
-    high: 0.358719
-  # orig=0.0..0.5  median_good=0.13983  n_good=20  confident=True
+    low: 0.049472
+    high: 0.297565
+  # orig=0.0..0.5  median_good=0.0882849  n_good=20  confident=True
 
 esm_mut_scaler:
-  search: ["standard", "robust"]  # freq={'standard': 7, 'robust': 13}
+  search: ["robust", "none"]  # freq={'robust': 12, 'none': 8}
 
 esm_wt_scaler:
-  search: ["robust", "none"]  # freq={'robust': 17, 'none': 3}
+  search: ["robust", "none", "standard"]  # freq={'robust': 7, 'none': 7, 'standard': 6}
 
 hidden_dims:
-  search: [[256, 128, 64], [64], [128, 64]]  # freq={'[256, 128, 64]': 15, '[64]': 4, '[128, 64]': 1}
+  search: [[64], [256, 128, 64], [128, 64]]  # freq={'[64]': 11, '[256, 128, 64]': 6, '[128, 64]': 3}
 
 kl_anneal_epochs:
   search:
     type: int
-    low: 66
-    high: 94
-  # orig=5..100  median_good=77  n_good=20  confident=True
+    low: 10
+    high: 87
+  # orig=5..100  median_good=23.5  n_good=20  confident=True
 
 learning_rate:
   search:
     type: loguniform
-    low: 0.000103936
-    high: 0.000813084
-  # orig=1e-05..0.01  median_good=0.000366063  n_good=20  confident=True
+    low: 8.09598e-05
+    high: 0.00189053
+  # orig=1e-05..0.01  median_good=0.00112142  n_good=20  confident=True
 
 log_var_floor:
-  search: [-4.0, -2.0]  # min=-4.0  max=-2.0  median=-2.0  freq={'-2': 19, '-4': 1}
+  search: [-6.0, -4.0, -2.0]  # min=-6.0  max=-2.0  median=-4.0  freq={'-6': 9, '-2': 7, '-4': 4}
 
 loss_type:
-  search: ["mse", "gaussian_nll"]  # freq={'mse': 18, 'gaussian_nll': 2}
+  search: ["gaussian_nll", "mse"]  # freq={'gaussian_nll': 19, 'mse': 1}
 
 null_reg_weight:
-  search: [0.01, 0.05, 0.1, 0.2]  # min=0.01  max=0.2  median=0.07500000000000001  freq={'0.01': 7, '0.2': 9, '0.05': 3, '0.1': 1}
+  search: [0.05]  # min=0.05  max=0.05  median=0.05  freq={'0.05': 20}
 
 prior_std:
   search:
     type: loguniform
-    low: 0.100054
-    high: 0.367433
-  # orig=0.05..2.0  median_good=0.266008  n_good=20  confident=True
+    low: 0.18027
+    high: 0.433938
+  # orig=0.05..2.0  median_good=0.224856  n_good=20  confident=True
 
 saprot_zs_scaler:
-  search: ["none"]  # freq={'none': 20}
+  search: ["standard"]  # freq={'standard': 20}
 
 substrate_embedding_type:
-  search: ["maccs"]  # freq={'maccs': 20}
+  search: ["mordred"]  # freq={'mordred': 20}
 
 use_lds:
-  search: [false]  # freq={'False': 20}
+  search: [true, false]  # freq={'True': 11, 'False': 9}
 
 x_substrate_scaler:
-  search: ["standard"]  # freq={'standard': 20}
+  search: ["standard", "none"]  # freq={'standard': 19, 'none': 1}

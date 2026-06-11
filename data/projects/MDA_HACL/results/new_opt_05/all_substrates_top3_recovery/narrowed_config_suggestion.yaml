@@ -6,64 +6,64 @@
 clip_grad_norm:
   search:
     type: loguniform
-    low: 2.02289
-    high: 19.124
-  # orig=0.5..20.0  median_good=14.0469  n_good=20  confident=True
+    low: 1.42827
+    high: 13.9145
+  # orig=0.5..20.0  median_good=3.96098  n_good=20  confident=True
 
 dropout_rate:
   search:
     type: uniform
-    low: 0.349395
-    high: 0.469706
-  # orig=0.0..0.5  median_good=0.424021  n_good=20  confident=True
+    low: 0.0358651
+    high: 0.363131
+  # orig=0.0..0.5  median_good=0.0734442  n_good=20  confident=True
 
 esm_mut_scaler:
-  search: ["none", "standard", "robust"]  # freq={'none': 11, 'standard': 8, 'robust': 1}
+  search: ["robust", "none", "standard"]  # freq={'robust': 8, 'none': 11, 'standard': 1}
 
 esm_wt_scaler:
-  search: ["robust", "standard", "none"]  # freq={'robust': 12, 'standard': 7, 'none': 1}
+  search: ["none", "standard", "robust"]  # freq={'none': 13, 'standard': 5, 'robust': 2}
 
 hidden_dims:
-  search: [[256, 128, 64], [128, 64], [64]]  # freq={'[256, 128, 64]': 15, '[128, 64]': 4, '[64]': 1}
+  search: [[256, 128, 64], [128, 64], [64]]  # freq={'[256, 128, 64]': 7, '[128, 64]': 11, '[64]': 2}
 
 kl_anneal_epochs:
   search:
     type: int
-    low: 14
-    high: 80
-  # orig=5..100  median_good=61.5  n_good=20  confident=True
+    low: 18
+    high: 88
+  # orig=5..100  median_good=41  n_good=20  confident=True
 
 learning_rate:
   search:
     type: loguniform
-    low: 1.35868e-05
-    high: 7.4764e-05
-  # orig=1e-05..0.01  median_good=1.97764e-05  n_good=20  confident=True
+    low: 5.7246e-05
+    high: 0.000836781
+  # orig=1e-05..0.01  median_good=0.000226051  n_good=20  confident=True
 
 log_var_floor:
-  search: [-6.0, -4.0, -2.0]  # min=-6.0  max=-2.0  median=-5.0  freq={'-6': 10, '-2': 9, '-4': 1}
+  search: [-6.0, -4.0, -2.0]  # min=-6.0  max=-2.0  median=-2.0  freq={'-2': 14, '-4': 1, '-6': 5}
 
 loss_type:
-  search: ["gaussian_nll", "mse"]  # freq={'gaussian_nll': 19, 'mse': 1}
+  search: ["mse", "gaussian_nll", "hurdle"]  # freq={'mse': 6, 'gaussian_nll': 13, 'hurdle': 1}
 
 null_reg_weight:
-  search: [0.0, 0.01, 0.05]  # min=0.0  max=0.05  median=0.01  freq={'0.01': 13, '0.0': 6, '0.05': 1}
+  search: [0.01, 0.05, 0.1]  # min=0.01  max=0.1  median=0.030000000000000002  freq={'0.01': 10, '0.05': 9, '0.1': 1}
 
 prior_std:
   search:
     type: loguniform
-    low: 0.139951
-    high: 1.94516
-  # orig=0.05..2.0  median_good=1.15386  n_good=20  confident=True
+    low: 0.116089
+    high: 1.24553
+  # orig=0.05..2.0  median_good=0.26428  n_good=20  confident=True
 
 saprot_zs_scaler:
-  search: ["none", "standard"]  # freq={'none': 5, 'standard': 15}
+  search: ["standard", "none"]  # freq={'standard': 18, 'none': 2}
 
 substrate_embedding_type:
-  search: ["molformer", "mordred"]  # freq={'molformer': 5, 'mordred': 15}
+  search: ["mordred", "maccs", "molformer"]  # freq={'mordred': 18, 'maccs': 1, 'molformer': 1}
 
 use_lds:
-  search: [false, true]  # freq={'False': 6, 'True': 14}
+  search: [false, true]  # freq={'False': 12, 'True': 8}
 
 x_substrate_scaler:
-  search: ["standard", "none"]  # freq={'standard': 14, 'none': 6}
+  search: ["none", "standard"]  # freq={'none': 14, 'standard': 6}

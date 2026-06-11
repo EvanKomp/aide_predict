@@ -5,12 +5,15 @@
   "objective_metric": "per_position_ndcg_mean",
   "n_trials_considered": 100,
   "n_good_trials": 20,
-  "good_trial_cutoff_objective": 0.9662543979226738,
+  "good_trial_cutoff_objective": 0.9654074984991968,
   "confident": true,
   "params": {
     "hidden_dims": {
       "kind": "list",
       "good_values": [
+        [
+          64
+        ],
         [
           128,
           64
@@ -19,15 +22,12 @@
           256,
           128,
           64
-        ],
-        [
-          64
         ]
       ],
       "value_frequencies": {
-        "[128, 64]": 13,
-        "[256, 128, 64]": 3,
-        "[64]": 4
+        "[64]": 16,
+        "[128, 64]": 2,
+        "[256, 128, 64]": 2
       },
       "confident": true
     },
@@ -36,11 +36,11 @@
       "type": "loguniform",
       "orig_low": 0.05,
       "orig_high": 2.0,
-      "min_good": 0.21820025699029927,
-      "max_good": 0.6098501131624904,
-      "median_good": 0.41944047651272987,
-      "raw_min_good": 0.19874221395021394,
-      "raw_max_good": 0.9061983168718236,
+      "min_good": 0.053935788037273356,
+      "max_good": 0.15904913082657968,
+      "median_good": 0.07541235426842073,
+      "raw_min_good": 0.05060858439954214,
+      "raw_max_good": 0.5123575184033893,
       "narrow_quantiles": [
         0.1,
         0.9
@@ -53,11 +53,11 @@
       "type": "uniform",
       "orig_low": 0.0,
       "orig_high": 0.5,
-      "min_good": 0.021030229725624797,
-      "max_good": 0.2070598916939337,
-      "median_good": 0.09994471461696952,
-      "raw_min_good": 0.005297325148804766,
-      "raw_max_good": 0.467869541343033,
+      "min_good": 0.08387128317609864,
+      "max_good": 0.21881015944144655,
+      "median_good": 0.12740526401235508,
+      "raw_min_good": 0.0719878891404372,
+      "raw_max_good": 0.29587530853034083,
       "narrow_quantiles": [
         0.1,
         0.9
@@ -68,12 +68,12 @@
     "substrate_embedding_type": {
       "kind": "categorical",
       "good_values": [
-        "molformer",
+        "mordred",
         "morgan"
       ],
       "value_frequencies": {
-        "molformer": 19,
-        "morgan": 1
+        "mordred": 18,
+        "morgan": 2
       },
       "confident": true
     },
@@ -82,11 +82,11 @@
       "type": "loguniform",
       "orig_low": 1e-05,
       "orig_high": 0.01,
-      "min_good": 1.2657879185523436e-05,
-      "max_good": 4.9119009704502815e-05,
-      "median_good": 1.8908845681201048e-05,
-      "raw_min_good": 1.0291352790821957e-05,
-      "raw_max_good": 0.00019943972037971659,
+      "min_good": 6.003115025010387e-05,
+      "max_good": 0.0006660289740384388,
+      "median_good": 0.00011258641854051444,
+      "raw_min_good": 4.349840387419406e-05,
+      "raw_max_good": 0.0021128094487352727,
       "narrow_quantiles": [
         0.1,
         0.9
@@ -99,11 +99,11 @@
       "type": "int",
       "orig_low": 5.0,
       "orig_high": 100.0,
-      "min_good": 53.7,
-      "max_good": 93.30000000000001,
-      "median_good": 78.0,
-      "raw_min_good": 46.0,
-      "raw_max_good": 98.0,
+      "min_good": 24.8,
+      "max_good": 48.1,
+      "median_good": 38.0,
+      "raw_min_good": 8.0,
+      "raw_max_good": 51.0,
       "narrow_quantiles": [
         0.1,
         0.9
@@ -116,11 +116,11 @@
       "type": "loguniform",
       "orig_low": 0.5,
       "orig_high": 20.0,
-      "min_good": 0.6678237332025321,
-      "max_good": 4.5287216198716616,
-      "median_good": 1.7334412083172224,
-      "raw_min_good": 0.5905791702905319,
-      "raw_max_good": 6.622047830974099,
+      "min_good": 0.6183363179372953,
+      "max_good": 1.5461974148182627,
+      "median_good": 0.918264261954837,
+      "raw_min_good": 0.5248335365599738,
+      "raw_max_good": 3.2639567023526115,
       "narrow_quantiles": [
         0.1,
         0.9
@@ -131,18 +131,20 @@
     "loss_type": {
       "kind": "categorical",
       "good_values": [
-        "gaussian_nll"
+        "gaussian_nll",
+        "mse"
       ],
       "value_frequencies": {
-        "gaussian_nll": 20
+        "gaussian_nll": 16,
+        "mse": 4
       },
       "confident": true
     },
     "null_reg_weight": {
       "kind": "numeric",
-      "min_good": 0.0,
+      "min_good": 0.01,
       "max_good": 0.2,
-      "median_good": 0.2,
+      "median_good": 0.1,
       "observed_values": [
         0.0,
         0.01,
@@ -151,10 +153,9 @@
         0.2
       ],
       "value_frequencies": {
-        "0.0": 1,
-        "0.01": 5,
-        "0.2": 13,
-        "0.1": 1
+        "0.01": 3,
+        "0.1": 16,
+        "0.2": 1
       },
       "confident": true
     },
@@ -162,75 +163,80 @@
       "kind": "numeric",
       "min_good": -6.0,
       "max_good": -2.0,
-      "median_good": -6.0,
+      "median_good": -2.0,
       "observed_values": [
         -6.0,
         -4.0,
         -2.0
       ],
       "value_frequencies": {
-        "-6": 19,
-        "-2": 1
+        "-2": 16,
+        "-6": 3,
+        "-4": 1
       },
       "confident": true
     },
     "use_lds": {
       "kind": "categorical",
       "good_values": [
-        true,
-        false
+        false,
+        true
       ],
       "value_frequencies": {
-        "True": 4,
-        "False": 16
+        "False": 18,
+        "True": 2
       },
       "confident": true
     },
     "x_substrate_scaler": {
       "kind": "categorical",
       "good_values": [
-        "standard",
-        "none"
+        "none",
+        "standard"
       ],
       "value_frequencies": {
-        "standard": 19,
-        "none": 1
+        "none": 6,
+        "standard": 14
       },
       "confident": true
     },
     "saprot_zs_scaler": {
       "kind": "categorical",
       "good_values": [
-        "none",
-        "standard"
+        "standard",
+        "none"
       ],
       "value_frequencies": {
-        "none": 5,
-        "standard": 15
+        "standard": 18,
+        "none": 2
       },
       "confident": true
     },
     "esm_wt_scaler": {
       "kind": "categorical",
       "good_values": [
+        "standard",
+        "robust",
         "none"
       ],
       "value_frequencies": {
-        "none": 20
+        "standard": 15,
+        "robust": 3,
+        "none": 2
       },
       "confident": true
     },
     "esm_mut_scaler": {
       "kind": "categorical",
       "good_values": [
-        "none",
         "standard",
-        "robust"
+        "robust",
+        "none"
       ],
       "value_frequencies": {
-        "none": 18,
-        "standard": 1,
-        "robust": 1
+        "standard": 9,
+        "robust": 10,
+        "none": 1
       },
       "confident": true
     }

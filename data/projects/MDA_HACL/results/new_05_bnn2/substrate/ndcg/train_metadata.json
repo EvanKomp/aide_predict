@@ -154,5 +154,5 @@
   "x_aa_enabled": false,
   "n_singleshot_repeats": null,
   "distance_weight_temperature": 1.0,
-  "substrate_embedding_type": "maccs"
+  "substrate_embedding_type": "morgan"
 }
