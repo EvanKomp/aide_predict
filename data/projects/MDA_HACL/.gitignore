@@ -1,0 +1,28 @@
+# HACL branch: commit code + plots + metrics + prediction CSVs only.
+# Heavy/regenerable binaries are excluded (local restore-point commits, no push).
+# NOTE: gitignore does NOT support inline '#' comments — keep comments on own lines.
+
+# heavy / regenerable binaries
+*.pt
+*.bin
+*.pkl
+*.tar.gz
+*.sqlite
+*.pse
+*.cif
+*.out
+*.log
+
+# heavy dirs
+slurm_logs/
+**/models/
+**/*_embeddings/
+structure/
+evcouplings/
+results/archive_05_bnn2/
+
+# raw + intermediate data (badass CSVs, PCA pkl) — NOT predictions
+data/
+
+# sensitivity per-item dirs (570 each); keep only summary/ + sweep_plan.json
+results/new_05_bnn2/sensitivity/*/substrate/

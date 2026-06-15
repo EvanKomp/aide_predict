@@ -1,0 +1,101 @@
+{
+  "hidden_dims": [
+    64
+  ],
+  "prior_std": 0.17086671889891034,
+  "dropout_rate": 0.3565828708975887,
+  "substrate_embedding_type": "mordred",
+  "learning_rate": 0.00045062691317976025,
+  "kl_anneal_epochs": 100,
+  "clip_grad_norm": 11.794004878887364,
+  "loss_type": "mse",
+  "null_reg_weight": 0.01,
+  "log_var_floor": -2,
+  "use_lds": false,
+  "x_substrate_scaler": "none",
+  "saprot_zs_scaler": "standard",
+  "esm_wt_scaler": "none",
+  "esm_mut_scaler": "robust",
+  "n_epochs": 500,
+  "best_beta": 0.0,
+  "best_reference_mode": "distance_weighted",
+  "objective_metric": "per_position_top3_recovery_mean",
+  "acq_sigma": "within_epi_ale",
+  "objective_value": 0.6111111111111112,
+  "raw_objective": 0.6111111111111112,
+  "null_objective": 0.5944444444444444,
+  "delta": 0.01666666666666672,
+  "scope": "all-substrates",
+  "reference_modes_evaluated": [
+    "formaldehyde",
+    "nearest",
+    "avg_all",
+    "distance_weighted"
+  ],
+  "trial_number": 69,
+  "per_beta_objective": {
+    "0.0": 0.6111111111111112,
+    "0.5": 0.5944444444444444,
+    "1.0": 0.5944444444444444,
+    "1.5": 0.5888888888888889,
+    "2.0": 0.5888888888888889
+  },
+  "per_mode_results": {
+    "formaldehyde": {
+      "status": "ok",
+      "best_bnn": 0.4999999999999999,
+      "best_beta": 0.0,
+      "per_beta": {
+        "0.0": 0.4999999999999999,
+        "0.5": 0.4933333333333333,
+        "1.0": 0.4933333333333333,
+        "1.5": 0.4933333333333333,
+        "2.0": 0.48666666666666664
+      },
+      "null": 0.4999999999999999,
+      "n_rows": 990
+    },
+    "nearest": {
+      "status": "ok",
+      "best_bnn": 0.5444444444444443,
+      "best_beta": 0.0,
+      "per_beta": {
+        "0.0": 0.5444444444444443,
+        "0.5": 0.5444444444444443,
+        "1.0": 0.5444444444444443,
+        "1.5": 0.5444444444444443,
+        "2.0": 0.5444444444444443
+      },
+      "null": 0.6499999999999999,
+      "n_rows": 1198
+    },
+    "avg_all": {
+      "status": "ok",
+      "best_bnn": 0.6055555555555556,
+      "best_beta": 0.0,
+      "per_beta": {
+        "0.0": 0.6055555555555556,
+        "0.5": 0.5944444444444444,
+        "1.0": 0.5888888888888889,
+        "1.5": 0.5888888888888889,
+        "2.0": 0.5888888888888889
+      },
+      "null": 0.6,
+      "n_rows": 1198
+    },
+    "distance_weighted": {
+      "status": "ok",
+      "best_bnn": 0.6111111111111112,
+      "best_beta": 0.0,
+      "per_beta": {
+        "0.0": 0.6111111111111112,
+        "0.5": 0.5944444444444444,
+        "1.0": 0.5944444444444444,
+        "1.5": 0.5888888888888889,
+        "2.0": 0.5888888888888889
+      },
+      "null": 0.5944444444444444,
+      "n_rows": 1198
+    }
+  }
+}

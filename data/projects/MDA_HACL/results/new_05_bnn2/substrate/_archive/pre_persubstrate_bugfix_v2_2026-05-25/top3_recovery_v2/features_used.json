@@ -1,0 +1,10 @@
+{
+  "fc_ref": true,
+  "ref_distance": true,
+  "x_target_substrate": true,
+  "x_ref_substrate": true,
+  "x_aa": false,
+  "esm_wt": true,
+  "esm_mut": true,
+  "saprot_zs": true
+}

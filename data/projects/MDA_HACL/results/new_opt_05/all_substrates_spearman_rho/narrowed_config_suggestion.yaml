@@ -1,0 +1,69 @@
+# Auto-generated from new_opt_05.py — drop into config.yaml
+# Source study: new_opt_05__all-substrates__all__spearman_rho
+# Scope: all-substrates  reference_mode: all  metric: spearman_rho
+# Good trials: 20/100  confident=True
+
+clip_grad_norm:
+  search:
+    type: loguniform
+    low: 0.854404
+    high: 5.77839
+  # orig=0.5..20.0  median_good=1.29465  n_good=20  confident=True
+
+dropout_rate:
+  search:
+    type: uniform
+    low: 0.081259
+    high: 0.358719
+  # orig=0.0..0.5  median_good=0.13983  n_good=20  confident=True
+
+esm_mut_scaler:
+  search: ["standard", "robust"]  # freq={'standard': 7, 'robust': 13}
+
+esm_wt_scaler:
+  search: ["robust", "none"]  # freq={'robust': 17, 'none': 3}
+
+hidden_dims:
+  search: [[256, 128, 64], [64], [128, 64]]  # freq={'[256, 128, 64]': 15, '[64]': 4, '[128, 64]': 1}
+
+kl_anneal_epochs:
+  search:
+    type: int
+    low: 66
+    high: 94
+  # orig=5..100  median_good=77  n_good=20  confident=True
+
+learning_rate:
+  search:
+    type: loguniform
+    low: 0.000103936
+    high: 0.000813084
+  # orig=1e-05..0.01  median_good=0.000366063  n_good=20  confident=True
+
+log_var_floor:
+  search: [-4.0, -2.0]  # min=-4.0  max=-2.0  median=-2.0  freq={'-2': 19, '-4': 1}
+
+loss_type:
+  search: ["mse", "gaussian_nll"]  # freq={'mse': 18, 'gaussian_nll': 2}
+
+null_reg_weight:
+  search: [0.01, 0.05, 0.1, 0.2]  # min=0.01  max=0.2  median=0.07500000000000001  freq={'0.01': 7, '0.2': 9, '0.05': 3, '0.1': 1}
+
+prior_std:
+  search:
+    type: loguniform
+    low: 0.100054
+    high: 0.367433
+  # orig=0.05..2.0  median_good=0.266008  n_good=20  confident=True
+
+saprot_zs_scaler:
+  search: ["none"]  # freq={'none': 20}
+
+substrate_embedding_type:
+  search: ["maccs"]  # freq={'maccs': 20}
+
+use_lds:
+  search: [false]  # freq={'False': 20}
+
+x_substrate_scaler:
+  search: ["standard"]  # freq={'standard': 20}

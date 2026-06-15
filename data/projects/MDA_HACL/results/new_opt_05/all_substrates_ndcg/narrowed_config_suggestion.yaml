@@ -1,0 +1,69 @@
+# Auto-generated from new_opt_05.py — drop into config.yaml
+# Source study: new_opt_05__all-substrates__all__ndcg
+# Scope: all-substrates  reference_mode: all  metric: ndcg
+# Good trials: 20/100  confident=True
+
+clip_grad_norm:
+  search:
+    type: loguniform
+    low: 3.76602
+    high: 6.01635
+  # orig=0.5..20.0  median_good=4.64053  n_good=20  confident=True
+
+dropout_rate:
+  search:
+    type: uniform
+    low: 0.268712
+    high: 0.420357
+  # orig=0.0..0.5  median_good=0.381238  n_good=20  confident=True
+
+esm_mut_scaler:
+  search: ["robust", "standard"]  # freq={'robust': 18, 'standard': 2}
+
+esm_wt_scaler:
+  search: ["none", "standard", "robust"]  # freq={'none': 12, 'standard': 3, 'robust': 5}
+
+hidden_dims:
+  search: [[256, 128, 64], [64], [128, 64]]  # freq={'[256, 128, 64]': 4, '[64]': 15, '[128, 64]': 1}
+
+kl_anneal_epochs:
+  search:
+    type: int
+    low: 73
+    high: 97
+  # orig=5..100  median_good=86  n_good=20  confident=True
+
+learning_rate:
+  search:
+    type: loguniform
+    low: 5.97922e-05
+    high: 0.000220708
+  # orig=1e-05..0.01  median_good=0.000120741  n_good=20  confident=True
+
+log_var_floor:
+  search: [-6.0, -4.0, -2.0]  # min=-6.0  max=-2.0  median=-2.0  freq={'-2': 19, '-6': 1}
+
+loss_type:
+  search: ["mse", "gaussian_nll"]  # freq={'mse': 3, 'gaussian_nll': 17}
+
+null_reg_weight:
+  search: [0.0, 0.01, 0.05, 0.1, 0.2]  # min=0.0  max=0.2  median=0.2  freq={'0.2': 15, '0.1': 3, '0.0': 2}
+
+prior_std:
+  search:
+    type: loguniform
+    low: 0.231369
+    high: 1.01292
+  # orig=0.05..2.0  median_good=0.462372  n_good=20  confident=True
+
+saprot_zs_scaler:
+  search: ["none"]  # freq={'none': 20}
+
+substrate_embedding_type:
+  search: ["maccs", "molformer"]  # freq={'maccs': 19, 'molformer': 1}
+
+use_lds:
+  search: [false]  # freq={'False': 20}
+
+x_substrate_scaler:
+  search: ["standard"]  # freq={'standard': 20}
