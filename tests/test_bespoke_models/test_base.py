@@ -1023,7 +1023,7 @@ def test_position_specific_gap_handling(tmp_path):
 
     # --- Case C: specific alignment positions subset ---
     model_pos = GapModel(metadata_folder=str(tmp_path), positions=[0, 3],
-                         pool=False, gap_fill_value=-1.0)
+                         pool=False, flatten=False, gap_fill_value=-1.0)
     model_pos.fit([])
     sub = model_pos.transform(seqs)
     assert sub.shape == (2, 2, 2)   # (n_seqs, n_positions, dim)
