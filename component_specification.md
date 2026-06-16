@@ -167,11 +167,15 @@ def as_array(self) -> np.ndarray
 
 **Key Methods**:
 ```python
-def __init__(self, pdb_file: str, chain: str = 'A', plddt_file: Optional[str] = None)
+def __init__(self, structure_file: str, chain: str = 'A', plddt_file: Optional[str] = None,
+             context_chains: Optional[Tuple[str, ...]] = None)  # context_chains: other chains supplied as 3D context to structure-aware models (multichain complexes)
 def get_sequence(self) -> str
 def get_plddt(self) -> Optional[np.ndarray]
 def get_dssp(self) -> Dict[str, str]
 def validate_sequence(self, protein_sequence: str) -> bool
+def get_all_chain_ids(self, protein_only: bool = True) -> List[str]
+def get_chain_coords(self, chain_id: str) -> np.ndarray  # [L, 3, 3] backbone (N, CA, C)
+def set_target_chain(self, new_chain: str, auto_context: bool = True) -> None
 @classmethod
 def from_af2_folder(cls, folder_path: str, chain: str = 'A') -> 'ProteinStructure'
 ```
@@ -215,6 +219,12 @@ The package includes several bespoke models implemented using the `ProteinModelW
 - MSA Transformer (Embeddings and Log Likelihood Predictor)
 - SaProt (Embeddings and Log Likelihood Predictor)
 - EVMutation (Predicts hamiltonian changes using pairwise potentials)
+- ESM-IF1 (Structure-conditioned autoregressive Log Likelihood Predictor; supports multichain complexes)
+- HMM, VESPA, EVE, SSEmb (additional zero-shot predictors)
+
+The package also provides composite wrappers built on the same API:
+
+- ZScoreRescaledScorer (wraps a per-variant scorer and adds amino-acid-group z-score rescaling; see `aide_predict.utils.scoring` for the underlying primitives)
 
 These models follow the structure and API defined by the base classes and mixins.
 

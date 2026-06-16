@@ -101,6 +101,176 @@ END
         with pytest.raises(FileNotFoundError):
             ProteinStructure.from_af2_folder(str(tmp_path))
 
+    @pytest.fixture
+    def temp_multichain_pdb(self):
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.pdb', delete=False) as f:
+            f.write("""ATOM      1  N   ALA A   1       0.000   0.000   0.000  1.00  0.00           N
+ATOM      2  CA  ALA A   1       1.458   0.000   0.000  1.00  0.00           C
+ATOM      3  C   ALA A   1       2.009   1.362   0.000  1.00  0.00           C
+ATOM      4  O   ALA A   1       1.702   2.144   0.907  1.00  0.00           O
+ATOM      5  N   GLY A   2       2.831   1.687  -0.987  1.00  0.00           N
+ATOM      6  CA  GLY A   2       3.396   3.037  -1.009  1.00  0.00           C
+ATOM      7  C   GLY A   2       2.362   4.089  -1.408  1.00  0.00           C
+ATOM      8  O   GLY A   2       2.730   5.261  -1.509  1.00  0.00           O
+TER       9      GLY A   2
+ATOM     10  N   CYS B   1      20.000  20.000  20.000  1.00  0.00           N
+ATOM     11  CA  CYS B   1      21.458  20.000  20.000  1.00  0.00           C
+ATOM     12  C   CYS B   1      22.009  21.362  20.000  1.00  0.00           C
+ATOM     13  O   CYS B   1      21.702  22.144  20.907  1.00  0.00           O
+ATOM     14  N   ASP B   2      22.831  21.687  19.013  1.00  0.00           N
+ATOM     15  CA  ASP B   2      23.396  23.037  18.991  1.00  0.00           C
+ATOM     16  C   ASP B   2      22.362  24.089  18.592  1.00  0.00           C
+ATOM     17  O   ASP B   2      22.730  25.261  18.491  1.00  0.00           O
+TER      18      ASP B   2
+END
+""")
+        yield f.name
+        os.unlink(f.name)
+
+    def test_context_chains_tuple_normalization(self, temp_multichain_pdb):
+        # Lists are normalized to tuples for hashability.
+        s = ProteinStructure(temp_multichain_pdb, chain='A', context_chains=['B'])
+        assert s.context_chains == ('B',)
+
+    def test_context_chains_default_none(self, temp_multichain_pdb):
+        s = ProteinStructure(temp_multichain_pdb, chain='A')
+        assert s.context_chains is None
+
+    def test_context_chains_in_hash(self, temp_multichain_pdb):
+        s1 = ProteinStructure(temp_multichain_pdb, chain='A')
+        s2 = ProteinStructure(temp_multichain_pdb, chain='A', context_chains=('B',))
+        assert hash(s1) != hash(s2)
+
+    def test_context_chains_in_repr(self, temp_multichain_pdb):
+        s1 = ProteinStructure(temp_multichain_pdb, chain='A')
+        s2 = ProteinStructure(temp_multichain_pdb, chain='A', context_chains=('B',))
+        assert 'context_chains' not in repr(s1)
+        assert "context_chains=('B',)" in repr(s2)
+
+    def test_context_chains_cannot_include_primary(self, temp_multichain_pdb):
+        with pytest.raises(ValueError, match="primary chain"):
+            ProteinStructure(temp_multichain_pdb, chain='A', context_chains=('A',))
+
+    def test_context_chains_missing_raises(self, temp_multichain_pdb):
+        with pytest.raises(ValueError, match="not found"):
+            ProteinStructure(temp_multichain_pdb, chain='A', context_chains=('Z',))
+
+    def test_get_all_chain_ids(self, temp_multichain_pdb):
+        s = ProteinStructure(temp_multichain_pdb, chain='A')
+        assert set(s.get_all_chain_ids()) == {'A', 'B'}
+
+    @pytest.fixture
+    def temp_pdb_with_ligand_chain(self):
+        # Chain A has protein residues (ALA, GLY); chain Z has only HETATM (a heme
+        # cofactor). Default get_all_chain_ids should hide Z.
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.pdb', delete=False) as f:
+            f.write("""ATOM      1  N   ALA A   1       0.000   0.000   0.000  1.00  0.00           N
+ATOM      2  CA  ALA A   1       1.458   0.000   0.000  1.00  0.00           C
+ATOM      3  C   ALA A   1       2.009   1.362   0.000  1.00  0.00           C
+ATOM      4  O   ALA A   1       1.702   2.144   0.907  1.00  0.00           O
+ATOM      5  N   GLY A   2       2.831   1.687  -0.987  1.00  0.00           N
+ATOM      6  CA  GLY A   2       3.396   3.037  -1.009  1.00  0.00           C
+ATOM      7  C   GLY A   2       2.362   4.089  -1.408  1.00  0.00           C
+ATOM      8  O   GLY A   2       2.730   5.261  -1.509  1.00  0.00           O
+TER       9      GLY A   2
+HETATM   10 FE   HEM Z   1      30.000  30.000  30.000  1.00  0.00          FE
+HETATM   11  NA  HEM Z   1      30.500  30.000  30.000  1.00  0.00           N
+END
+""")
+        yield f.name
+        os.unlink(f.name)
+
+    def test_get_all_chain_ids_filters_non_protein(self, temp_pdb_with_ligand_chain):
+        s = ProteinStructure(temp_pdb_with_ligand_chain, chain='A')
+        # Default: protein chains only.
+        assert s.get_all_chain_ids() == ['A']
+        # Opt-in to the full list.
+        assert set(s.get_all_chain_ids(protein_only=False)) == {'A', 'Z'}
+
+    def test_context_chains_accept_non_protein_explicit(self, temp_pdb_with_ligand_chain):
+        # Power users can still attach a ligand chain as context explicitly.
+        s = ProteinStructure(
+            temp_pdb_with_ligand_chain, chain='A', context_chains=('Z',),
+        )
+        assert s.context_chains == ('Z',)
+
+    def test_set_target_chain_auto_context_skips_non_protein(self, temp_pdb_with_ligand_chain):
+        s = ProteinStructure(temp_pdb_with_ligand_chain, chain='A')
+        # Re-target chain A (no-op for chain but exercises the auto_context path).
+        s.set_target_chain('A')
+        # The HEM cofactor chain Z must NOT be pulled in as auto context.
+        assert s.context_chains is None
+
+    def test_get_chain_coords_shape_and_dtype(self, temp_multichain_pdb):
+        s = ProteinStructure(temp_multichain_pdb, chain='A')
+        coords = s.get_chain_coords('A')
+        assert coords.shape == (2, 3, 3)
+        assert coords.dtype == np.float32
+        assert not np.any(np.isnan(coords))
+        np.testing.assert_allclose(coords[0, 0], [0.0, 0.0, 0.0], rtol=1e-5)
+
+    def test_get_chain_coords_context_chain(self, temp_multichain_pdb):
+        s = ProteinStructure(temp_multichain_pdb, chain='A', context_chains=('B',))
+        coords_b = s.get_chain_coords('B')
+        assert coords_b.shape == (2, 3, 3)
+        np.testing.assert_allclose(coords_b[0, 0], [20.0, 20.0, 20.0], rtol=1e-5)
+
+    def test_set_target_chain(self, temp_multichain_pdb):
+        s = ProteinStructure(temp_multichain_pdb, chain='A')
+        assert s.get_sequence() == 'AG'
+        s.set_target_chain('B')
+        assert s.chain == 'B'
+        assert s.context_chains == ('A',)
+        # Cache must be invalidated so the new chain's sequence is returned.
+        assert s.get_sequence() == 'CD'
+
+    def test_set_target_chain_no_auto_context(self, temp_multichain_pdb):
+        s = ProteinStructure(temp_multichain_pdb, chain='A', context_chains=('B',))
+        s.set_target_chain('B', auto_context=False)
+        assert s.chain == 'B'
+        assert s.context_chains is None
+
+    def test_set_target_chain_invalid(self, temp_multichain_pdb):
+        s = ProteinStructure(temp_multichain_pdb, chain='A')
+        with pytest.raises(ValueError, match="not found"):
+            s.set_target_chain('Z')
+
+    @pytest.fixture
+    def temp_pdb_missing_atom(self):
+        # Chain A residue 1 (ALA) is missing its CA atom -> the CA row of the
+        # backbone tensor must be NaN.
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.pdb', delete=False) as f:
+            f.write("""ATOM      1  N   ALA A   1       0.000   0.000   0.000  1.00  0.00           N
+ATOM      2  C   ALA A   1       2.009   1.362   0.000  1.00  0.00           C
+ATOM      3  O   ALA A   1       1.702   2.144   0.907  1.00  0.00           O
+ATOM      4  N   GLY A   2       2.831   1.687  -0.987  1.00  0.00           N
+ATOM      5  CA  GLY A   2       3.396   3.037  -1.009  1.00  0.00           C
+ATOM      6  C   GLY A   2       2.362   4.089  -1.408  1.00  0.00           C
+ATOM      7  O   GLY A   2       2.730   5.261  -1.509  1.00  0.00           O
+TER       8      GLY A   2
+END
+""")
+        yield f.name
+        os.unlink(f.name)
+
+    def test_get_chain_coords_nan_for_missing_atom(self, temp_pdb_missing_atom):
+        s = ProteinStructure(temp_pdb_missing_atom, chain='A')
+        coords = s.get_chain_coords('A')
+        assert coords.shape == (2, 3, 3)
+        # Residue 1 missing CA -> CA row (index 1) is all NaN; N and C present.
+        assert np.all(np.isnan(coords[0, 1]))
+        assert not np.any(np.isnan(coords[0, 0]))   # N present
+        assert not np.any(np.isnan(coords[0, 2]))   # C present
+        # Residue 2 (GLY) is complete.
+        assert not np.any(np.isnan(coords[1]))
+
+    def test_get_chain_coords_empty_for_non_protein_chain(self, temp_pdb_with_ligand_chain):
+        # Chain Z holds only HETATM records -> no canonical residues -> empty tensor.
+        s = ProteinStructure(temp_pdb_with_ligand_chain, chain='A', context_chains=('Z',))
+        coords = s.get_chain_coords('Z')
+        assert coords.shape == (0, 3, 3)
+        assert coords.dtype == np.float32
+
 
 class TestStructureMapper:
     @pytest.fixture
@@ -170,3 +340,67 @@ class TestStructureMapper:
         mapper = StructureMapper(temp_structure_folder)
         with pytest.raises(ValueError):
             mapper.assign_structures("invalid input")
+
+    @pytest.fixture
+    def temp_multichain_folder(self):
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            with open(os.path.join(tmpdirname, "complex.pdb"), "w") as f:
+                f.write("""ATOM      1  N   ALA A   1       0.000   0.000   0.000  1.00  0.00           N
+ATOM      2  CA  ALA A   1       1.458   0.000   0.000  1.00  0.00           C
+ATOM      3  C   ALA A   1       2.009   1.362   0.000  1.00  0.00           C
+ATOM      4  O   ALA A   1       1.702   2.144   0.907  1.00  0.00           O
+ATOM      5  N   GLY A   2       2.831   1.687  -0.987  1.00  0.00           N
+ATOM      6  CA  GLY A   2       3.396   3.037  -1.009  1.00  0.00           C
+ATOM      7  C   GLY A   2       2.362   4.089  -1.408  1.00  0.00           C
+ATOM      8  O   GLY A   2       2.730   5.261  -1.509  1.00  0.00           O
+TER       9      GLY A   2
+ATOM     10  N   CYS B   1      20.000  20.000  20.000  1.00  0.00           N
+ATOM     11  CA  CYS B   1      21.458  20.000  20.000  1.00  0.00           C
+ATOM     12  C   CYS B   1      22.009  21.362  20.000  1.00  0.00           C
+ATOM     13  O   CYS B   1      21.702  22.144  20.907  1.00  0.00           O
+ATOM     14  N   ASP B   2      22.831  21.687  19.013  1.00  0.00           N
+ATOM     15  CA  ASP B   2      23.396  23.037  18.991  1.00  0.00           C
+ATOM     16  C   ASP B   2      22.362  24.089  18.592  1.00  0.00           C
+ATOM     17  O   ASP B   2      22.730  25.261  18.491  1.00  0.00           O
+TER      18      ASP B   2
+END
+""")
+            yield tmpdirname
+
+    def test_get_protein_sequences_uniform_chain(self, temp_multichain_folder):
+        mapper = StructureMapper(temp_multichain_folder)
+        seqs = mapper.get_protein_sequences(target_chain='A')
+        assert len(seqs) == 1
+        assert str(seqs[0]) == 'AG'
+        assert seqs[0].structure.chain == 'A'
+        assert seqs[0].structure.context_chains == ('B',)
+
+    def test_get_protein_sequences_other_chain(self, temp_multichain_folder):
+        mapper = StructureMapper(temp_multichain_folder)
+        seqs = mapper.get_protein_sequences(target_chain='B')
+        assert str(seqs[0]) == 'CD'
+        assert seqs[0].structure.chain == 'B'
+        assert seqs[0].structure.context_chains == ('A',)
+
+    def test_get_protein_sequences_json_map(self, temp_multichain_folder, tmp_path):
+        mapper = StructureMapper(temp_multichain_folder)
+        chain_map = {"complex": "B"}
+        json_path = tmp_path / "chain_map.json"
+        json_path.write_text(json.dumps(chain_map))
+        seqs = mapper.get_protein_sequences(target_chain=str(json_path))
+        assert seqs[0].structure.chain == 'B'
+        assert str(seqs[0]) == 'CD'
+
+    def test_get_protein_sequences_no_auto_context(self, temp_multichain_folder):
+        mapper = StructureMapper(temp_multichain_folder)
+        seqs = mapper.get_protein_sequences(target_chain='A', auto_context=False)
+        assert seqs[0].structure.context_chains is None
+
+    def test_get_protein_sequences_json_map_fallback(self, temp_multichain_folder, tmp_path):
+        # The JSON map doesn't list "complex", so it falls back to chain 'A'.
+        mapper = StructureMapper(temp_multichain_folder)
+        json_path = tmp_path / "chain_map.json"
+        json_path.write_text(json.dumps({"some_other_structure": "B"}))
+        seqs = mapper.get_protein_sequences(target_chain=str(json_path))
+        assert seqs[0].structure.chain == 'A'
+        assert str(seqs[0]) == 'AG'

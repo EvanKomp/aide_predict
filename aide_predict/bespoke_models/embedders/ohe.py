@@ -219,7 +219,14 @@ class OneHotAlignedEmbedding(ShouldRefitOnSequencesMixin, PositionSpecificMixin,
         Notes: WT is set to None to avoid normalization. For an embedder this is effectively a feature scaler which you
         should do manually if you want
         """
-        super().__init__(metadata_folder=metadata_folder, wt=None, positions=positions, pool=False, flatten=flatten)
+        super().__init__(
+            metadata_folder=metadata_folder,
+            wt=None,
+            positions=positions,
+            pool=False,
+            flatten=flatten,
+            handle_aligned=False # DO NOT let position specific mixin handle alignments here, it will delete gaps and map to the called sequences ungapped
+        )
         self._vocab = list(AA_SINGLE.union(GAP_CHARACTERS))
 
     def _fit(self, X: ProteinSequences, y: Optional[np.ndarray] = None) -> 'OneHotAlignedEmbedding':

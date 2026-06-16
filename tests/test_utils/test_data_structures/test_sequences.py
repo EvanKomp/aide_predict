@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 from unittest.mock import patch, MagicMock
 
-from aide_predict.utils.data_structures import ProteinCharacter, ProteinSequence, ProteinSequences, ProteinSequencesOnFile
+from aide_predict.utils.data_structures import ProteinCharacter, ProteinSequence, ProteinSequences, ProteinSequencesOnFile, ProteinStructure
 from aide_predict.utils.constants import AA_SINGLE, GAP_CHARACTERS, NON_CONONICAL_AA_SINGLE
 from Bio.PDB import PDBIO, Structure, Model, Chain, Residue, Atom
 
@@ -1224,6 +1224,63 @@ class TestMSAIntegration:
         assert sequences[0].has_msa
         
         # The new sequence should not have 
+
+class TestProteinSequenceMultichain:
+    """Tests for ProteinSequence.with_target_chain, which requires a multichain structure."""
+
+    @pytest.fixture
+    def multichain_pdb(self, tmp_path):
+        pdb_content = """ATOM      1  N   ALA A   1       0.000   0.000   0.000  1.00  0.00           N
+ATOM      2  CA  ALA A   1       1.458   0.000   0.000  1.00  0.00           C
+ATOM      3  C   ALA A   1       2.009   1.362   0.000  1.00  0.00           C
+ATOM      4  O   ALA A   1       1.702   2.144   0.907  1.00  0.00           O
+ATOM      5  N   GLY A   2       2.831   1.687  -0.987  1.00  0.00           N
+ATOM      6  CA  GLY A   2       3.396   3.037  -1.009  1.00  0.00           C
+ATOM      7  C   GLY A   2       2.362   4.089  -1.408  1.00  0.00           C
+ATOM      8  O   GLY A   2       2.730   5.261  -1.509  1.00  0.00           O
+TER       9      GLY A   2
+ATOM     10  N   CYS B   1      20.000  20.000  20.000  1.00  0.00           N
+ATOM     11  CA  CYS B   1      21.458  20.000  20.000  1.00  0.00           C
+ATOM     12  C   CYS B   1      22.009  21.362  20.000  1.00  0.00           C
+ATOM     13  O   CYS B   1      21.702  22.144  20.907  1.00  0.00           O
+ATOM     14  N   ASP B   2      22.831  21.687  19.013  1.00  0.00           N
+ATOM     15  CA  ASP B   2      23.396  23.037  18.991  1.00  0.00           C
+ATOM     16  C   ASP B   2      22.362  24.089  18.592  1.00  0.00           C
+ATOM     17  O   ASP B   2      22.730  25.261  18.491  1.00  0.00           O
+TER      18      ASP B   2
+END
+"""
+        pdb_path = tmp_path / "complex.pdb"
+        pdb_path.write_text(pdb_content)
+        return str(pdb_path)
+
+    def test_with_target_chain_switches_sequence_and_structure(self, multichain_pdb):
+        struct = ProteinStructure(multichain_pdb, chain='A')
+        seq = ProteinSequence("AG", id="prot1", structure=struct)
+        new_seq = seq.with_target_chain('B')
+
+        # New sequence reflects chain B.
+        assert str(new_seq) == "CD"
+        assert new_seq.id == "prot1"
+        assert new_seq.structure.chain == 'B'
+        assert new_seq.structure.context_chains == ('A',)
+
+        # Original is untouched (immutability + structure clone).
+        assert str(seq) == "AG"
+        assert seq.structure.chain == 'A'
+        assert seq.structure is not new_seq.structure
+
+    def test_with_target_chain_no_auto_context(self, multichain_pdb):
+        struct = ProteinStructure(multichain_pdb, chain='A')
+        seq = ProteinSequence("AG", id="prot1", structure=struct)
+        new_seq = seq.with_target_chain('B', auto_context=False)
+        assert new_seq.structure.context_chains is None
+
+    def test_with_target_chain_requires_structure(self):
+        seq = ProteinSequence("ACDE", id="no_struct")
+        with pytest.raises(ValueError, match="requires an attached"):
+            seq.with_target_chain('B')
+
 
 # Run the tests
 if __name__ == "__main__":

@@ -174,7 +174,7 @@ class HMMWrapper(CanRegressMixin, RequiresMSAForFitMixin, ProteinModelWrapper):
             if not os.path.exists(out_tbl) or os.path.getsize(out_tbl) == 0:
                 raise RuntimeError("HMMsearch failed to produce output")
 
-            data = pd.read_csv(out_tbl, delim_whitespace=True, comment='#', header=None)
+            data = pd.read_csv(out_tbl, sep=r'\s+', comment='#', header=None)
 
         scores = np.zeros((len(X), 1))
         for i, seq in enumerate(X):

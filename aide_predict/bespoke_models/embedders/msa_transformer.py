@@ -73,7 +73,7 @@ class MSATransformerEmbedding(PositionSpecificMixin, CanHandleAlignedSequencesMi
             use_cache (bool): Whether to cache results to avoid redundant computations.
             wt (Optional[Union[str, ProteinSequence]]): The wild type sequence, if any.
         """
-        super().__init__(metadata_folder=metadata_folder, wt=wt, positions=positions, pool=pool, flatten=flatten, use_cache=use_cache)
+        super().__init__(metadata_folder=metadata_folder, wt=wt, positions=positions, pool=pool, flatten=flatten, use_cache=use_cache, handle_aligned=False)
         self.layer = layer
         self.batch_size = batch_size
         self.device = device
