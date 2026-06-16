@@ -6,7 +6,7 @@ title: Ensemble Variant Nomination
 
 ## Overview
 
-This guide reproduces the first round of the [MULTI-evolve](https://www.science.org/doi/10.1126/science.adr8628) zero-shot nomination workflow using AIDE primitives. The idea is to score a full saturation-mutagenesis (SSM) library along two complementary tracks and combine them:
+This guide reproduces the first round of the [MULTI-evolve](https://www.science.org/doi/10.1126/science.aea1820) zero-shot nomination workflow using AIDE primitives. The idea is to score a full saturation-mutagenesis (SSM) library along two complementary tracks and combine them:
 
 - a **structure track** — `ESMIFLikelihoodWrapper` (ESM-IF1), conditioned on the backbone;
 - a **sequence track** — an ensemble of sequence PLMs (`ESM2LikelihoodWrapper` loading the ESM-1v / ESM-2 checkpoints), averaged.
