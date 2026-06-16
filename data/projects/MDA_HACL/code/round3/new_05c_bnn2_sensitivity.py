@@ -185,6 +185,7 @@ def run_one(
     device: Optional[str],
     extra_train_args: List[str],
     dry_run: bool,
+    acq_sigma: str = "within_epi_ale",
 ) -> Tuple[bool, Optional[Path]]:
     """Execute one (train → score) pair. Returns (success, run_dir)."""
     target = str(item["target_substrate"])
@@ -207,6 +208,7 @@ def run_one(
     score_cmd = [
         sys.executable, str(SCORE_SCRIPT),
         "--run-dir", str(run_dir),
+        "--acq-sigma", acq_sigma,
     ]
 
     logger.info("▶ %s  k=%d  subs=%s", target, item["k"], subset)
@@ -243,6 +245,19 @@ def _safe_get(d: dict, *path, default=float("nan")):
     return cur
 
 
+def _bnn_best(m: dict, bb_key: str, *fallback_path) -> float:
+    """BNN ranking metric at this mode's best β.
+
+    Prefer the scorer's flat ``bnn_at_best_beta`` block (scalar per metric);
+    fall back to the β=0 ``bnn`` block via ``fallback_path`` for older runs
+    that predate the best-β layer.
+    """
+    bb = m.get("bnn_at_best_beta")
+    if isinstance(bb, dict) and bb.get(bb_key) is not None:
+        return bb[bb_key]
+    return _safe_get(m.get("bnn", {}), *fallback_path)
+
+
 def collect_metrics(sweep_root: Path, plan: List[Dict[str, object]]) -> pd.DataFrame:
     """Walk every planned run and pull headline metrics into long form.
 
@@ -250,8 +265,13 @@ def collect_metrics(sweep_root: Path, plan: List[Dict[str, object]]) -> pd.DataF
     mean), per-position top-1 recovery, and overall top-3 / top-5 recovery
     (per-substrate mean) for both BNN and matched null. All "overall" metrics
     are computed within each held-out substrate then equal-weight averaged —
-    they're no longer pooled across substrates. Missing fields (older runs)
-    fall back to NaN.
+    they're no longer pooled across substrates.
+
+    BNN *ranking* metrics are read at each mode's best β (``bnn_at_best_beta``,
+    the per-mode β the hyperopt fixed; recorded in the ``best_beta`` column),
+    falling back to the β=0 ``bnn`` block for runs predating the best-β layer.
+    Regression metrics (MAE) and the null are β-invariant and read as before.
+    Missing fields (older runs) fall back to NaN.
     """
     rows = []
     for item in plan:
@@ -271,27 +291,31 @@ def collect_metrics(sweep_root: Path, plan: List[Dict[str, object]]) -> pd.DataF
                 "subset_hash": _subset_hash(tuple(item["subset"])),  # type: ignore[arg-type]
                 "subset": ",".join(sorted(item["subset"])),          # type: ignore[arg-type]
                 "mode": mode,
-                # Overall regression-style metrics (per-substrate mean)
-                "bnn_spearman": _safe_get(bnn, "spearman_rho"),
+                # Per-mode UCB β used for the BNN ranking metrics below.
+                "best_beta": m.get("best_beta", 0.0),
+                # BNN ranking metrics @ best β; null is β-invariant.
+                "bnn_spearman": _bnn_best(m, "spearman_rho", "spearman_rho"),
                 "null_spearman": _safe_get(null, "spearman_rho"),
+                # MAE is β-invariant (β only re-ranks; the predicted mean is unchanged).
                 "bnn_mae": _safe_get(bnn, "mae"),
                 "null_mae": _safe_get(null, "mae"),
                 # NDCG (per-position mean — within-(substrate, position) two-step)
-                "bnn_ndcg": _safe_get(bnn, "per_position_ndcg_mean", "mean"),
+                "bnn_ndcg": _bnn_best(m, "per_position_ndcg_mean", "per_position_ndcg_mean", "mean"),
                 "null_ndcg": _safe_get(null, "per_position_ndcg_mean", "mean"),
                 # NDCG (overall — within-substrate then averaged across substrates)
-                "bnn_ndcg_overall": _safe_get(bnn, "ndcg"),
+                "bnn_ndcg_overall": _bnn_best(m, "ndcg", "ndcg"),
                 "null_ndcg_overall": _safe_get(null, "ndcg"),
                 # Per-position top-1 recovery
-                "bnn_per_pos_top1": _safe_get(bnn, "per_position_top1_recovery", "recovery"),
+                "bnn_per_pos_top1": _bnn_best(m, "per_position_top1_recovery", "per_position_top1_recovery", "recovery"),
                 "null_per_pos_top1": _safe_get(null, "per_position_top1_recovery", "recovery"),
                 # Overall top-k recovery (per-substrate mean)
-                "bnn_top3": _safe_get(bnn, "top3_recovery", "recovery"),
+                "bnn_top3": _bnn_best(m, "top3_recovery", "top3_recovery", "recovery"),
                 "null_top3": _safe_get(null, "top3_recovery", "recovery"),
-                "bnn_top5": _safe_get(bnn, "top5_recovery", "recovery"),
+                "bnn_top5": _bnn_best(m, "top5_recovery", "top5_recovery", "recovery"),
                 "null_top5": _safe_get(null, "top5_recovery", "recovery"),
-                # Deltas
-                "delta_spearman": m.get("delta_spearman", float("nan")),
+                # Deltas (Spearman @ best β; MAE β-invariant)
+                "delta_spearman": _safe_get(m, "delta_at_best_beta", "spearman_rho",
+                                            default=m.get("delta_spearman", float("nan"))),
                 "delta_mae": m.get("delta_mae", float("nan")),
                 "n_rows": m.get("n_rows", 0),
             })
@@ -920,6 +944,11 @@ def parse_args() -> argparse.Namespace:
                              "results/new_05_bnn2/sensitivity/<timestamp>)")
     parser.add_argument("--device", type=str, default=None,
                         help="Passed through to new_05_bnn2_train.py")
+    parser.add_argument("--acq-sigma", type=str, default="within_epi_ale",
+                        choices=["within_epi_ale", "within_epi", "total"],
+                        help="UCB acquisition σ forwarded to new_05b_bnn2_score.py "
+                             "(must match the σ the hyperopt optimised under; the "
+                             "locked-in config is within_epi_ale).")
     parser.add_argument("--seed", type=int, default=42,
                         help="Seeds the RNG used to sample subsets")
     parser.add_argument("--dry-run", action="store_true",
@@ -1024,6 +1053,7 @@ def main():
                 device=args.device,
                 extra_train_args=[a for a in (args.train_args or []) if a != "--"],
                 dry_run=args.dry_run,
+                acq_sigma=args.acq_sigma,
             )
             if not ok:
                 failures += 1

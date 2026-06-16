@@ -78,6 +78,7 @@ fi
 python code/round3/new_05c_bnn2_sensitivity.py \
     --output-dir "${OUT_DIR}" \
     --device cuda:0 \
+    --acq-sigma within_epi_ale \
     -- \
     --hyperparams "${HP}"
 
