@@ -101,7 +101,7 @@ You can always check which modules are installed/available to you by running `ge
 ### Composite / Ensemble Utilities
 
 1. `ZScoreRescaledScorer`
-   - Wraps any per-variant scorer and rescales its log-ratios within an amino-acid group (destination residue or substitution type) — the z-score ("Z") ranking from the [MULTI-evolve](https://www.science.org/doi/10.1126/science.adr8628) ensemble. Behaves as a single scikit-learn transformer (`fit`/`transform`), and `score_table` returns the per-mutation DataFrame.
+   - Wraps any per-variant scorer and rescales its log-ratios within an amino-acid group (destination residue or substitution type) — the z-score ("Z") ranking from the [MULTI-evolve](https://www.science.org/doi/10.1126/science.aea1820) ensemble. Behaves as a single scikit-learn transformer (`fit`/`transform`), and `score_table` returns the per-mutation DataFrame.
    - See the "Ensemble Variant Nomination" user guide for a full structure + sequence first-round scan. Lower-level primitives (`per_variant_mutation_info`, `zscore_by_aa_group`) live in `aide_predict.utils.scoring`.
 
 ### Embeddings for Downstream ML
