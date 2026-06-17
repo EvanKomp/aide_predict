@@ -160,6 +160,33 @@ scores = model.predict(mutants)
 
 SSEmb is especially effective for scoring mutations in proteins with known structures and rich evolutionary information.
 
+### ESM-IF1
+
+[ESM-IF1](https://proceedings.mlr.press/v162/hsu22a.html) is a structure-conditioned, autoregressive language model (the GVP-Transformer) that scores variants given a protein backbone:
+
+```python
+from aide_predict import ESMIFLikelihoodWrapper, ProteinSequence
+
+# Build the wild type from a structure (sequence + ProteinStructure attached)
+wt = ProteinSequence.from_pdb("structures/structure.pdb", chain="A")
+
+# wildtype_marginal or mutant_marginal; masked_marginal is refused
+# (ESM-IF has no bidirectional mask-scoring mode)
+model = ESMIFLikelihoodWrapper(
+    wt=wt,
+    marginal_method="wildtype_marginal",
+)
+
+# No training needed
+model.fit()
+
+# Score mutations
+mutants = wt.saturation_mutagenesis()
+scores = model.predict(mutants)
+```
+
+ESM-IF1 also conditions on the rest of a complex when the attached structure carries `context_chains`. See [Ensemble Variant Nomination](multi_evolve_ensemble.md) for a worked structure + sequence ensemble and [Data Structures](data_structures.md) for the multichain helpers.
+
 ## Evolutionary Models
 
 ### HMM

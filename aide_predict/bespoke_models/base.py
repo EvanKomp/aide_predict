@@ -898,7 +898,8 @@ class PositionSpecificMixin:
     
     This mixin adds functionality for handling position-specific outputs from protein models.
     It allows selecting specific positions to analyze, pooling across positions, and 
-    flattening multi-dimensional outputs.
+    flattening multi-dimensional outputs. It can also automatically handle aligned sequences
+    with gaps by stripping gaps before processing and remapping embeddings back to aligned positions.
     
     Attributes:
         positions (Optional[List[int]]): The positions to output scores for. If None, all positions are used.
@@ -908,14 +909,22 @@ class PositionSpecificMixin:
             - If callable: Uses the provided function for pooling
             - If False: No pooling is performed
         flatten (bool): Whether to flatten dimensions beyond the second dimension.
+        handle_aligned (bool): If True, automatically strip gaps before processing and remap to aligned positions.
+        gap_fill_value (float): Value to use for gap positions in aligned sequences (default 0.0).
     """
     _per_position_capable: bool = True
 
-    def _init_handler(self, positions=None, pool=True, flatten=True, **kwargs):
+    def _init_handler(self, positions=None, pool=True, flatten=True, 
+                     handle_aligned=True, gap_fill_value=0.0, **kwargs):
         """Initialize position-specific attributes from kwargs."""
         self.positions = positions
         self.pool = pool
         self.flatten = flatten
+        self.handle_aligned = handle_aligned
+        self.gap_fill_value = gap_fill_value
+        # Temporary storage for alignment mapping during transform
+        self._alignment_mapping = None
+        self._alignment_width = None
         
     def _is_ragged_array(self, arr):
         """Check if the input is a ragged array (list of arrays with different shapes)."""
@@ -934,9 +943,67 @@ class PositionSpecificMixin:
         if self.positions is not None:
             if not (X.aligned or len(X) == 1):
                 raise ValueError("Input sequences must be same length / aligned for position-specific output.")
+        
+        # Handle aligned sequences if enabled
+        if self.handle_aligned and X.has_gaps:
+            # Store original alignment width for later remapping
+            self._alignment_width = X.width
+            # Store mapping in instance for post-transform hook
+            self._alignment_mapping = X.get_alignment_mapping()
+            # Convert mapping to have integer keys ascending from 0
+            self._alignment_mapping = {i: m for i, m in enumerate(self._alignment_mapping.values())}
+            X = X.with_no_gaps()
+        else:
+            self._alignment_mapping = None
+            self._alignment_width = None
             
         return X
 
+    def _remap_to_aligned_positions(self, result, mapping, positions, fill_value):
+        """
+        Remap embeddings from ungapped sequences back to aligned positions.
+        
+        Args:
+            result: List of embeddings for ungapped sequences
+            mapping: Dict mapping sequence index to list of aligned positions
+            positions: List of aligned positions to extract
+            fill_value: Value to use for gap positions
+            
+        Returns:
+            List of remapped embeddings with gaps represented by fill_value
+        """
+        aligned_embeddings = []
+        for i, emb in enumerate(result):
+            seq_mapping = mapping[i]
+            # emb shape: (1, seq_len, embedding_dim), (seq_len, embedding_dim), or (seq_len,) for 1D
+            # Remove batch dimension if present
+            if emb.ndim == 3 and emb.shape[0] == 1:
+                emb = emb[0]  # Now (seq_len, embedding_dim)
+            
+            if emb.ndim == 1:
+                # Handle 1D case (e.g., single position or pooled)
+                emb = np.expand_dims(emb, 0)
+                squeeze_after = True
+            else:
+                squeeze_after = False
+            
+            # Now emb is (seq_len, embedding_dim)
+            seq_len = emb.shape[0]
+            embedding_dim = emb.shape[-1] if emb.ndim > 1 else 1
+            aligned_emb = np.full((len(positions), embedding_dim), fill_value, dtype=emb.dtype)
+            
+            for j, pos in enumerate(positions):
+                if pos in seq_mapping:
+                    aligned_pos = seq_mapping.index(pos)
+                    if aligned_pos < seq_len:
+                        aligned_emb[j] = emb[aligned_pos]
+            
+            if squeeze_after:
+                aligned_emb = np.squeeze(aligned_emb, axis=-1)
+            
+            aligned_embeddings.append(aligned_emb)
+        return aligned_embeddings
+    
     def _post_transform_hook(self, result, X):
         """
         Process the model output to handle position selection, pooling, and flattening.
@@ -950,6 +1017,18 @@ class PositionSpecificMixin:
         """
         if result is None or len(result) == 0:
             return result
+        
+        # Remap to aligned positions if we stripped gaps earlier
+        # If positions is None, remap to all positions in the alignment
+        if self._alignment_mapping is not None:
+            positions_to_map = self.positions if self.positions is not None else list(range(self._alignment_width))
+            result = self._remap_to_aligned_positions(
+                result, self._alignment_mapping, positions_to_map, self.gap_fill_value
+            )
+            # Clean up temporary storage
+            self._alignment_mapping = None
+            self._alignment_width = None
+        
         if self.pool:
             # get the pool function
             if isinstance(self.pool, str):
@@ -961,8 +1040,16 @@ class PositionSpecificMixin:
 
         # Handle ragged arrays (different shapes)
         if self._is_ragged_array(result):
+            # If positions were specified, ragged output is not acceptable
+            if self.positions is not None:
+                raise ValueError(
+                    f"Model returned ragged output (inconsistent shapes) but specific positions {self.positions} "
+                    "were requested. Cannot extract consistent position-specific embeddings from ragged output."
+                )
             if not self.pool:
-                raise ValueError("Pooling must be enabled to handle ragged arrays.")
+                # return here ... the output is not useful for direct downtream use in eg sklearn but the user may want this
+                logger.warning("Output is a ragged array and no pooling was specified. Returning list of arrays.")
+                return result
             else:
                 # apply pooling to each array in the list
                 result = [pool_func(a, axis=-2) for a in result]

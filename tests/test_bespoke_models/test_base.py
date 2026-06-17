@@ -258,7 +258,7 @@ class TestProteinModelWrapper:
         with pytest.raises(ValueError):
             full_dim_model.transform(seqs)
         
-        # Test with ragged array output without pooling
+        # Test with ragged array output without pooling and with pisitions asked for
         class RaggedModel(TestModel):
             def _transform(self, X):
                 # Return a list of arrays with different shapes
@@ -973,3 +973,60 @@ def test_requires_wt_during_inference_mixin():
     
     # Check results - should automatically normalize by WT length (4)
     np.testing.assert_array_equal(result_no_mixin, np.array([[0], [1]]))
+
+def test_position_specific_gap_handling(tmp_path):
+    """PositionSpecificMixin auto-strips gaps from aligned input, runs the model
+    on ungapped sequences, and remaps per-position output back onto alignment
+    columns (filling gap columns with gap_fill_value)."""
+
+    class GapModel(PositionSpecificMixin, ProteinModelWrapper):
+        def _fit(self, X, y=None):
+            self.fitted_ = True
+            return self
+
+        def _transform(self, X):
+            # X is ungapped here (the mixin stripped gaps in the pre-hook).
+            # Return per-sequence (1, L, 2) arrays whose row i is [i, i] so the
+            # remap can be checked exactly against the original ungapped index.
+            out = []
+            for seq in X:
+                emb = np.zeros((1, len(seq), 2), dtype=np.float32)
+                for i in range(len(seq)):
+                    emb[0, i, :] = i
+                out.append(emb)
+            return out
+
+    seqs = ProteinSequences([
+        ProteinSequence("AC-DE"),   # ungapped ACDE; aligned cols 0,1,3,4
+        ProteinSequence("A-CDE"),   # ungapped ACDE; aligned cols 0,2,3,4
+    ])
+
+    # --- Case A: full alignment width, no pooling, distinct gap fill (-1) ---
+    model = GapModel(metadata_folder=str(tmp_path), pool=False, flatten=False,
+                     gap_fill_value=-1.0)
+    model.fit([])
+    result = model.transform(seqs)
+    assert result.shape == (2, 5, 2)   # (n_seqs, alignment_width, dim)
+    np.testing.assert_array_equal(
+        result[0], [[0, 0], [1, 1], [-1, -1], [2, 2], [3, 3]])
+    np.testing.assert_array_equal(
+        result[1], [[0, 0], [-1, -1], [1, 1], [2, 2], [3, 3]])
+
+    # --- Case B: pooling across the (remapped) alignment positions ---
+    model_pool = GapModel(metadata_folder=str(tmp_path), pool=True,
+                          gap_fill_value=-1.0)
+    model_pool.fit([])
+    pooled = model_pool.transform(seqs)
+    assert pooled.shape == (2, 2)
+    # mean of [0,1,-1,2,3] == 1.0 (same for both sequences)
+    np.testing.assert_allclose(pooled, np.ones((2, 2)))
+
+    # --- Case C: specific alignment positions subset ---
+    model_pos = GapModel(metadata_folder=str(tmp_path), positions=[0, 3],
+                         pool=False, flatten=False, gap_fill_value=-1.0)
+    model_pos.fit([])
+    sub = model_pos.transform(seqs)
+    assert sub.shape == (2, 2, 2)   # (n_seqs, n_positions, dim)
+    # aligned col 0 -> ungapped idx 0; aligned col 3 -> ungapped idx 2 (both seqs)
+    np.testing.assert_array_equal(sub[0], [[0, 0], [2, 2]])
+    np.testing.assert_array_equal(sub[1], [[0, 0], [2, 2]])

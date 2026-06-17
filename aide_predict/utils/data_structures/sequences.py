@@ -160,6 +160,38 @@ class ProteinSequence(str):
         """Return a new ProteinSequence with all gaps removed."""
         return ProteinSequence("".join(c for c in self if c not in GAP_CHARACTERS),
                                id=self._id, structure=self._structure, msa=self._msa)
+
+    def with_target_chain(self, new_chain: str, auto_context: bool = True) -> 'ProteinSequence':
+        """
+        Return a new ProteinSequence pointing at a different chain of the same structure.
+
+        Clones the attached ProteinStructure (so the original is not mutated),
+        switches its primary chain via ``ProteinStructure.set_target_chain``,
+        and wraps the new chain's amino-acid string in a fresh ProteinSequence.
+
+        Args:
+            new_chain: The chain ID to become the new primary chain.
+            auto_context: Forwarded to ``ProteinStructure.set_target_chain``;
+                when True, populates ``context_chains`` with the other chains
+                in the file.
+
+        Returns:
+            ProteinSequence: A new instance with the new chain's sequence and
+            a cloned structure pointing at that chain.
+
+        Raises:
+            ValueError: If no structure is attached.
+        """
+        if self._structure is None:
+            raise ValueError("with_target_chain requires an attached ProteinStructure.")
+        cloned = ProteinStructure(
+            structure_file=self._structure.structure_file,
+            chain=self._structure.chain,
+            plddt_file=self._structure.plddt_file,
+            context_chains=self._structure.context_chains,
+        )
+        cloned.set_target_chain(new_chain, auto_context=auto_context)
+        return ProteinSequence(cloned.get_sequence(), id=self._id, structure=cloned)
     
     @property
     def as_array(self) -> np.ndarray:
@@ -347,7 +379,7 @@ class ProteinSequence(str):
         return False
 
     @classmethod
-    def from_pdb(cls, pdb_file: str, chain: str = 'A', id: Optional[str] = None) -> 'ProteinSequence':
+    def from_pdb(cls, structure_file: str, chain: str = 'A', id: Optional[str] = None) -> 'ProteinSequence':
         """
         Create a ProteinSequence from a PDB file.
 
@@ -355,7 +387,7 @@ class ProteinSequence(str):
         a ProteinSequence object with the associated structure.
 
         Args:
-            pdb_file (str): Path to the PDB file.
+            structure_file (str): Path to the PDB file.
             chain (str): Chain identifier to extract sequence from. Defaults to 'A'.
             id (Optional[str]): Identifier for the sequence. If None, uses the PDB filename.
 
@@ -371,17 +403,17 @@ class ProteinSequence(str):
             >>> print(seq)
             'MAEGEITTFTALTEKFNLPPGNYKKPKLLYCSNG...'
             >>> print(seq.structure)
-            ProteinStructure(pdb_file='1abc.pdb', chain='A')
+            ProteinStructure(structure_file='1abc.pdb', chain='A')
         """
         # Create structure object (this validates file existence)
-        structure = ProteinStructure(pdb_file=pdb_file, chain=chain)
+        structure = ProteinStructure(structure_file=structure_file, chain=chain)
         
         # Extract sequence from structure
         sequence = structure.get_sequence()
         
         # Use PDB filename as ID if none provided
         if id is None:
-            id = os.path.splitext(os.path.basename(pdb_file))[0]
+            id = os.path.splitext(os.path.basename(structure_file))[0]
         
         # Create sequence object with structure
         return cls(sequence, id=id, structure=structure)

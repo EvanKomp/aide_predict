@@ -78,6 +78,10 @@ seq2 = seq2.align(seq)
 # align to an existing alignment
 seq2 = seq2.align(msa)  # Align to existing MSA
 
+# For a sequence backed by a multichain structure, point it at a different
+# chain (returns a NEW ProteinSequence with a cloned structure; the original
+# is unchanged). auto_context populates the other chains as structural context.
+seqB = seq.with_target_chain("B", auto_context=True)
 ```
 
 ## ProteinSequences
@@ -187,6 +191,28 @@ chain_obj = structure.get_chain()  # Get specific chain
 positions = structure.get_residue_positions()  # Get residue numbers
 ```
 
+### Multichain complexes
+
+For complexes (e.g. AlphaFold3 multimers), a `ProteinStructure` carries one
+**primary chain** (the one whose sequence is scored) plus optional
+`context_chains` — additional chains supplied to structure-aware models like
+ESM-IF1 as 3D context but not themselves scored.
+
+```python
+# List the chains present in the file
+structure.get_all_chain_ids()        # e.g. ['A', 'B', 'C']
+
+# Switch the primary chain in place; auto_context makes every OTHER chain context
+structure.set_target_chain("A", auto_context=True)
+structure.context_chains              # -> ('B', 'C')
+
+# Set context chains explicitly at construction time instead
+structure = ProteinStructure("complex.pdb", chain="A", context_chains=("B", "C"))
+
+# Backbone coords for any chain as an [L, 3, 3] (N, CA, C) array
+coords = structure.get_chain_coords("A")
+```
+
 ## StructureMapper
 
 `StructureMapper` helps manage multiple structures and map them to sequences, particularly useful when working with structure-aware models.
@@ -214,6 +240,11 @@ available_ids = mapper.get_available_structures()
 
 # Get ProteinSequences with structures
 sequences = mapper.get_protein_sequences()
+
+# Choose a target chain for every structure, or pass a JSON path mapping
+# {structure_id: chain_id} for per-file overrides. auto_context (default True)
+# wires the other chains of each file in as structural context.
+sequences = mapper.get_protein_sequences(target_chain="A", auto_context=True)
 ```
 
 The StructureMapper is particularly useful when working with structure-aware models like SaProt, which can use structure information to improve predictions:

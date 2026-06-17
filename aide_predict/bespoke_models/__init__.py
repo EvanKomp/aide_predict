@@ -13,6 +13,8 @@ from .predictors.saprot import SaProtLikelihoodWrapper
 from .predictors.vespa import VESPAWrapper
 from .predictors.eve import EVEWrapper
 from .predictors.ssemb import SSEmbWrapper
+from .predictors.esm_if import ESMIFLikelihoodWrapper
+from .composites.zscore import ZScoreRescaledScorer
 
 from .embedders.esm2 import ESM2Embedding
 from .embedders.ohe import OneHotAlignedEmbedding, OneHotProteinEmbedding
@@ -20,6 +22,7 @@ from .embedders.msa_transformer import MSATransformerEmbedding
 from .embedders.saprot import SaProtEmbedding
 from .embedders.kmer import KmerEmbedding
 from .embedders.ssemb import SSEmbEmbedding
+from .embedders.aa_properties import AAPropertiesEmbedding
 
 
 TOOLS = [
@@ -31,6 +34,10 @@ TOOLS = [
     VESPAWrapper,
     EVEWrapper,
     SSEmbWrapper,
+    ESMIFLikelihoodWrapper,
+
+    # composites
+    ZScoreRescaledScorer,
 
     # embedders
     ESM2Embedding,
@@ -40,4 +47,5 @@ TOOLS = [
     SaProtEmbedding,
     KmerEmbedding,
     SSEmbEmbedding,
+    AAPropertiesEmbedding,
 ]

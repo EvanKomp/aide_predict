@@ -149,20 +149,9 @@ class ESM2Embedding(ExpectsNoFitMixin, PositionSpecificMixin, CanHandleAlignedSe
                     raise ValueError("Cannot flatten variable length sequences without positions or pooling.")
                 warnings.warn("Variable length sequences are being processed without positions or pooling, raw shapes will be output.")
             
-            mapping = None
-            if X.has_gaps:
-                # here we need to store a mapping such that if positions were specified we can map back to
-                # the aligned positions
-                mapping = X.get_alignment_mapping()
-                # convert mapping to have integer keys ascending from 0
-                mapping = {i: m for i, m in enumerate(mapping.values())}
-
-                X = X.with_no_gaps()
-                # raise if positions were not passed - here behavior is uncertain
-                if self.positions is None and not self.pool:
-                    raise ValueError("Cannot return position-specific embeddings for sequences with gaps unless positions are specified or pooling is on.")
-
-            base_index = 0
+            # Note: gap handling is now managed by PositionSpecificMixin hooks
+            # X will arrive here without gaps if handle_aligned=True
+            
             bar = tqdm.tqdm(total=len(X), desc="Computing ESM2 embeddings")
             for batch in X.iter_batches(self.batch_size):
                 batch_sequences = self._prepare_sequences(batch)
@@ -181,49 +170,13 @@ class ESM2Embedding(ExpectsNoFitMixin, PositionSpecificMixin, CanHandleAlignedSe
                 # Remove special tokens (assuming first and last tokens are special)
                 embeddings = [emb[1:-1] for emb in embeddings]
                 
-                if self.positions is not None and mapping is None:
-                    # here we have fixed length so we can just use positions
-                    embeddings = [emb[self.positions] for emb in embeddings]
-                elif self.positions is not None and mapping is not None:
-                    # here we have variable length sequences that were input as an aligned set,
-                    # the user asked for positions in the alignment
-                    aligned_embeddings = []
-                    for i, emb in enumerate(embeddings):
-                        seq_mapping = mapping[base_index + i]
-                        aligned_emb = np.zeros((len(self.positions), emb.shape[1]))
-                        for j, pos in enumerate(self.positions):
-                            if pos in seq_mapping:
-                                aligned_pos = seq_mapping.index(pos)
-                                aligned_emb[j] = emb[aligned_pos]
-                            # If pos is not in seq_mapping, it remains a zero vector
-                        aligned_embeddings.append(aligned_emb)
-                    embeddings = aligned_embeddings
-                else:
-                    # Here positions were not specified and either have fixed length or pooling
-                    # is on
-                    pass
-                
-                if self.pool:
-                    if self.pool == 'mean' or self.pool is True:
-                        embeddings = [emb.mean(axis=0) for emb in embeddings]
-                    elif self.pool == 'max':
-                        embeddings = [emb.max(axis=0) for emb in embeddings]
-                    elif hasattr(np, self.pool):
-                        # check if the pool is a numpy function
-                        pool_func = getattr(np, self.pool)
-                        embeddings = [pool_func(emb, axis=0) for emb in embeddings]
-                    else:
-                        raise ValueError(f"Invalid pooling method: {self.pool}")
-                
-                # add 0th dimension
+                # Add 0th dimension for stacking
                 embeddings = [np.expand_dims(emb, 0) for emb in embeddings]
                 all_embeddings.extend(embeddings)
 
-                base_index += len(batch)
-
                 bar.update(len(batch))
             
-        # stack along 0 dimension
+        # Return as list - PositionSpecificMixin will handle position selection, pooling, and alignment remapping
         return all_embeddings
 
     def get_feature_names_out(self, input_features: Optional[List[str]] = None) -> List[str]:

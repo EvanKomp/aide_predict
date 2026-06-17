@@ -1,0 +1,7 @@
+fair-esm
+transformers[torch]
+torch-geometric
+torch-scatter
+torch-cluster
+# fair-esm imports filter_backbone from biotite.structure; that name was removed in biotite 1.0+.
+biotite<1.0
