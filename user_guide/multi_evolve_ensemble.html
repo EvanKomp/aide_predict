@@ -1,0 +1,285 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ensemble Variant Nomination (MULTI-evolve first round) &mdash; aide 1.1.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=e50f1ef7"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Building ML Pipelines" href="pipelines.html" />
+    <link rel="prev" title="Saturation Mutagenesis" href="saturation_mutagenesis.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            aide
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installing AIDE</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_examples.html">API examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="data_structures.html">Data Structures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model_compatibility.html">Model Compatibility</a></li>
+<li class="toctree-l1"><a class="reference internal" href="protein_model.html">ProteinModelWrapper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="zero_shot.html">Zero-Shot Prediction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="supervised.html">Supervised Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="saturation_mutagenesis.html">Saturation Mutagenesis</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Ensemble Variant Nomination (MULTI-evolve first round)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#build-the-wt-and-its-ssm-library">1. Build the WT and its SSM library</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#structure-track-esm-if1">2. Structure track — ESM-IF1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sequence-track-plm-ensemble">3. Sequence track — PLM ensemble</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#assemble-the-table-and-z-score-each-track">4. Assemble the table and z-score each track</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#four-method-position-exclusive-top-n-then-union">5. Four-method position-exclusive top-N, then union</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#reusable-composite-zscorerescaledscorer">Reusable composite: <code class="docutils literal notranslate"><span class="pre">ZScoreRescaledScorer</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#multichain-complexes">Multichain complexes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pipelines.html">Building ML Pipelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caching.html">Caching Model Outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="position_specific.html">Position-Specific Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing_models.html">Contributing Models to AIDE</a></li>
+<li class="toctree-l1"><a class="reference internal" href="structure_pred.html">Structure Prediction with SoloSeq</a></li>
+<li class="toctree-l1"><a class="reference internal" href="msa_search.html">Generating MSAs with MMseqs2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="badass.html">Protein Optimization with BADASS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="roadmap.html">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="resource_test.html">Resource testing</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">aide_predict</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">aide</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Ensemble Variant Nomination (MULTI-evolve first round)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/user_guide/multi_evolve_ensemble.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="ensemble-variant-nomination-multi-evolve-first-round">
+<h1>Ensemble Variant Nomination (MULTI-evolve first round)<a class="headerlink" href="#ensemble-variant-nomination-multi-evolve-first-round" title="Link to this heading"></a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>This guide reproduces the first round of the <a class="reference external" href="https://www.science.org/doi/10.1126/science.aea1820">MULTI-evolve</a> zero-shot nomination workflow using AIDE primitives. The idea is to score a full saturation-mutagenesis (SSM) library along two complementary tracks and combine them:</p>
+<ul class="simple">
+<li><p>a <strong>structure track</strong> — <code class="docutils literal notranslate"><span class="pre">ESMIFLikelihoodWrapper</span></code> (ESM-IF1), conditioned on the backbone;</p></li>
+<li><p>a <strong>sequence track</strong> — an ensemble of sequence PLMs (<code class="docutils literal notranslate"><span class="pre">ESM2LikelihoodWrapper</span></code> loading the ESM-1v / ESM-2 checkpoints), averaged.</p></li>
+</ul>
+<p>Each track is scored as a per-mutation log-ratio, then <strong>rescaled within an amino-acid group</strong> (<code class="docutils literal notranslate"><span class="pre">zscore_by_aa_group</span></code>) so that mutations to, say, proline are compared against other mutations to proline rather than against the whole library. Finally we take a <strong>position-exclusive top-N</strong> under four rankings (fold-change and z-score for each track) and <strong>union</strong> them — at most one mutation per residue per method.</p>
+<p>All of the pieces below are public API. A ready-to-run driver that implements this exact workflow (including multimer handling and plots) lives at <code class="docutils literal notranslate"><span class="pre">scripts/multi_evolve_ssm_scan.py</span></code>.</p>
+</section>
+<section id="build-the-wt-and-its-ssm-library">
+<h2>1. Build the WT and its SSM library<a class="headerlink" href="#build-the-wt-and-its-ssm-library" title="Link to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aide_predict</span> <span class="kn">import</span> <span class="n">ProteinSequence</span><span class="p">,</span> <span class="n">ProteinSequences</span>
+
+<span class="c1"># from_pdb extracts the chain sequence and attaches the ProteinStructure.</span>
+<span class="n">wt</span> <span class="o">=</span> <span class="n">ProteinSequence</span><span class="o">.</span><span class="n">from_pdb</span><span class="p">(</span><span class="s2">&quot;my_enzyme.pdb&quot;</span><span class="p">,</span> <span class="n">chain</span><span class="o">=</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;my_enzyme&quot;</span><span class="p">)</span>
+
+<span class="c1"># All single-point variants (19 * L). MULTI-evolve drops Met1 by convention</span>
+<span class="c1"># (mutated_positions is 0-indexed, so position 0 is residue 1).</span>
+<span class="n">ssm</span> <span class="o">=</span> <span class="n">wt</span><span class="o">.</span><span class="n">saturation_mutagenesis</span><span class="p">()</span>
+<span class="n">ssm</span> <span class="o">=</span> <span class="n">ProteinSequences</span><span class="p">([</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">ssm</span> <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">mutated_positions</span><span class="p">(</span><span class="n">wt</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</section>
+<section id="structure-track-esm-if1">
+<h2>2. Structure track — ESM-IF1<a class="headerlink" href="#structure-track-esm-if1" title="Link to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aide_predict</span> <span class="kn">import</span> <span class="n">ESMIFLikelihoodWrapper</span>
+
+<span class="n">esm_if</span> <span class="o">=</span> <span class="n">ESMIFLikelihoodWrapper</span><span class="p">(</span>
+    <span class="n">wt</span><span class="o">=</span><span class="n">wt</span><span class="p">,</span>
+    <span class="n">marginal_method</span><span class="o">=</span><span class="s2">&quot;wildtype_marginal&quot;</span><span class="p">,</span>  <span class="c1"># masked_marginal is refused (autoregressive)</span>
+    <span class="n">pool</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>                            <span class="c1"># one scalar (log-ratio) per variant</span>
+    <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">esm_if</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+<span class="n">esm_if_logratio</span> <span class="o">=</span> <span class="n">esm_if</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">ssm</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="sequence-track-plm-ensemble">
+<h2>3. Sequence track — PLM ensemble<a class="headerlink" href="#sequence-track-plm-ensemble" title="Link to this heading"></a></h2>
+<p>The full MULTI-evolve sequence track is five ESM-1v checkpoints plus <code class="docutils literal notranslate"><span class="pre">esm2_t36_3B_UR50D</span></code>. Load each one, score, then free it before the next so peak GPU memory stays bounded. Two checkpoints are shown here for brevity:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">aide_predict</span> <span class="kn">import</span> <span class="n">ESM2LikelihoodWrapper</span>
+
+<span class="n">PLM_CHECKPOINTS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;esm1v_t33_650M_UR90S_1&quot;</span><span class="p">,</span> <span class="s2">&quot;esm2_t36_3B_UR50D&quot;</span><span class="p">]</span>
+<span class="n">plm_logratios</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">ckpt</span> <span class="ow">in</span> <span class="n">PLM_CHECKPOINTS</span><span class="p">:</span>
+    <span class="n">plm</span> <span class="o">=</span> <span class="n">ESM2LikelihoodWrapper</span><span class="p">(</span>
+        <span class="n">wt</span><span class="o">=</span><span class="n">wt</span><span class="p">,</span> <span class="n">model_checkpoint</span><span class="o">=</span><span class="n">ckpt</span><span class="p">,</span>
+        <span class="n">marginal_method</span><span class="o">=</span><span class="s2">&quot;wildtype_marginal&quot;</span><span class="p">,</span> <span class="n">pool</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">plm</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+    <span class="n">plm_logratios</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">plm</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">ssm</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+    <span class="k">del</span> <span class="n">plm</span>  <span class="c1"># free before loading the next checkpoint</span>
+
+<span class="n">plm_logratios</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">plm_logratios</span><span class="p">)</span>             <span class="c1"># (n_plms, n_variants)</span>
+<span class="n">mean_plm_logratio</span> <span class="o">=</span> <span class="n">plm_logratios</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>        <span class="c1"># Track A score</span>
+<span class="n">plm_pass_count</span> <span class="o">=</span> <span class="p">(</span><span class="n">plm_logratios</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>      <span class="c1"># consensus tier for Seq-FC</span>
+</pre></div>
+</div>
+</section>
+<section id="assemble-the-table-and-z-score-each-track">
+<h2>4. Assemble the table and z-score each track<a class="headerlink" href="#assemble-the-table-and-z-score-each-track" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">per_variant_mutation_info</span></code> gives the <code class="docutils literal notranslate"><span class="pre">(wt_aa,</span> <span class="pre">mut_aa,</span> <span class="pre">position,</span> <span class="pre">mutation)</span></code> scaffold; <code class="docutils literal notranslate"><span class="pre">zscore_by_aa_group</span></code> adds the AA-grouped z-score column and returns the per-group <code class="docutils literal notranslate"><span class="pre">(mean,</span> <span class="pre">std)</span></code> stats it learned.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aide_predict.utils.scoring</span> <span class="kn">import</span> <span class="n">per_variant_mutation_info</span><span class="p">,</span> <span class="n">zscore_by_aa_group</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">per_variant_mutation_info</span><span class="p">(</span><span class="n">ssm</span><span class="p">,</span> <span class="n">wt</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;esm_if_logratio&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">esm_if_logratio</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;mean_plm_logratio&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mean_plm_logratio</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;plm_pass_count&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">plm_pass_count</span>
+
+<span class="c1"># Rescale within destination-residue groups (the MULTI-evolve default).</span>
+<span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">zscore_by_aa_group</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">grouping</span><span class="o">=</span><span class="s2">&quot;destination_residue&quot;</span><span class="p">,</span>
+                           <span class="n">score_col</span><span class="o">=</span><span class="s2">&quot;esm_if_logratio&quot;</span><span class="p">,</span> <span class="n">out_col</span><span class="o">=</span><span class="s2">&quot;z_esm_if_logratio&quot;</span><span class="p">,</span>
+                           <span class="n">min_group_size</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">zscore_by_aa_group</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">grouping</span><span class="o">=</span><span class="s2">&quot;destination_residue&quot;</span><span class="p">,</span>
+                           <span class="n">score_col</span><span class="o">=</span><span class="s2">&quot;mean_plm_logratio&quot;</span><span class="p">,</span> <span class="n">out_col</span><span class="o">=</span><span class="s2">&quot;z_mean_plm_logratio&quot;</span><span class="p">,</span>
+                           <span class="n">min_group_size</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="four-method-position-exclusive-top-n-then-union">
+<h2>5. Four-method position-exclusive top-N, then union<a class="headerlink" href="#four-method-position-exclusive-top-n-then-union" title="Link to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="k">def</span> <span class="nf">position_exclusive_topn</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">sort_cols</span><span class="p">,</span> <span class="n">ascendings</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Top-n rows, at most one per residue position, skipping NaN sort keys.&quot;&quot;&quot;</span>
+    <span class="n">used</span><span class="p">,</span> <span class="n">picked</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(),</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">sort_cols</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="n">ascendings</span><span class="p">)</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">c</span><span class="p">])</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">sort_cols</span><span class="p">)</span> <span class="ow">or</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;position&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">used</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">picked</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">);</span> <span class="n">used</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;position&quot;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">picked</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">n</span><span class="p">:</span>
+            <span class="k">break</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">picked</span><span class="p">)</span>
+
+<span class="n">N</span> <span class="o">=</span> <span class="mi">24</span>
+<span class="n">methods</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;seq_fc&quot;</span><span class="p">:</span>    <span class="p">([</span><span class="s2">&quot;plm_pass_count&quot;</span><span class="p">,</span> <span class="s2">&quot;mean_plm_logratio&quot;</span><span class="p">],</span> <span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">]),</span>  <span class="c1"># consensus + magnitude</span>
+    <span class="s2">&quot;struct_fc&quot;</span><span class="p">:</span> <span class="p">([</span><span class="s2">&quot;esm_if_logratio&quot;</span><span class="p">],</span> <span class="p">[</span><span class="kc">False</span><span class="p">]),</span>
+    <span class="s2">&quot;seq_z&quot;</span><span class="p">:</span>     <span class="p">([</span><span class="s2">&quot;z_mean_plm_logratio&quot;</span><span class="p">],</span> <span class="p">[</span><span class="kc">False</span><span class="p">]),</span>
+    <span class="s2">&quot;struct_z&quot;</span><span class="p">:</span>  <span class="p">([</span><span class="s2">&quot;z_esm_if_logratio&quot;</span><span class="p">],</span> <span class="p">[</span><span class="kc">False</span><span class="p">]),</span>
+<span class="p">}</span>
+<span class="n">picks</span> <span class="o">=</span> <span class="p">{</span><span class="n">m</span><span class="p">:</span> <span class="n">position_exclusive_topn</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">cols</span><span class="p">,</span> <span class="n">asc</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span> <span class="k">for</span> <span class="n">m</span><span class="p">,</span> <span class="p">(</span><span class="n">cols</span><span class="p">,</span> <span class="n">asc</span><span class="p">)</span> <span class="ow">in</span> <span class="n">methods</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+<span class="c1"># Union: one row per nominated mutation, with a per-method indicator column.</span>
+<span class="n">nominations</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">picks</span><span class="o">.</span><span class="n">values</span><span class="p">())</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="s2">&quot;mutation&quot;</span><span class="p">)[[</span><span class="s2">&quot;mutation&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">m</span><span class="p">,</span> <span class="n">sub</span> <span class="ow">in</span> <span class="n">picks</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">nominations</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s2">_picked&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nominations</span><span class="p">[</span><span class="s2">&quot;mutation&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">sub</span><span class="p">[</span><span class="s2">&quot;mutation&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+<span class="n">nominations</span><span class="p">[</span><span class="s2">&quot;n_methods_picked&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nominations</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">like</span><span class="o">=</span><span class="s2">&quot;_picked&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">nominations</span> <span class="o">=</span> <span class="n">nominations</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;n_methods_picked&quot;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">nominations</span></code> now holds the unioned variant short-list; <code class="docutils literal notranslate"><span class="pre">n_methods_picked</span></code> (1–4) tells you how many of the four rankings agreed on each mutation.</p>
+</section>
+<section id="reusable-composite-zscorerescaledscorer">
+<h2>Reusable composite: <code class="docutils literal notranslate"><span class="pre">ZScoreRescaledScorer</span></code><a class="headerlink" href="#reusable-composite-zscorerescaledscorer" title="Link to this heading"></a></h2>
+<p>The z-score step (steps 2–4 for a single scorer) is also packaged as a scikit-learn-style transformer you can wrap around <em>any</em> per-variant scorer. It fits the AA-group stats on a calibration set and applies them at transform time:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aide_predict</span> <span class="kn">import</span> <span class="n">ESMIFLikelihoodWrapper</span><span class="p">,</span> <span class="n">ZScoreRescaledScorer</span>
+
+<span class="n">inner</span> <span class="o">=</span> <span class="n">ESMIFLikelihoodWrapper</span><span class="p">(</span><span class="n">wt</span><span class="o">=</span><span class="n">wt</span><span class="p">,</span> <span class="n">marginal_method</span><span class="o">=</span><span class="s2">&quot;wildtype_marginal&quot;</span><span class="p">,</span> <span class="n">pool</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">scorer</span> <span class="o">=</span> <span class="n">ZScoreRescaledScorer</span><span class="p">(</span><span class="n">inner_scorer</span><span class="o">=</span><span class="n">inner</span><span class="p">,</span> <span class="n">grouping</span><span class="o">=</span><span class="s2">&quot;destination_residue&quot;</span><span class="p">,</span>
+                              <span class="n">min_group_size</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">wt</span><span class="o">=</span><span class="n">wt</span><span class="p">)</span>
+
+<span class="n">scorer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">ssm</span><span class="p">)</span>
+<span class="n">arr</span> <span class="o">=</span> <span class="n">scorer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">ssm</span><span class="p">)</span>        <span class="c1"># (N, 2): columns [logratio, z_logratio]</span>
+<span class="n">table</span> <span class="o">=</span> <span class="n">scorer</span><span class="o">.</span><span class="n">score_table</span><span class="p">(</span><span class="n">ssm</span><span class="p">)</span>    <span class="c1"># rich DataFrame: mutation, position, wt_aa,</span>
+                                   <span class="c1"># mut_aa, logratio, z_logratio, ...</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">grouping</span></code> switches between <code class="docutils literal notranslate"><span class="pre">&quot;destination_residue&quot;</span></code> (bin by <code class="docutils literal notranslate"><span class="pre">mut_aa</span></code>) and <code class="docutils literal notranslate"><span class="pre">&quot;substitution_type&quot;</span></code> (bin by the <code class="docutils literal notranslate"><span class="pre">(wt_aa,</span> <span class="pre">mut_aa)</span></code> pair); <code class="docutils literal notranslate"><span class="pre">multi_mutant_strategy</span></code> controls whether multi-mutation variants are tolerated (<code class="docutils literal notranslate"><span class="pre">&quot;skip&quot;</span></code>, giving them a NaN z-score) or rejected (<code class="docutils literal notranslate"><span class="pre">&quot;raise&quot;</span></code>).</p>
+</section>
+<section id="multichain-complexes">
+<h2>Multichain complexes<a class="headerlink" href="#multichain-complexes" title="Link to this heading"></a></h2>
+<p>ESM-IF1 can condition the target chain on the rest of a complex. If <code class="docutils literal notranslate"><span class="pre">my_enzyme.pdb</span></code> were a multimer, point the WT at the chain you want to score and let the others become structural context:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">wt</span> <span class="o">=</span> <span class="n">ProteinSequence</span><span class="o">.</span><span class="n">from_pdb</span><span class="p">(</span><span class="s2">&quot;complex.pdb&quot;</span><span class="p">,</span> <span class="n">chain</span><span class="o">=</span><span class="s2">&quot;A&quot;</span><span class="p">)</span>
+<span class="n">wt</span> <span class="o">=</span> <span class="n">wt</span><span class="o">.</span><span class="n">with_target_chain</span><span class="p">(</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="n">auto_context</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>   <span class="c1"># other chains -&gt; ESM-IF context</span>
+</pre></div>
+</div>
+<p>For a homo-/hetero-multimer you typically loop the target chain over each protein chain and run the scan once per chain. See <a class="reference internal" href="data_structures.html"><span class="std std-doc">Data Structures</span></a> for <code class="docutils literal notranslate"><span class="pre">set_target_chain</span></code>, <code class="docutils literal notranslate"><span class="pre">with_target_chain</span></code>, and <code class="docutils literal notranslate"><span class="pre">context_chains</span></code>.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="saturation_mutagenesis.html" class="btn btn-neutral float-left" title="Saturation Mutagenesis" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pipelines.html" class="btn btn-neutral float-right" title="Building ML Pipelines" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Gregg T. Beckham.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
