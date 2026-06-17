@@ -1,0 +1,350 @@
+substrate,mutation,position,wt_aa,mut_aa,num_models,models,mean_rank,avg_score,available
+1-hydroxypropan-2-one,A399G,399,A,G,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,1.3333333333333333,0.23999730935456717,False
+1-hydroxypropan-2-one,V83G,83,V,G,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,2.5,0.08924299623540753,False
+1-hydroxypropan-2-one,A420S,420,A,S,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,2.6666666666666665,0.10937392238828424,False
+1-hydroxypropan-2-one,V83S,83,V,S,10,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted,3.6,-0.21048653769391007,False
+1-hydroxypropan-2-one,S407Q,407,S,Q,5,BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_nearest,4.8,-0.2540671808831754,False
+1-hydroxypropan-2-one,S569R,569,S,R,2,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1,4.5,0.3208494450775312,False
+1-hydroxypropan-2-one,S569K,569,S,K,2,BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1,5.0,-0.44305961262413995,False
+1-hydroxypropan-2-one,G556R,556,G,R,1,null_formaldehyde,3.0,0.3461573123931885,False
+1-hydroxypropan-2-one,A399E,399,A,E,1,null_formaldehyde,5.0,0.26787543296813965,False
+1-hydroxypropan-2-one,A570L,570,A,L,1,null_nearest,5.0,0.3483048677444458,False
+1-hydroxypropan-2-one,S425A,425,S,A,1,BNN(pp_ndcg)_avg_all_b0.5,5.0,-0.768389816444037,False
+1-hydroxypropan-2-one,V83T,83,V,T,1,BNN(pp_ndcg)_avg_all_b1.5,5.0,-0.03750351737183322,False
+2-Ethylbutyraldehyde,A399G,399,A,G,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,1.25,0.49796846705533726,True
+2-Ethylbutyraldehyde,A420S,420,A,S,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,2.25,0.39040700506938636,True
+2-Ethylbutyraldehyde,V83G,83,V,G,11,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde,3.0,0.2646910571960371,True
+2-Ethylbutyraldehyde,V83S,83,V,S,9,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted,4.444444444444445,-0.03697924526263726,True
+2-Ethylbutyraldehyde,S407Q,407,S,Q,7,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_top3)_avg_all_b0;BNN(top3)_avg_all_b0;null_avg_all;null_distance_weighted;null_nearest,4.0,-0.010194813934358329,True
+2-Ethylbutyraldehyde,A399E,399,A,E,2,BNN(pp_top3)_avg_all_b1;null_formaldehyde,4.5,0.5078421688694708,True
+2-Ethylbutyraldehyde,S407S,407,S,S,2,BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5,5.0,0.0427059569007327,True
+2-Ethylbutyraldehyde,A399A,399,A,A,1,BNN(pp_top3)_avg_all_b1,1.0,1.2018063054624606,True
+2-Ethylbutyraldehyde,G556R,556,G,R,1,null_formaldehyde,3.0,0.3461573123931885,True
+2-Ethylbutyraldehyde,A570K,570,A,K,1,null_nearest,4.0,0.5611013770103455,True
+2-Ethylbutyraldehyde,S425A,425,S,A,1,null_nearest,5.0,0.44870632886886597,True
+2-Ethylbutyraldehyde,S569K,569,S,K,1,BNN(top3)_avg_all_b1,5.0,0.14570868112682422,True
+2-Methylpentanal,A399G,399,A,G,10,BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde,1.2,0.7228349235922962,True
+2-Methylpentanal,A420S,420,A,S,10,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde,2.5,0.13333609097838667,True
+2-Methylpentanal,V83G,83,V,G,10,BNN(ndcg)_distance_weighted_b0;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,2.6,-0.20158782461494726,True
+2-Methylpentanal,V83S,83,V,S,7,BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted,4.285714285714286,-0.29870387799415254,True
+2-Methylpentanal,S407Q,407,S,Q,4,BNN(ndcg)_distance_weighted_b1;BNN(pp_top3)_avg_all_b0;null_avg_all;null_distance_weighted,4.25,-0.23712650357198078,True
+2-Methylpentanal,A570A,570,A,A,2,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1,1.5,0.4874700994757698,True
+2-Methylpentanal,T561M,561,T,M,2,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1,3.5,0.41611060448163806,True
+2-Methylpentanal,A399E,399,A,E,2,BNN(pp_top3)_avg_all_b1;null_formaldehyde,4.5,1.802372914951837,True
+2-Methylpentanal,S407S,407,S,S,2,BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5,5.0,0.06114904761566187,True
+2-Methylpentanal,S569K,569,S,K,2,BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1,5.0,-0.34475273538564144,True
+2-Methylpentanal,V83F,83,V,F,1,null_nearest,1.0,-2.0,True
+2-Methylpentanal,A399S,399,A,S,1,BNN(pp_top3)_avg_all_b1,2.0,3.4379914182361135,True
+2-Methylpentanal,A399D,399,A,D,1,BNN(pp_top3)_avg_all_b1,3.0,3.429665312748784,True
+2-Methylpentanal,G556R,556,G,R,1,null_formaldehyde,3.0,0.3461573123931885,True
+2-Methylpentanal,V83H,83,V,H,1,null_nearest,3.0,-2.0,True
+2-Methylpentanal,V83I,83,V,I,1,null_nearest,4.0,-2.0,True
+2-Methylpentanal,A399N,399,A,N,1,BNN(pp_top3)_avg_all_b1,5.0,3.2141349781146644,True
+2-Methylpentanal,A570S,570,A,S,1,BNN(ndcg)_distance_weighted_b0,5.0,-0.22387283603033836,True
+2-Methylpentanal,V83K,83,V,K,1,null_nearest,5.0,-2.0,True
+"3,4-dimethylpentan-2-one",A399G,399,A,G,11,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,1.0,0.5504317047687702,True
+"3,4-dimethylpentan-2-one",A420S,420,A,S,11,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,2.272727272727273,0.4005136209252097,True
+"3,4-dimethylpentan-2-one",V83G,83,V,G,11,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,3.0,0.3078059180599476,True
+"3,4-dimethylpentan-2-one",V83S,83,V,S,6,BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted,4.0,-0.1602476650824238,True
+"3,4-dimethylpentan-2-one",S407Q,407,S,Q,5,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_top3)_avg_all_b0;null_avg_all;null_distance_weighted,4.2,0.06543916004983816,True
+"3,4-dimethylpentan-2-one",S569K,569,S,K,5,BNN(ndcg)_distance_weighted_b0;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1,4.8,1.7518318452341313,True
+"3,4-dimethylpentan-2-one",S407S,407,S,S,3,BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5,5.0,0.6853087135369412,True
+"3,4-dimethylpentan-2-one",A399A,399,A,A,1,BNN(pp_top3)_avg_all_b1,1.0,10.155370298349991,True
+"3,4-dimethylpentan-2-one",A399S,399,A,S,1,BNN(pp_top3)_avg_all_b1,2.0,9.83911493016174,True
+"3,4-dimethylpentan-2-one",G556R,556,G,R,1,null_formaldehyde,3.0,0.3461573123931885,True
+"3,4-dimethylpentan-2-one",S569Q,569,S,Q,1,BNN(pp_top3)_avg_all_b1,3.0,9.750424093147036,True
+"3,4-dimethylpentan-2-one",A399Q,399,A,Q,1,BNN(pp_top3)_avg_all_b1,4.0,9.679222160063873,True
+"3,4-dimethylpentan-2-one",A570F,570,A,F,1,null_nearest,4.0,0.42975229024887085,True
+"3,4-dimethylpentan-2-one",A399E,399,A,E,1,null_formaldehyde,5.0,0.26787543296813965,True
+"3,4-dimethylpentan-2-one",A420T,420,A,T,1,null_nearest,5.0,0.39269694685935974,True
+3-hydroxpropanal,V83G,83,V,G,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,2.3333333333333335,-0.15137183652558092,True
+3-hydroxpropanal,A399G,399,A,G,11,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde,1.4545454545454546,0.1433624000015701,True
+3-hydroxpropanal,A420S,420,A,S,11,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde,2.272727272727273,0.028111906662913803,True
+3-hydroxpropanal,V83S,83,V,S,10,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted,4.1,-0.2939416729393086,True
+3-hydroxpropanal,S407Q,407,S,Q,5,BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;null_avg_all;null_distance_weighted,4.8,-0.46970575195758,True
+3-hydroxpropanal,S569K,569,S,K,2,BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1,5.0,-0.37513757570620454,True
+3-hydroxpropanal,T561L,561,T,L,2,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1,5.0,-0.3267733269494144,True
+3-hydroxpropanal,V83F,83,V,F,1,null_nearest,1.0,-2.0,True
+3-hydroxpropanal,G556R,556,G,R,1,null_formaldehyde,3.0,0.3461573123931885,True
+3-hydroxpropanal,V83H,83,V,H,1,null_nearest,3.0,-2.0,True
+3-hydroxpropanal,V83I,83,V,I,1,null_nearest,4.0,-2.0,True
+3-hydroxpropanal,A399E,399,A,E,1,null_formaldehyde,5.0,0.26787543296813965,True
+3-hydroxpropanal,S407S,407,S,S,1,BNN(pp_ndcg)_avg_all_b1.5,5.0,0.20416769132754164,True
+3-hydroxpropanal,V83K,83,V,K,1,null_nearest,5.0,-2.0,True
+5- hydroxypentanal,V83G,83,V,G,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,2.5,-0.08767217766668539,True
+5- hydroxypentanal,A399G,399,A,G,11,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde,1.2727272727272727,0.24262321040422946,True
+5- hydroxypentanal,A420S,420,A,S,11,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde,2.272727272727273,0.12305329498957836,True
+5- hydroxypentanal,V83S,83,V,S,8,BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted,4.25,-0.2685992522357768,True
+5- hydroxypentanal,S407Q,407,S,Q,6,BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;null_avg_all;null_distance_weighted,4.666666666666667,-0.5181733614098482,True
+5- hydroxypentanal,T561L,561,T,L,2,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1,4.0,0.19014365608379202,True
+5- hydroxypentanal,S569R,569,S,R,2,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1,5.0,0.13533298586217568,True
+5- hydroxypentanal,V83F,83,V,F,1,null_nearest,1.0,-2.0,True
+5- hydroxypentanal,G556R,556,G,R,1,null_formaldehyde,3.0,0.3461573123931885,True
+5- hydroxypentanal,V83H,83,V,H,1,null_nearest,3.0,-2.0,True
+5- hydroxypentanal,V83I,83,V,I,1,null_nearest,4.0,-2.0,True
+5- hydroxypentanal,A399E,399,A,E,1,null_formaldehyde,5.0,0.26787543296813965,True
+5- hydroxypentanal,S407S,407,S,S,1,BNN(pp_ndcg)_avg_all_b1.5,5.0,0.3453095865631455,True
+5- hydroxypentanal,S569K,569,S,K,1,BNN(top3)_avg_all_b1,5.0,0.1264795287862378,True
+5- hydroxypentanal,V83K,83,V,K,1,null_nearest,5.0,-2.0,True
+Benzaldehyde,A399G,399,A,G,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,1.3333333333333333,0.4615116789807281,False
+Benzaldehyde,A420S,420,A,S,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,2.0,0.36958614954163277,False
+Benzaldehyde,V83G,83,V,G,10,BNN(ndcg)_distance_weighted_b0;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde,2.8,0.13298088126234234,False
+Benzaldehyde,V83S,83,V,S,8,BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted,4.375,-0.18850291168187006,False
+Benzaldehyde,S407Q,407,S,Q,7,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_top3)_avg_all_b0;BNN(top3)_avg_all_b0;null_avg_all;null_distance_weighted;null_nearest,3.857142857142857,-0.0102095308627242,False
+Benzaldehyde,A570K,570,A,K,3,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;null_nearest,4.666666666666667,0.7258722123925399,False
+Benzaldehyde,S569K,569,S,K,3,BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b1;null_nearest,4.666666666666667,0.3130918517096896,False
+Benzaldehyde,S407S,407,S,S,2,BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5,5.0,0.11229462062657719,False
+Benzaldehyde,G556R,556,G,R,1,null_formaldehyde,3.0,0.3461573123931885,False
+Benzaldehyde,A570E,570,A,E,1,BNN(ndcg)_distance_weighted_b1,4.0,1.6275832560162955,False
+Benzaldehyde,A399E,399,A,E,1,null_formaldehyde,5.0,0.26787543296813965,False
+Butyraldehyde,V83G,83,V,G,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,2.8333333333333335,-0.024640576261439118,False
+Butyraldehyde,A420S,420,A,S,11,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde,2.090909090909091,0.21919361003907217,False
+Butyraldehyde,A399G,399,A,G,10,BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde,1.1,0.36880047905700974,False
+Butyraldehyde,V83S,83,V,S,9,BNN(ndcg)_distance_weighted_b0;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted,4.333333333333333,-0.19364148414132898,False
+Butyraldehyde,S407Q,407,S,Q,3,BNN(pp_top3)_avg_all_b0;null_avg_all;null_distance_weighted,4.333333333333333,-0.6441306488381492,False
+Butyraldehyde,S569K,569,S,K,3,BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1,4.666666666666667,-0.11597570654968599,False
+Butyraldehyde,A570A,570,A,A,2,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1,3.0,0.48772065152907623,False
+Butyraldehyde,T561M,561,T,M,2,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1,4.5,0.4406863840572095,False
+Butyraldehyde,V83F,83,V,F,1,null_nearest,1.0,-2.0,False
+Butyraldehyde,G556R,556,G,R,1,null_formaldehyde,3.0,0.3461573123931885,False
+Butyraldehyde,V83H,83,V,H,1,null_nearest,3.0,-2.0,False
+Butyraldehyde,V83I,83,V,I,1,null_nearest,4.0,-2.0,False
+Butyraldehyde,A399E,399,A,E,1,null_formaldehyde,5.0,0.26787543296813965,False
+Butyraldehyde,S407S,407,S,S,1,BNN(pp_ndcg)_avg_all_b1.5,5.0,0.730103140218983,False
+Butyraldehyde,V83K,83,V,K,1,null_nearest,5.0,-2.0,False
+Butyraldehyde,V83V,83,V,V,1,BNN(pp_ndcg)_avg_all_b0.5,5.0,-0.366162383812765,False
+D-Glyceraldehyde,A399G,399,A,G,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,1.1666666666666667,0.34455713050584574,False
+D-Glyceraldehyde,A420S,420,A,S,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,2.5,0.1660198244136685,False
+D-Glyceraldehyde,V83G,83,V,G,11,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,2.727272727272727,0.05642911619704913,False
+D-Glyceraldehyde,V83S,83,V,S,8,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted,3.875,-0.3102481410027519,False
+D-Glyceraldehyde,S407Q,407,S,Q,5,BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_nearest,4.8,-0.25821139646697666,False
+D-Glyceraldehyde,S407S,407,S,S,2,BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5,3.5,0.6917512753496693,False
+D-Glyceraldehyde,S569S,569,S,S,2,BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5,3.5,0.6438719786822928,False
+D-Glyceraldehyde,S569K,569,S,K,2,BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1,4.5,-0.20807781888694288,False
+D-Glyceraldehyde,G556R,556,G,R,1,null_formaldehyde,3.0,0.3461573123931885,False
+D-Glyceraldehyde,A399E,399,A,E,1,null_formaldehyde,5.0,0.26787543296813965,False
+D-Glyceraldehyde,A570L,570,A,L,1,null_nearest,5.0,0.3483048677444458,False
+D-Glyceraldehyde,S569R,569,S,R,1,BNN(ndcg)_distance_weighted_b0,5.0,-1.07867404201506,False
+D-Glyceraldehyde,T561L,561,T,L,1,BNN(ndcg)_distance_weighted_b1,5.0,0.0031853304417603923,False
+D-Glyceraldehyde,V83V,83,V,V,1,BNN(pp_ndcg)_avg_all_b1.5,5.0,1.063866401280159,False
+Heptanal,V83G,83,V,G,11,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,2.909090909090909,-0.1483618100992161,True
+Heptanal,A399G,399,A,G,10,BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde,1.2,1.3166464544007674,True
+Heptanal,A420S,420,A,S,10,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde,2.3,0.08016100707191606,True
+Heptanal,V83S,83,V,S,7,BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted,4.285714285714286,-0.3216600702714977,True
+Heptanal,S407Q,407,S,Q,3,BNN(pp_top3)_avg_all_b0;null_avg_all;null_distance_weighted,4.333333333333333,-0.6503970043526756,True
+Heptanal,A570A,570,A,A,2,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1,1.0,0.3962541863936031,True
+Heptanal,T561M,561,T,M,2,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1,4.0,0.2045864770183691,True
+Heptanal,S569K,569,S,K,2,BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1,5.0,-0.3515898385856069,True
+Heptanal,V83V,83,V,V,2,BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5,5.0,0.014487075061918264,True
+Heptanal,V83F,83,V,F,1,null_nearest,1.0,-2.0,True
+Heptanal,A399A,399,A,A,1,BNN(pp_top3)_avg_all_b1,2.0,10.14146723260995,True
+Heptanal,A399S,399,A,S,1,BNN(pp_top3)_avg_all_b1,3.0,9.838913672500176,True
+Heptanal,G556R,556,G,R,1,null_formaldehyde,3.0,0.3461573123931885,True
+Heptanal,V83H,83,V,H,1,null_nearest,3.0,-2.0,True
+Heptanal,A399D,399,A,D,1,BNN(pp_top3)_avg_all_b1,4.0,9.72766970078403,True
+Heptanal,V83I,83,V,I,1,null_nearest,4.0,-2.0,True
+Heptanal,A399E,399,A,E,1,null_formaldehyde,5.0,0.26787543296813965,True
+Heptanal,A399N,399,A,N,1,BNN(pp_top3)_avg_all_b1,5.0,9.653676664478885,True
+Heptanal,A570R,570,A,R,1,BNN(ndcg)_distance_weighted_b0,5.0,-0.36961972701467716,True
+Heptanal,V83K,83,V,K,1,null_nearest,5.0,-2.0,True
+Isobutyraldehyde,A399G,399,A,G,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,1.1666666666666667,0.5836686320629018,False
+Isobutyraldehyde,A420S,420,A,S,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,2.0833333333333335,0.4589699588742518,False
+Isobutyraldehyde,V83G,83,V,G,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,3.25,0.3329473655241263,False
+Isobutyraldehyde,V83S,83,V,S,8,BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted,4.375,-0.18514690187167376,False
+Isobutyraldehyde,S407Q,407,S,Q,5,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_top3)_avg_all_b0;null_avg_all;null_distance_weighted,3.8,0.14398654184011708,False
+Isobutyraldehyde,S569K,569,S,K,3,BNN(ndcg)_distance_weighted_b0;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1,5.0,-0.08921854193514944,False
+Isobutyraldehyde,A570R,570,A,R,2,BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5,4.5,0.8493515332952353,False
+Isobutyraldehyde,G556R,556,G,R,1,null_formaldehyde,3.0,0.3461573123931885,False
+Isobutyraldehyde,S407S,407,S,S,1,BNN(pp_ndcg)_avg_all_b1.5,3.0,0.8013897203210759,False
+Isobutyraldehyde,A570F,570,A,F,1,null_nearest,4.0,0.42975229024887085,False
+Isobutyraldehyde,G556G,556,G,G,1,BNN(pp_top3)_avg_all_b1,4.0,0.41803713706390533,False
+Isobutyraldehyde,A399E,399,A,E,1,null_formaldehyde,5.0,0.26787543296813965,False
+Isobutyraldehyde,A420T,420,A,T,1,null_nearest,5.0,0.39269694685935974,False
+Isocaproaldehyde (4 methylpentanal),A399G,399,A,G,11,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde,1.3636363636363635,0.7052795367369712,True
+Isocaproaldehyde (4 methylpentanal),V83G,83,V,G,11,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,2.6363636363636362,-0.09025132539739636,True
+Isocaproaldehyde (4 methylpentanal),A420S,420,A,S,10,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde,2.2,0.1521126419055973,True
+Isocaproaldehyde (4 methylpentanal),V83S,83,V,S,7,BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted,4.285714285714286,-0.33874286972214723,True
+Isocaproaldehyde (4 methylpentanal),S407Q,407,S,Q,6,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_top3)_avg_all_b0;null_avg_all;null_distance_weighted,4.333333333333333,-0.222060925386273,True
+Isocaproaldehyde (4 methylpentanal),A570A,570,A,A,2,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1,4.0,0.5727733041328263,True
+Isocaproaldehyde (4 methylpentanal),A399E,399,A,E,2,BNN(pp_top3)_avg_all_b1;null_formaldehyde,5.0,2.1199720246308393,True
+Isocaproaldehyde (4 methylpentanal),S569K,569,S,K,2,BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1,5.0,-0.34902562757217537,True
+Isocaproaldehyde (4 methylpentanal),V83F,83,V,F,1,null_nearest,1.0,-2.0,True
+Isocaproaldehyde (4 methylpentanal),A399A,399,A,A,1,BNN(pp_top3)_avg_all_b1,2.0,4.503530366549583,True
+Isocaproaldehyde (4 methylpentanal),A399D,399,A,D,1,BNN(pp_top3)_avg_all_b1,3.0,4.080492895548163,True
+Isocaproaldehyde (4 methylpentanal),G556R,556,G,R,1,null_formaldehyde,3.0,0.3461573123931885,True
+Isocaproaldehyde (4 methylpentanal),V83H,83,V,H,1,null_nearest,3.0,-2.0,True
+Isocaproaldehyde (4 methylpentanal),A399S,399,A,S,1,BNN(pp_top3)_avg_all_b1,4.0,4.071491039318316,True
+Isocaproaldehyde (4 methylpentanal),V83I,83,V,I,1,null_nearest,4.0,-2.0,True
+Isocaproaldehyde (4 methylpentanal),V83K,83,V,K,1,null_nearest,5.0,-2.0,True
+Isocaproaldehyde (4 methylpentanal),V83V,83,V,V,1,BNN(pp_ndcg)_avg_all_b1.5,5.0,0.3028509275267881,True
+Isovaleraldehyde,A399G,399,A,G,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,1.0,0.5590675457957139,False
+Isovaleraldehyde,A420S,420,A,S,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,2.4166666666666665,0.40700189612994336,False
+Isovaleraldehyde,V83G,83,V,G,11,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,2.909090909090909,0.27223291398019706,False
+Isovaleraldehyde,V83S,83,V,S,7,BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted,4.285714285714286,-0.30150122528725143,False
+Isovaleraldehyde,S407Q,407,S,Q,6,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_top3)_avg_all_b0;null_avg_all;null_distance_weighted,4.333333333333333,-0.005011499497763546,False
+Isovaleraldehyde,S569K,569,S,K,5,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1,4.2,0.42654392254219664,False
+Isovaleraldehyde,G556R,556,G,R,1,null_formaldehyde,3.0,0.3461573123931885,False
+Isovaleraldehyde,S569N,569,S,N,1,BNN(pp_top3)_avg_all_b1,3.0,0.7571954806418514,False
+Isovaleraldehyde,A570F,570,A,F,1,null_nearest,4.0,0.42975229024887085,False
+Isovaleraldehyde,A399E,399,A,E,1,null_formaldehyde,5.0,0.26787543296813965,False
+Isovaleraldehyde,A420T,420,A,T,1,null_nearest,5.0,0.39269694685935974,False
+Isovaleraldehyde,S407S,407,S,S,1,BNN(pp_ndcg)_avg_all_b1.5,5.0,0.4793956066506051,False
+Isovaleraldehyde,S569P,569,S,P,1,BNN(pp_top3)_avg_all_b1,5.0,0.7032883056548312,False
+L-Glyceraldehyde,A399G,399,A,G,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,1.25,0.3253381298650712,False
+L-Glyceraldehyde,A420S,420,A,S,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,2.5833333333333335,0.16323077303026348,False
+L-Glyceraldehyde,V83G,83,V,G,11,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,2.6363636363636362,0.058086110648725396,False
+L-Glyceraldehyde,V83S,83,V,S,9,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted,3.7777777777777777,-0.15711511346572063,False
+L-Glyceraldehyde,S407Q,407,S,Q,5,BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_nearest,4.8,-0.25821139646697666,False
+L-Glyceraldehyde,S569S,569,S,S,2,BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5,3.5,0.6235884266176537,False
+L-Glyceraldehyde,S569K,569,S,K,2,BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1,5.0,-0.22706877107659318,False
+L-Glyceraldehyde,V83T,83,V,T,2,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1,5.0,-0.528673392402644,False
+L-Glyceraldehyde,S407S,407,S,S,1,BNN(pp_ndcg)_avg_all_b1.5,2.0,1.2299116562323675,False
+L-Glyceraldehyde,G556R,556,G,R,1,null_formaldehyde,3.0,0.3461573123931885,False
+L-Glyceraldehyde,A399E,399,A,E,1,null_formaldehyde,5.0,0.26787543296813965,False
+L-Glyceraldehyde,A570L,570,A,L,1,null_nearest,5.0,0.3483048677444458,False
+L-Glyceraldehyde,A570R,570,A,R,1,BNN(pp_ndcg)_avg_all_b0.5,5.0,0.1044469682568332,False
+Methyl Isobutyl Ketone,A399G,399,A,G,11,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,1.0909090909090908,0.4682556688778543,True
+Methyl Isobutyl Ketone,A420S,420,A,S,11,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,2.3636363636363638,0.32627821277750224,True
+Methyl Isobutyl Ketone,V83G,83,V,G,11,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,2.727272727272727,0.25218563461469734,True
+Methyl Isobutyl Ketone,V83S,83,V,S,9,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted,4.444444444444445,-0.05711500460642581,True
+Methyl Isobutyl Ketone,S407Q,407,S,Q,5,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_top3)_avg_all_b0;null_avg_all;null_distance_weighted,4.0,-0.01107260980104723,True
+Methyl Isobutyl Ketone,A399E,399,A,E,2,BNN(pp_top3)_avg_all_b1;null_formaldehyde,3.5,1.3434112080769653,True
+Methyl Isobutyl Ketone,S569K,569,S,K,2,BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1,5.0,-0.3262893238900759,True
+Methyl Isobutyl Ketone,A399A,399,A,A,1,BNN(pp_top3)_avg_all_b1,1.0,2.9201637396281828,True
+Methyl Isobutyl Ketone,A399Q,399,A,Q,1,BNN(pp_top3)_avg_all_b1,3.0,2.347565366901434,True
+Methyl Isobutyl Ketone,G556R,556,G,R,1,null_formaldehyde,3.0,0.3461573123931885,True
+Methyl Isobutyl Ketone,A399C,399,A,C,1,BNN(pp_top3)_avg_all_b1,4.0,1.9965777829996345,True
+Methyl Isobutyl Ketone,A570F,570,A,F,1,null_nearest,4.0,0.42975229024887085,True
+Methyl Isobutyl Ketone,A399H,399,A,H,1,BNN(pp_top3)_avg_all_b1,5.0,1.9432278910363405,True
+Methyl Isobutyl Ketone,A420T,420,A,T,1,null_nearest,5.0,0.39269694685935974,True
+Methyl Isobutyl Ketone,V83T,83,V,T,1,BNN(pp_ndcg)_avg_all_b0.5,5.0,-0.5457186653167382,True
+Methyl Isobutyl Ketone,V83V,83,V,V,1,BNN(pp_ndcg)_avg_all_b1.5,5.0,0.36515435946346875,True
+Methyl acetoacetate,A399G,399,A,G,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,1.8333333333333333,0.020697777760957898,True
+Methyl acetoacetate,V83G,83,V,G,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,2.1666666666666665,0.010470585190099599,True
+Methyl acetoacetate,A420S,420,A,S,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,2.4166666666666665,-0.05658222305618928,True
+Methyl acetoacetate,V83S,83,V,S,11,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_nearest,3.8181818181818183,-0.3350633285113775,True
+Methyl acetoacetate,S407Q,407,S,Q,5,BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;null_avg_all;null_distance_weighted,4.8,-0.5298482594163414,True
+Methyl acetoacetate,V83P,83,V,P,3,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;null_nearest,4.666666666666667,-0.6226902440312738,True
+Methyl acetoacetate,G556R,556,G,R,1,null_formaldehyde,3.0,0.3461573123931885,True
+Methyl acetoacetate,A399E,399,A,E,1,null_formaldehyde,5.0,0.26787543296813965,True
+Methyl acetoacetate,S425A,425,S,A,1,BNN(pp_ndcg)_avg_all_b0.5,5.0,-0.6808811745882289,True
+Methyl acetoacetate,S569K,569,S,K,1,BNN(top3)_avg_all_b1,5.0,0.10344679557926084,True
+Methyl acetoacetate,V83V,83,V,V,1,BNN(pp_ndcg)_avg_all_b1.5,5.0,0.1955428048962624,True
+Propionaldehyde,A399G,399,A,G,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,1.1666666666666667,0.5510472920924302,False
+Propionaldehyde,A420S,420,A,S,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,2.1666666666666665,0.4278151267667862,False
+Propionaldehyde,V83G,83,V,G,11,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde,3.090909090909091,0.2921154995165145,False
+Propionaldehyde,V83S,83,V,S,9,BNN(ndcg)_distance_weighted_b0;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted,4.333333333333333,-0.13084860083653496,False
+Propionaldehyde,S407Q,407,S,Q,6,BNN(ndcg)_distance_weighted_b1;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_nearest,4.333333333333333,0.15288562241923045,False
+Propionaldehyde,S569K,569,S,K,3,BNN(ndcg)_distance_weighted_b0;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1,4.666666666666667,-0.0891710859779975,False
+Propionaldehyde,S407S,407,S,S,2,BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5,3.5,0.2412718823866276,False
+Propionaldehyde,A570L,570,A,L,1,BNN(ndcg)_distance_weighted_b1,3.0,1.7888188170539732,False
+Propionaldehyde,G556R,556,G,R,1,null_formaldehyde,3.0,0.3461573123931885,False
+Propionaldehyde,A570K,570,A,K,1,null_nearest,4.0,0.5611013770103455,False
+Propionaldehyde,A399E,399,A,E,1,null_formaldehyde,5.0,0.26787543296813965,False
+Propionaldehyde,S425A,425,S,A,1,null_nearest,5.0,0.44870632886886597,False
+Valeraldehyde,V83G,83,V,G,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,2.75,-0.07067703474585525,True
+Valeraldehyde,A420S,420,A,S,11,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde,2.1818181818181817,0.16471969325855318,True
+Valeraldehyde,A399G,399,A,G,9,BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde,1.0,0.2817189680404003,True
+Valeraldehyde,V83S,83,V,S,9,BNN(ndcg)_distance_weighted_b0;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted,4.333333333333333,-0.23813247459014336,True
+Valeraldehyde,S407Q,407,S,Q,5,BNN(ndcg)_distance_weighted_b1;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;null_avg_all;null_distance_weighted,4.6,-0.17533514697032943,True
+Valeraldehyde,A570A,570,A,A,2,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1,1.5,0.345505881700373,True
+Valeraldehyde,T561M,561,T,M,2,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1,4.0,0.18736677515728362,True
+Valeraldehyde,S569K,569,S,K,2,BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1,5.0,-0.3552021539956266,True
+Valeraldehyde,V83F,83,V,F,1,null_nearest,1.0,-2.0,True
+Valeraldehyde,G556R,556,G,R,1,null_formaldehyde,3.0,0.3461573123931885,True
+Valeraldehyde,V83H,83,V,H,1,null_nearest,3.0,-2.0,True
+Valeraldehyde,V83I,83,V,I,1,null_nearest,4.0,-2.0,True
+Valeraldehyde,A399E,399,A,E,1,null_formaldehyde,5.0,0.26787543296813965,True
+Valeraldehyde,S407S,407,S,S,1,BNN(pp_ndcg)_avg_all_b1.5,5.0,0.6616262304292884,True
+Valeraldehyde,S569S,569,S,S,1,BNN(pp_ndcg)_avg_all_b0.5,5.0,-0.36230068040159624,True
+Valeraldehyde,V83K,83,V,K,1,null_nearest,5.0,-2.0,True
+acetoacetic_acid,A399G,399,A,G,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,1.5,0.024998662819852562,False
+acetoacetic_acid,V83G,83,V,G,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,2.1666666666666665,-0.028850038505014313,False
+acetoacetic_acid,A420S,420,A,S,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,2.75,-0.09242020608162092,False
+acetoacetic_acid,V83S,83,V,S,11,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_nearest,3.909090909090909,-0.35591112390178453,False
+acetoacetic_acid,S407Q,407,S,Q,5,BNN(ndcg)_distance_weighted_b1;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;null_avg_all;null_distance_weighted,4.8,-0.44734345448006946,False
+acetoacetic_acid,V83P,83,V,P,2,BNN(ndcg)_distance_weighted_b0;null_nearest,4.0,-0.7555614448874679,False
+acetoacetic_acid,S569K,569,S,K,2,BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1,5.0,-0.41003810077319736,False
+acetoacetic_acid,G556R,556,G,R,1,null_formaldehyde,3.0,0.3461573123931885,False
+acetoacetic_acid,A399E,399,A,E,1,null_formaldehyde,5.0,0.26787543296813965,False
+acetoacetic_acid,S425A,425,S,A,1,BNN(pp_ndcg)_avg_all_b0.5,5.0,-0.6611359612548735,False
+acetoacetic_acid,V83V,83,V,V,1,BNN(pp_ndcg)_avg_all_b1.5,5.0,0.20139755685733607,False
+acetoine,A399G,399,A,G,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,1.25,0.44004485270770477,False
+acetoine,A420S,420,A,S,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,2.4166666666666665,0.289483849864194,False
+acetoine,V83G,83,V,G,11,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,2.727272727272727,0.237831339849343,False
+acetoine,V83S,83,V,S,10,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_nearest,3.9,-0.017530113802865187,False
+acetoine,S407Q,407,S,Q,4,BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;null_avg_all;null_distance_weighted,5.0,-0.4370316022774655,False
+acetoine,S569S,569,S,S,2,BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5,4.5,0.6023555278959876,False
+acetoine,S569K,569,S,K,2,BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1,5.0,-0.24263726690749254,False
+acetoine,V83T,83,V,T,2,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1,5.0,0.02088701075832755,False
+acetoine,S407S,407,S,S,1,BNN(pp_ndcg)_avg_all_b1.5,2.0,1.2047331504790235,False
+acetoine,A570A,570,A,A,1,BNN(pp_ndcg)_avg_all_b0.5,3.0,0.1612645996102242,False
+acetoine,G556R,556,G,R,1,null_formaldehyde,3.0,0.3461573123931885,False
+acetoine,A399E,399,A,E,1,null_formaldehyde,5.0,0.26787543296813965,False
+acetoine,V83P,83,V,P,1,null_nearest,5.0,0.004321373999118805,False
+butan-2-one,A399G,399,A,G,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,1.25,0.42260324024819124,False
+butan-2-one,A420S,420,A,S,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,2.1666666666666665,0.3141056945868788,False
+butan-2-one,V83G,83,V,G,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,2.6666666666666665,0.24070005603877512,False
+butan-2-one,V83S,83,V,S,9,BNN(ndcg)_distance_weighted_b0;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted,4.222222222222222,-0.23058549020125582,False
+butan-2-one,S407Q,407,S,Q,5,BNN(ndcg)_distance_weighted_b1;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;null_avg_all;null_distance_weighted,4.4,-0.03717404853799762,False
+butan-2-one,S569K,569,S,K,3,BNN(ndcg)_distance_weighted_b0;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1,5.0,-0.2239203571144197,False
+butan-2-one,G556R,556,G,R,1,null_formaldehyde,3.0,0.3461573123931885,False
+butan-2-one,A570F,570,A,F,1,null_nearest,4.0,0.42975229024887085,False
+butan-2-one,A399E,399,A,E,1,null_formaldehyde,5.0,0.26787543296813965,False
+butan-2-one,A420T,420,A,T,1,null_nearest,5.0,0.39269694685935974,False
+butan-2-one,A570R,570,A,R,1,BNN(ndcg)_distance_weighted_b1,5.0,1.3321194989386387,False
+butan-2-one,S425A,425,S,A,1,BNN(pp_ndcg)_avg_all_b0.5,5.0,-0.6686744194825768,False
+butan-2-one,V83T,83,V,T,1,BNN(pp_ndcg)_avg_all_b1.5,5.0,0.0755546267697893,False
+lactaldehyde,A399G,399,A,G,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,1.1666666666666667,0.3585214983620119,False
+lactaldehyde,A420S,420,A,S,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,2.4166666666666665,0.2179491055183795,False
+lactaldehyde,V83G,83,V,G,11,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,2.5454545454545454,0.16339794193041565,False
+lactaldehyde,V83S,83,V,S,11,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_nearest,4.181818181818182,-0.07252275358924269,False
+lactaldehyde,S407Q,407,S,Q,5,BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;null_avg_all;null_distance_weighted,4.8,-0.5199656126586459,False
+lactaldehyde,V83T,83,V,T,2,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1,5.0,-0.1887346118610077,False
+lactaldehyde,S407S,407,S,S,1,BNN(pp_ndcg)_avg_all_b1.5,2.0,1.0576298925126209,False
+lactaldehyde,G556R,556,G,R,1,null_formaldehyde,3.0,0.3461573123931885,False
+lactaldehyde,S569S,569,S,S,1,BNN(pp_ndcg)_avg_all_b0.5,4.0,-0.02756171520706685,False
+lactaldehyde,A399E,399,A,E,1,null_formaldehyde,5.0,0.26787543296813965,False
+lactaldehyde,S569K,569,S,K,1,BNN(top3)_avg_all_b1,5.0,0.18884320164109492,False
+lactaldehyde,V83P,83,V,P,1,null_nearest,5.0,0.004321373999118805,False
+lactaldehyde,V83V,83,V,V,1,BNN(pp_ndcg)_avg_all_b1.5,5.0,0.9269625412399051,False
+malonaldehyde,A399G,399,A,G,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,1.4166666666666667,0.1925567583629042,False
+malonaldehyde,A420S,420,A,S,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,2.25,0.11338087134169161,False
+malonaldehyde,V83G,83,V,G,11,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde,2.4545454545454546,0.030861215790067155,False
+malonaldehyde,V83S,83,V,S,10,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted,4.1,-0.2734619102159808,False
+malonaldehyde,S407Q,407,S,Q,9,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;null_avg_all;null_distance_weighted;null_nearest,4.555555555555555,-0.43047129312345234,False
+malonaldehyde,S569K,569,S,K,2,BNN(top3)_avg_all_b1;null_nearest,5.0,0.22359350917346088,False
+malonaldehyde,G556R,556,G,R,1,null_formaldehyde,3.0,0.3461573123931885,False
+malonaldehyde,A570K,570,A,K,1,null_nearest,4.0,0.3138672113418579,False
+malonaldehyde,A399E,399,A,E,1,null_formaldehyde,5.0,0.26787543296813965,False
+malonaldehyde,S407S,407,S,S,1,BNN(pp_ndcg)_avg_all_b1.5,5.0,0.3354813185192702,False
+oxalaldehyde,V83G,83,V,G,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,2.3333333333333335,-0.20237786636465716,False
+oxalaldehyde,A399G,399,A,G,11,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde,1.2727272727272727,0.06672014940808081,False
+oxalaldehyde,A420S,420,A,S,11,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde,2.4545454545454546,-0.0419599050486041,False
+oxalaldehyde,V83S,83,V,S,10,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted,4.0,-0.3815805416281049,False
+oxalaldehyde,S407Q,407,S,Q,6,BNN(ndcg)_distance_weighted_b1;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;null_avg_all;null_distance_weighted,5.0,-0.49195077659542186,False
+oxalaldehyde,V83T,83,V,T,2,BNN(ndcg)_distance_weighted_b0;BNN(pp_ndcg)_avg_all_b1.5,5.0,-0.7980112866118554,False
+oxalaldehyde,V83F,83,V,F,1,null_nearest,1.0,-2.0,False
+oxalaldehyde,G556R,556,G,R,1,null_formaldehyde,3.0,0.3461573123931885,False
+oxalaldehyde,V83H,83,V,H,1,null_nearest,3.0,-2.0,False
+oxalaldehyde,V83I,83,V,I,1,null_nearest,4.0,-2.0,False
+oxalaldehyde,A399E,399,A,E,1,null_formaldehyde,5.0,0.26787543296813965,False
+oxalaldehyde,S425A,425,S,A,1,BNN(pp_ndcg)_avg_all_b0.5,5.0,-0.7569180094682445,False
+oxalaldehyde,S569K,569,S,K,1,BNN(top3)_avg_all_b1,5.0,0.08894550560082604,False
+oxalaldehyde,V83K,83,V,K,1,null_nearest,5.0,-2.0,False
+pentan-2-one,V83G,83,V,G,12,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde;null_nearest,2.3333333333333335,-0.08202385616956047,False
+pentan-2-one,A420S,420,A,S,11,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde,2.272727272727273,0.120326960225837,False
+pentan-2-one,A399G,399,A,G,10,BNN(ndcg)_distance_weighted_b1;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted;null_formaldehyde,1.5,0.25565232511132546,False
+pentan-2-one,V83S,83,V,S,9,BNN(ndcg)_distance_weighted_b0;BNN(pp_ndcg)_avg_all_b0.5;BNN(pp_ndcg)_avg_all_b1.5;BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1;null_avg_all;null_distance_weighted,4.333333333333333,-0.31139999411755476,False
+pentan-2-one,S407Q,407,S,Q,4,BNN(pp_top3)_avg_all_b0;BNN(pp_top3)_avg_all_b1;null_avg_all;null_distance_weighted,4.5,-0.4064484292408902,False
+pentan-2-one,A570A,570,A,A,2,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1,3.0,0.21093118237433575,False
+pentan-2-one,T561M,561,T,M,2,BNN(ndcg)_distance_weighted_b0;BNN(ndcg)_distance_weighted_b1,4.0,0.18260994879526582,False
+pentan-2-one,S569K,569,S,K,2,BNN(top3)_avg_all_b0;BNN(top3)_avg_all_b1,5.0,-0.41343467198049666,False
+pentan-2-one,V83F,83,V,F,1,null_nearest,1.0,-2.0,False
+pentan-2-one,G556R,556,G,R,1,null_formaldehyde,3.0,0.3461573123931885,False
+pentan-2-one,V83H,83,V,H,1,null_nearest,3.0,-2.0,False
+pentan-2-one,V83I,83,V,I,1,null_nearest,4.0,-2.0,False
+pentan-2-one,A399E,399,A,E,1,null_formaldehyde,5.0,0.26787543296813965,False
+pentan-2-one,S425A,425,S,A,1,BNN(pp_ndcg)_avg_all_b0.5,5.0,-0.6611532501722193,False
+pentan-2-one,V83K,83,V,K,1,null_nearest,5.0,-2.0,False
+pentan-2-one,V83T,83,V,T,1,BNN(pp_ndcg)_avg_all_b1.5,5.0,0.11670008960695832,False

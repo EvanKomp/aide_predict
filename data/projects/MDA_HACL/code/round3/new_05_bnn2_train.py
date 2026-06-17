@@ -618,6 +618,13 @@ Examples:
 
     # Training control
     parser.add_argument("--skip-final-model", action="store_true")
+    parser.add_argument("--skip-cv", action="store_true",
+                        help="Retrain ONLY the all-data final model into models/ "
+                             "(skip the fold CV). Leaves the committed "
+                             "pairwise_predictions.csv / train_lookup.csv / "
+                             "metrics.json / train_metadata.json / hyperparams.json "
+                             "untouched. Use to regenerate stale gitignored model "
+                             "binaries so they match the committed best_hyperparams.")
     parser.add_argument("--n-singleshot-repeats", type=int, default=10)
     parser.add_argument("--hyperparams", type=str, default=None,
                         help="Path to best_hyperparams.json from opt script")
@@ -755,6 +762,25 @@ def main():
     training_substrates_subsample = (
         sorted(subsample) if subsample is not None else full_substrate_pool
     )
+
+    # --skip-cv: retrain ONLY the all-data final model (regenerate models/),
+    # leaving the committed CV outputs untouched. Used to rebuild stale gitignored
+    # model binaries so they match the committed best_hyperparams.json.
+    if getattr(args, "skip_cv", False):
+        if split_type not in ("random", "substrate"):
+            raise SystemExit("--skip-cv is only valid for --split random|substrate")
+        if args.skip_final_model:
+            raise SystemExit("--skip-cv with --skip-final-model would do nothing")
+        models_dir.mkdir(parents=True, exist_ok=True)
+        logger.info("--skip-cv: retraining FINAL model only -> %s "
+                    "(CV / metrics / hyperparams left untouched)", models_dir)
+        train_final_model(
+            df, embeddings, bnn1_hidden, bnn1_input_dim, latent_dim,
+            bnn1_pipe_wt, bnn1_pipe_mut, params, config, device,
+            substrate_meta, models_dir, None,
+        )
+        logger.info("Final model retrained: %s", models_dir / "final_model.pt")
+        return
 
     # CV
     pairwise_df, train_lookup_df, fold_summaries, fold_histories = run_cv_and_collect_predictions(
