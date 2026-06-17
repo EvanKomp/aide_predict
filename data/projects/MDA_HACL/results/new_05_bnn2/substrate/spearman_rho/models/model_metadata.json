@@ -1,0 +1,23 @@
+{
+  "bnn1_input_dim": 0,
+  "latent_dim": 0,
+  "other_feature_dim": 2340,
+  "n_training_rows": 14368,
+  "n_epochs_trained": 11,
+  "other_feature_groups": [
+    "esm_mut",
+    "esm_wt",
+    "fc_ref",
+    "saprot_zs",
+    "x_ref_substrate",
+    "x_target_substrate"
+  ],
+  "other_feature_dims": {
+    "fc_ref": 1,
+    "x_target_substrate": 1122,
+    "x_ref_substrate": 1122,
+    "saprot_zs": 1,
+    "esm_wt": 1280,
+    "esm_mut": 1280
+  }
+}
